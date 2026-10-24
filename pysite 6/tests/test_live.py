@@ -104,7 +104,8 @@ class FakeNet:
 
     def __call__(self, url, data=None, headers=None):
         for marker, body in (("XML_daily", CBR_DAILY), ("DailyInfo", soap(KEY_ROWS)),
-                             ("IMOEX", MOEX("IMOEX", 2426.09)), ("RTSI", MOEX("RTSI", 914.0))):
+                             ("IMOEX", MOEX("IMOEX", 2426.09)), ("RTSI", MOEX("RTSI", 914.0)),
+                             ("RssPress", Blog.RSS)):
             if marker in url:
                 if marker in self.fail:
                     raise OSError("нет связи")
@@ -132,6 +133,7 @@ class Refresh(unittest.TestCase):
         self.assertAlmostEqual(s["rates"]["USD"], 82.8504)
         self.assertEqual(s["imoex"]["value"], 2426.09)
         self.assertEqual(s["rtsi"]["value"], 914.0)
+        self.assertEqual(s["news"][0]["title"], "Банк России снизил ставку")
         self.assertTrue(live_data.CACHE_FILE.exists())
 
     def test_one_source_fails_others_still_update(self):
@@ -144,7 +146,7 @@ class Refresh(unittest.TestCase):
     def test_failure_keeps_previous_values(self):
         live_data._http = FakeNet()
         live_data.refresh()
-        live_data._http = FakeNet(fail=["XML_daily", "DailyInfo", "IMOEX"])
+        live_data._http = FakeNet(fail=["XML_daily", "DailyInfo", "IMOEX", "RssPress"])
         s = live_data.refresh()
         self.assertFalse(any(v["ok"] for v in s["status"].values()))
         self.assertAlmostEqual(s["rates"]["USD"], 82.8504)     # старые значения остались
@@ -293,6 +295,58 @@ class Tools(unittest.TestCase):
             self.assertIn(key, html)
         self.assertNotIn("{{", html)
         self.assertEqual(site.TAX["free_base"] * site.TAX["free_rate"] / 100, 160_000)
+
+
+class Blog(unittest.TestCase):
+    RSS = ('<?xml version="1.0"?><rss version="2.0"><channel>'
+           '<item><title>Банк России снизил ставку</title><link>https://www.cbr.ru/press/1/</link>'
+           '<pubDate>Fri, 23 Oct 2026 13:30:00 +0300</pubDate></item>'
+           '<item><title>Без ссылки</title><link>javascript:x</link></item></channel></rss>').encode("utf-8")
+
+    def test_parse_rss(self):
+        items = live_data.parse_rss(self.RSS)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["date"], "2026-10-23")
+        with self.assertRaises(ValueError):
+            live_data.parse_rss(b"<rss><channel></channel></rss>")
+
+    def test_events_from_history(self):
+        import blog
+        live = {"key_history": [["2026-06-01", 14.5], ["2026-06-02", 14.5], ["2026-07-24", 14.0], ["2026-09-12", 14.0]]}
+        ev = blog.key_events(live, [], [])
+        self.assertEqual(len(ev), 1)
+        self.assertEqual((ev[0]["old"], ev[0]["new"], ev[0]["exact"]), (14.5, 14.0, True))
+
+    def test_new_decision_makes_new_post(self):
+        live_data.reset_for_tests()
+        live_data._state.update({"key_history": [["2026-01-01", 16.0], ["2026-11-20", 15.0]], "key_rate": 15.0})
+        after = site.get_posts()
+        self.assertTrue(any(p["kind"] == "auto" and "15%" in p["title"] for p in after))
+        self.assertIn("snizhenie-stavki-i-vklad", {p["slug"] for p in after})
+        live_data.reset_for_tests()
+
+    def test_pages_and_sitemap(self):
+        c = site.app.test_client()
+        index = c.get("/razbory/")
+        self.assertEqual(index.status_code, 200)
+        slugs = [p["slug"] for p in site.get_posts()]
+        self.assertGreaterEqual(len(slugs), 5)
+        for slug in slugs:
+            r = c.get(f"/razbory/{slug}/")
+            self.assertEqual(r.status_code, 200)
+            self.assertIn("application/ld+json", r.get_data(as_text=True))
+        self.assertEqual(c.get("/razbory/net-takogo/").status_code, 404)
+        os.environ["SITE_URL"] = "https://example.com/site/"
+        try:
+            xml = c.get("/sitemap.xml").get_data(as_text=True)
+        finally:
+            del os.environ["SITE_URL"]
+        self.assertIn("https://example.com/site/razbory/snizhenie-stavki-i-vklad/", xml)
+
+    def test_main_page_links_blog(self):
+        html = site.app.test_client().get("/").get_data(as_text=True)
+        self.assertIn('id="razbory"', html)
+        self.assertIn('href="razbory/"', html)
 
 
 if __name__ == "__main__":

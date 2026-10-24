@@ -1,0 +1,25 @@
+{% extends "_blog_base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block description %}{{ post.description }}{% endblock %}
+{% block ogtype %}article{% endblock %}
+{% block ld %}<script type="application/ld+json">{{ ld|tojson }}</script>{% endblock %}
+{% block content %}
+<article class="post">
+  <p class="post-meta"><a href="{{ root }}razbory/">← Все разборы</a> <span class="tag">{{ post.kind_label }}</span> <time datetime="{{ post.date }}">{{ post.date_label }}</time></p>
+  <h1>{{ post.title }}</h1>
+  {% for kind, val in post.blocks %}
+    {% if kind == 'p' %}<p>{{ val }}</p>
+    {% elif kind == 'h2' %}<h2>{{ val }}</h2>
+    {% elif kind == 'ul' %}<ul>{% for it in val %}<li>{{ it }}</li>{% endfor %}</ul>
+    {% elif kind == 'cta' %}<p class="post-cta"><a class="btn primary" href="{{ root }}{{ val[1] }}">{{ val[0] }}</a></p>
+    {% elif kind == 'note' %}<p class="post-note">{{ val }}</p>
+    {% endif %}
+  {% endfor %}
+  {% if others %}
+  <aside class="more">
+    <h2>Читайте также</h2>
+    <ul>{% for o in others %}<li><a href="{{ root }}razbory/{{ o.slug }}/">{{ o.title }}</a></li>{% endfor %}</ul>
+  </aside>
+  {% endif %}
+</article>
+{% endblock %}

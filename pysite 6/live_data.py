@@ -119,6 +119,31 @@ def parse_moex(json_bytes: bytes) -> dict:
     return {"value": float(value), "change_pct": row.get("LASTCHANGEPRC")}
 
 
+def parse_rss(xml_bytes: bytes, limit: int = 8) -> list[dict]:
+    """RSS 2.0 -> [{'title', 'link', 'date'}]; берём только заголовок и ссылку на источник."""
+    root = ET.fromstring(xml_bytes)
+    items = []
+    for it in root.iter("item"):
+        title = (it.findtext("title") or "").strip()
+        link = (it.findtext("link") or "").strip()
+        if not title or not link.startswith("http"):
+            continue
+        date = None
+        raw = (it.findtext("pubDate") or "").strip()
+        if raw:
+            try:
+                from email.utils import parsedate_to_datetime
+                date = parsedate_to_datetime(raw).date().isoformat()
+            except (TypeError, ValueError):
+                date = None
+        items.append({"title": title, "link": link, "date": date})
+        if len(items) >= limit:
+            break
+    if not items:
+        raise ValueError("в ленте нет новостей")
+    return items
+
+
 def key_rate_since(rows: list[tuple[str, float]]) -> str:
     """Дата, с которой действует последнее значение ставки."""
     last = rows[-1][1]
@@ -175,10 +200,18 @@ def _fetch_moex() -> dict:
     return {"imoex": imoex, "rtsi": rtsi}
 
 
+CBR_NEWS_URL = "https://www.cbr.ru/rss/RssPress"      # пресс-релизы Банка России
+
+
+def _fetch_news() -> dict:
+    return {"news": parse_rss(_http(CBR_NEWS_URL))}
+
+
 SOURCES = {
     "rates": ("Курсы валют ЦБ", _fetch_rates),
     "key": ("Ключевая ставка", _fetch_key_rate),
     "moex": ("Индексы МосБиржи", _fetch_moex),
+    "news": ("Новости Банка России", _fetch_news),
 }
 
 

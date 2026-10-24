@@ -21,7 +21,7 @@ os.environ["STATIC_BUILD"] = "1"
 os.environ["LIVE_DATA"] = "off"      # фоновый поток не нужен: обновляем один раз вручную ниже
 
 import live_data  # noqa: E402
-from app import STATIC_PRECACHE, app, sw_source  # noqa: E402
+from app import STATIC_PRECACHE, app, get_posts, sw_source  # noqa: E402
 
 ROOT = pathlib.Path(__file__).parent
 
@@ -37,23 +37,33 @@ def main() -> int:
         print("Ни один источник не ответил, сборка остановлена, чтобы не опубликовать устаревшие данные.")
         return 1
 
-    html = app.test_client().get("/").get_data(as_text=True)
     css = (ROOT / "static" / "style.css").read_text(encoding="utf-8")
     js = (ROOT / "static" / "app.js").read_text(encoding="utf-8")
 
-    html = html.replace(
-        '<link rel="stylesheet" href="/static/style.css">',
-        "<style>\n" + css + "\n</style>",
-    )
-    html = html.replace(
-        '<script src="/static/app.js"></script>',
-        "<script>\n" + js + "\n</script>",
-    )
-    assert "/static/" not in html, "в файле остались ссылки на static"
+    def inline(page: str) -> str:
+        page = page.replace('<link rel="stylesheet" href="/static/style.css">', "<style>\n" + css + "\n</style>")
+        page = page.replace('<script src="/static/app.js"></script>', "<script>\n" + js + "\n</script>")
+        assert "/static/" not in page, "в файле остались ссылки на static"
+        return page
+
+    html = inline(app.test_client().get("/").get_data(as_text=True))
 
     out = ROOT / "dist"
     out.mkdir(exist_ok=True)
     (out / "index.html").write_text(html, encoding="utf-8")
+    # разборы: отдельная страница для каждой статьи, чтобы её находили поисковики
+    blog_dir = out / "razbory"
+    if blog_dir.exists():
+        shutil.rmtree(blog_dir)           # старые страницы не копим
+    blog_dir.mkdir()
+    pages = {"": "/razbory/"}
+    for p in get_posts():
+        pages[p["slug"] + "/"] = f"/razbory/{p['slug']}/"
+    for rel, url in pages.items():
+        target = blog_dir / rel
+        target.mkdir(parents=True, exist_ok=True)
+        (target / "index.html").write_text(inline(app.test_client().get(url).get_data(as_text=True)), encoding="utf-8")
+    print(f"Разборы: {len(pages) - 1} статей")
     # для поисковиков; адрес сайта берётся из переменной SITE_URL (например, https://имя.github.io/my-site/)
     client = app.test_client()
     (out / "robots.txt").write_text(client.get("/robots.txt").get_data(as_text=True), encoding="utf-8")

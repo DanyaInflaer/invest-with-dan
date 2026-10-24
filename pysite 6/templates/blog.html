@@ -1,0 +1,27 @@
+{% extends "_blog_base.html" %}
+{% block title %}Разборы: ставки, вклады, ипотека и налоги{% endblock %}
+{% block description %}Короткие разборы про ключевую ставку, вклады, инфляцию, ипотеку и налоги: что изменилось и что это значит для вашего кошелька.{% endblock %}
+{% block content %}
+<section class="band blog-head">
+  <h1 class="blog-title">Разборы</h1>
+  <p class="blog-lead">Короткие материалы о том, что происходит со ставками, вкладами, ипотекой и налогами, и что это значит лично для вас. Новые разборы после решений Банка России появляются сами.</p>
+</section>
+<section class="post-list">
+  {% for p in posts %}
+  <article class="post-card">
+    <p class="post-meta"><span class="tag">{{ p.kind_label }}</span> <time datetime="{{ p.date }}">{{ p.date_label }}</time></p>
+    <h2><a href="{{ root }}razbory/{{ p.slug }}/">{{ p.title }}</a></h2>
+    <p>{{ p.description }}</p>
+  </article>
+  {% endfor %}
+</section>
+{% if news %}
+<section class="band news">
+  <h2 class="news-title">Новости Банка России</h2>
+  <p class="blog-lead">Заголовки из пресс-службы регулятора, полный текст на сайте источника.</p>
+  <ul class="news-list">
+    {% for n in news %}<li><a href="{{ n.link }}" rel="noopener nofollow" target="_blank">{{ n.title }}</a>{% if n.date_label %} <span class="muted">{{ n.date_label }}</span>{% endif %}</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

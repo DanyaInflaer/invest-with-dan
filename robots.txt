@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://danyainflaer.github.io/invest-with-dan/sitemap.xml

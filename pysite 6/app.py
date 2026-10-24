@@ -20,6 +20,7 @@ try:
 except ModuleNotFoundError:
     raise SystemExit("\nНе установлен Flask. Выполните в этой папке:\n    python -m pip install -r requirements.txt\nи запустите снова (или используйте start.bat / start.command).\n")
 
+import blog
 import live_data
 
 app = Flask(__name__)
@@ -517,7 +518,7 @@ def index():
         people=PEOPLE, invest=v["invest"],
         bars=bars, axis=AXIS, sources=SOURCES,
         regions=region_rows(), russia=RUSSIA_ROW, region_notes=REGION_NOTES,
-        tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
+        latest_posts=get_posts()[:3], tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
         mortgage_presets=MORTGAGE_PRESETS, deposit_rates=DEPOSIT_RATES,
         scenarios=build_scenarios(v["key"], v["next_meeting"]),
         infl_now=fmt(INFLATION), real_rate=fmt(v["key"] - INFLATION),
@@ -572,6 +573,60 @@ def icons(name):
     return send_from_directory(BASE / "static" / "icons", name)
 
 
+GUIDE_DATE = dt.date(2026, 10, 24)    # дата вечных разборов; обновляйте, когда меняете их тексты
+
+
+def _dep_year_rate():
+    return next(r["rate"] for r in DEPOSIT_RATES if r["upto_months"] == 12)
+
+
+def blog_context(now=None):
+    v = live_view(now)
+    return {
+        "key_now": v["key"], "inflation": INFLATION, "deposit_rate": _dep_year_rate(),
+        "first_key": KEY_SERIES[0], "mortgage_rate": MORTGAGE_PRESETS[0]["rate"],
+        "preferential_rate": MORTGAGE_PRESETS[2]["rate"], "annuity": annuity_payment,
+        "deposit_income": deposit_income, "real_gain": real_gain, "tax": TAX,
+        "guide_date": GUIDE_DATE.isoformat(), "guide_label": f"{GUIDE_DATE.day} {MONTHS_GEN[GUIDE_DATE.month - 1]} {GUIDE_DATE.year}",
+        "fallback_series": KEY_SERIES, "fallback_ym": RATE_YM,
+    }
+
+
+def get_posts():
+    return blog.build_posts(live_data.get_live(), blog_context())
+
+
+def _root(depth):
+    """Путь к главной странице: в статической сборке относительный (работает в любой папке), на сервере абсолютный."""
+    return "../" * depth if os.environ.get("STATIC_BUILD") else "/"
+
+
+def _blog_url(path):
+    return site_url() + path if site_url() else ""
+
+
+@app.route("/razbory/")
+def razbory_index():
+    return render_template("blog.html", posts=get_posts(), news=blog.news_items(live_data.get_live()),
+                           team=TEAM, root=_root(1), page_url=_blog_url("razbory/"))
+
+
+@app.route("/razbory/<slug>/")
+def razbory_post(slug):
+    posts = get_posts()
+    post = next((p for p in posts if p["slug"] == slug), None)
+    if post is None:
+        return Response("Разбор не найден", status=404)
+    url = _blog_url(f"razbory/{slug}/")
+    ld = {"@context": "https://schema.org", "@type": "Article", "headline": post["title"],
+          "description": post["description"], "datePublished": post["date"], "inLanguage": "ru",
+          "author": {"@type": "Organization", "name": TEAM["name"]}}
+    if url:
+        ld["mainEntityOfPage"] = url
+    others = [p for p in posts if p["slug"] != slug][:3]
+    return render_template("post.html", post=post, others=others, ld=ld, team=TEAM, root=_root(2), page_url=url)
+
+
 @app.route("/robots.txt")
 def robots():
     lines = ["User-agent: *", "Allow: /"]
@@ -585,7 +640,10 @@ def sitemap():
     today = dt.date.today().isoformat()
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-           f"  <url><loc>{site_url()}</loc><lastmod>{today}</lastmod></url>\n</urlset>\n")
+           f"  <url><loc>{site_url()}</loc><lastmod>{today}</lastmod></url>\n"
+           f"  <url><loc>{site_url()}razbory/</loc><lastmod>{today}</lastmod></url>\n"
+           + "".join(f"  <url><loc>{site_url()}razbory/{p['slug']}/</loc><lastmod>{p['date']}</lastmod></url>\n" for p in get_posts())
+           + "</urlset>\n")
     return Response(xml, mimetype="application/xml")
 
 

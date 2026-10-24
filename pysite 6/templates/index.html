@@ -34,6 +34,7 @@
       <a href="#ipoteka">Ипотека</a>
       <a href="#instrumenty">Налоги и пенсия</a>
       <a href="#vyvody">Что это значит</a>
+      <a href="#razbory">Разборы</a>
       <a href="#voprosy">Вопросы</a>
       <a href="#o-nas">О нас</a>
     </nav>
@@ -594,6 +595,24 @@
       </ul>
     </div>
     <p class="note">Информация на странице носит справочный характер и не является индивидуальной инвестиционной рекомендацией. Калькуляторы дают оценку и не заменяют расчёт банка.</p>
+  </section>
+
+  <!-- ===================== РАЗБОРЫ ===================== -->
+  <section class="band" id="razbory">
+    <div class="sec-head">
+      <h2>Разборы</h2>
+      <p>Короткие материалы о ставках, вкладах, ипотеке и налогах. После каждого решения Банка России появляется новый разбор.</p>
+    </div>
+    <div class="post-list">
+      {% for p in latest_posts %}
+      <article class="post-card">
+        <p class="post-meta"><span class="tag">{{ p.kind_label }}</span> <time datetime="{{ p.date }}">{{ p.date_label }}</time></p>
+        <h3><a href="razbory/{{ p.slug }}/">{{ p.title }}</a></h3>
+        <p>{{ p.description }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a></p>
   </section>
 
   <!-- ===================== ВОПРОСЫ ===================== -->
