@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Инвестиции и уровень жизни в России: свежие данные, графики, сравнение регионов, калькуляторы вклада и ипотеки.">
+<title>Инвестиции и уровень жизни · {{ team.name }}</title>
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Инвестиции и уровень жизни в России">
+<meta property="og:description" content="Свежие данные по ставкам, ценам, зарплатам и регионам, графики и калькуляторы вклада, ипотеки и инфляции.">
+{% if site_url %}<link rel="canonical" href="{{ site_url }}">
+<meta property="og:url" content="{{ site_url }}">
+{% endif %}<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230F5C45'/%3E%3Cpath d='M6 22l7-8 5 4 8-10' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{{ faq_ld|tojson }}</script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#F5F0E6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1714" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">{{ team.name }}</div>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#privet">Приветствие</a>
+      <a href="#dannye">Данные</a>
+      <a href="#dinamika">Динамика</a>
+      <a href="#regiony">Регионы</a>
+      <a href="#kalkulyatory">Калькуляторы</a>
+      <a href="#ipoteka">Ипотека</a>
+      <a href="#vyvody">Что это значит</a>
+      <a href="#voprosy">Вопросы</a>
+      <a href="#o-nas">О нас</a>
+    </nav>
+    <button type="button" class="btn" id="install-btn" hidden>Установить приложение</button>
+  </header>
+
+  <section class="hero" id="privet">
+    <div>
+      <div class="eyebrow">Россия · данные на {{ asof }}</div>
+      <h1>Здравствуйте! Мы команда {{ team.name }}</h1>
+      <p class="lead">Мы рады, что вы зашли. Мы помогаем разобраться, куда движется российская экономика, как живут люди в стране и что это значит для тех, кто думает о вложениях.</p>
+      <p class="lead">Ниже собраны свежие цифры, графики за год, сравнение регионов и четыре калькулятора (вклад, ипотека, инфляция, инвестиции) с сохранением расчётов в PDF. В конце страницы мы рассказываем о себе и о том, чем можем быть полезны.</p>
+      <p class="sign"><span>{{ team.signer }}</span><span>от лица всей команды</span></p>
+    </div>
+    <aside class="glance" aria-label="Коротко">
+      <h2>Россия сейчас</h2>
+      <dl>
+        {% for name, value in glance %}
+        <div class="row"><dt>{{ name }}</dt><dd>{{ value }}</dd></div>
+        {% endfor %}
+      </dl>
+    </aside>
+  </section>
+
+  <!-- ===================== ДАННЫЕ ===================== -->
+  <section class="band" id="dannye">
+    <div class="sec-head">
+      <h2>Инвестиции и уровень жизни в России</h2>
+      <p>Доходы растут, безработица остаётся низкой, а вложения в основной капитал сокращаются, и деньги в экономике остаются дорогими. Все показатели ниже взяты из последних публикаций Росстата, Банка России и Московской биржи.</p>
+    </div>
+    <div class="stamp">{{ live_note }} Остальные показатели обновлены {{ updated }}, последний месяц с данными указан у каждой цифры.</div>
+
+    {% macro cards(items) %}
+    <div class="cards">
+      {% for c in items %}
+      <article class="card">
+        <div class="k">{{ c.k }}</div>
+        <div class="v {{ c.tone }}">{{ c.v }}{% if c.unit %}<small>{{ c.unit }}</small>{% endif %}</div>
+        <div class="n">{{ c.n }}</div>
+      </article>
+      {% endfor %}
+    </div>
+    {% endmacro %}
+
+    <h3 class="group">Как живут люди</h3>
+    {{ cards(people) }}
+
+    <h3 class="group">Что происходит с вложениями</h3>
+    {{ cards(invest) }}
+
+    <h3 class="group">Сколько стоят деньги</h3>
+    <div class="scale">
+      <h4>Ставки и инфляция, % годовых</h4>
+      <p class="sub">{{ scale_sub }}</p>
+      <div class="bars" role="img" aria-label="Диаграмма ставок и инфляции, % годовых">
+        {% for b in bars %}
+        <div class="bar">
+          <div class="l">{{ b.label }}</div>
+          <div class="track"><div class="fill{% if b.alt %} alt{% endif %}" style="width: {{ b.width }}%"></div></div>
+          <div class="num">{{ b.text }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="axis" aria-hidden="true"><div>{% for t in axis %}<span>{{ t }}</span>{% endfor %}</div></div>
+    </div>
+    {% if decision %}<div class="note">{{ decision }}</div>
+    {% endif %}<div class="note">Ипотека на рыночных условиях стоит около 21% по полной стоимости кредита. По льготным программам, например IT-ипотеке, дальневосточной и сельской, ставка держится в пределах 6%. Вклады в крупнейших банках дают 13,06% в среднем по максимальным ставкам за первую декаду октября.</div>
+  </section>
+
+  <!-- ===================== ДИНАМИКА ===================== -->
+  <section class="band" id="dinamika">
+    <div class="sec-head">
+      <h2>Как менялись ставка, цены и зарплаты</h2>
+      <p>{{ dyn_lead }}</p>
+    </div>
+
+    <div class="chart-box">
+      <div class="tabs" role="tablist" aria-label="Выбор графика">
+        <button type="button" role="tab" id="tab-rate" aria-controls="panel-rate" aria-selected="true" class="tab">Ставка и инфляция</button>
+        <button type="button" role="tab" id="tab-wage" aria-controls="panel-wage" aria-selected="false" class="tab" tabindex="-1">Зарплаты</button>
+      </div>
+
+      <div id="panel-rate" role="tabpanel" aria-labelledby="tab-rate">
+        <div class="legend">
+          <span class="lg lg1">Ключевая ставка, %</span>
+          <span class="lg lg2">Инфляция за 12 месяцев, %</span>
+        </div>
+        <div class="readout" id="readout-rate" aria-live="polite"></div>
+        <div class="chart" id="chart-rate"></div>
+        <p class="chart-note">Ставка показана на конец месяца. Наведите курсор на график или нажмите на него, чтобы увидеть значения. На клавиатуре работают стрелки.</p>
+      </div>
+
+      <div id="panel-wage" role="tabpanel" aria-labelledby="tab-wage" hidden>
+        <div class="legend"><span class="lg lg1">Средняя начисленная зарплата, тыс. ₽ в месяц</span></div>
+        <div class="readout" id="readout-wage" aria-live="polite"></div>
+        <div class="chart" id="chart-wage"></div>
+        <p class="chart-note">В декабре зарплата обычно выше из-за годовых премий. За январь, февраль и март значения в использованных источниках не нашлись, на графике там пропуск.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== РЕГИОНЫ ===================== -->
+  <section class="band" id="regiony">
+    <div class="sec-head">
+      <h2>Сравнение регионов</h2>
+      <p>Зарплаты, безработица и инфляция заметно различаются от региона к региону. Нажмите на название столбца, чтобы отсортировать таблицу.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table class="regions" id="regions-table">
+        <thead>
+          <tr>
+            <th scope="col" class="c-name">Регион</th>
+            <th scope="col" class="num"><button type="button" class="sort" data-key="wage">Зарплата, апрель</button></th>
+            <th scope="col" class="num"><button type="button" class="sort" data-key="ratio">К средней по России</button></th>
+            <th scope="col" class="num"><button type="button" class="sort" data-key="unemp">Безработица, май–июль</button></th>
+            <th scope="col" class="num"><button type="button" class="sort" data-key="infl">Инфляция, сентябрь</button></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="pinned">
+            <th scope="row" class="c-name">{{ russia.name }}</th>
+            <td class="num">{{ "{:,}".format(russia.wage).replace(",", " ") }}&nbsp;₽</td>
+            <td class="num">1,00</td>
+            <td class="num">{{ "%.1f"|format(russia.unemp)|replace(".", ",") }}%</td>
+            <td class="num">{{ "%.2f"|format(russia.infl)|replace(".", ",") }}%</td>
+          </tr>
+          {% for r in regions %}
+          <tr data-wage="{{ r.wage if r.wage else '' }}" data-ratio="{{ r.ratio if r.ratio else '' }}" data-unemp="{{ r.unemp if r.unemp is not none else '' }}" data-infl="{{ r.infl if r.infl is not none else '' }}">
+            <th scope="row" class="c-name">{{ r.name }}</th>
+            <td class="num">{% if r.wage %}{{ "{:,}".format(r.wage).replace(",", " ") }}&nbsp;₽{% else %}<span class="dash" title="В использованных источниках значения нет">—</span>{% endif %}</td>
+            <td class="num">{% if r.ratio %}<span class="ratio"><span class="rbar"><i style="width: {{ [r.ratio / 2 * 100, 100]|min }}%"></i></span>{{ "%.2f"|format(r.ratio)|replace(".", ",") }}</span>{% else %}<span class="dash">—</span>{% endif %}</td>
+            <td class="num">{% if r.unemp is not none %}{{ "%.1f"|format(r.unemp)|replace(".", ",") }}%{% else %}<span class="dash" title="В использованных источниках значения нет">—</span>{% endif %}</td>
+            <td class="num">{% if r.infl is not none %}{{ "%.2f"|format(r.infl)|replace(".", ",") }}%{% else %}<span class="dash" title="В использованных источниках значения нет">—</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="chart-note">Прочерк означает, что показателя нет в использованных источниках. Зарплата по регионам дана за апрель 2026, сравнение сделано со средней по России за тот же месяц.</p>
+    <ul class="facts">
+      {% for n in region_notes %}<li>{{ n }}</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- ===================== КАЛЬКУЛЯТОРЫ ===================== -->
+  <section class="band" id="kalkulyatory">
+    <div class="sec-head">
+      <h2>Калькуляторы</h2>
+      <p>Ставки подставлены из текущих данных. Их можно изменить на свои. Расчёт ориентировочный, без налогов и комиссий.</p>
+    </div>
+
+    <div class="toolbar">
+      <button type="button" class="btn primary" id="pdf-btn">Сохранить все расчёты в PDF</button>
+      <span class="toolbar-hint">Откроется окно печати: выберите «Сохранить как PDF».</span>
+      <span class="toolbar-hint" id="pdf-msg" role="status"></span>
+    </div>
+
+    <div class="calcs">
+      <!-- Вклад -->
+      <form class="calc" id="deposit-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Вклад</h3>
+        <div class="field">
+          <label for="dep-amount">Сумма, ₽</label>
+          <input id="dep-amount" name="amount" type="number" inputmode="numeric" min="1000" step="1000" value="1000000">
+        </div>
+        <div class="field">
+          <label for="dep-months">Срок: <output id="dep-months-out">12 мес.</output></label>
+          <input id="dep-months" name="months" type="range" min="1" max="36" step="1" value="12">
+        </div>
+        <div class="field">
+          <label for="dep-rate">Ставка, % годовых <span class="hint" id="dep-rate-hint"></span></label>
+          <input id="dep-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+        </div>
+        <div class="field check">
+          <input id="dep-cap" name="cap" type="checkbox">
+          <label for="dep-cap">Капитализация процентов каждый месяц</label>
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Доход за срок</dt><dd id="dep-income">—</dd></div>
+          <div><dt>Итоговая сумма</dt><dd id="dep-final">—</dd></div>
+          <div class="sub"><dt>Доход с учётом инфляции {{ infl_now }}%</dt><dd id="dep-real">—</dd></div>
+        </dl>
+        <p class="calc-note" id="dep-warn"></p>
+      </form>
+
+      <!-- Ипотека -->
+      <form class="calc" id="mortgage-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Ипотека</h3>
+        <div class="field">
+          <label for="mor-price">Стоимость жилья, ₽</label>
+          <input id="mor-price" name="price" type="number" inputmode="numeric" min="100000" step="100000" value="6000000">
+        </div>
+        <div class="field">
+          <label for="mor-down">Первоначальный взнос: <output id="mor-down-out">20%</output></label>
+          <input id="mor-down" name="down" type="range" min="0" max="90" step="1" value="20">
+        </div>
+        <div class="field">
+          <label for="mor-years">Срок: <output id="mor-years-out">20 лет</output></label>
+          <input id="mor-years" name="years" type="range" min="1" max="30" step="1" value="20">
+        </div>
+        <div class="field">
+          <label for="mor-preset">Программа</label>
+          <select id="mor-preset" name="preset">
+            {% for p in mortgage_presets %}<option value="{{ p.rate }}">{{ p.label }}</option>{% endfor %}
+            <option value="custom">Своя ставка</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mor-rate">Ставка, % годовых</label>
+          <input id="mor-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ mortgage_presets[0].rate }}">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Платёж в месяц</dt><dd id="mor-pay">—</dd></div>
+          <div><dt>Сумма кредита</dt><dd id="mor-loan">—</dd></div>
+          <div><dt>Переплата за весь срок</dt><dd id="mor-over">—</dd></div>
+          <div class="sub"><dt>Платёж к средней зарплате по России</dt><dd id="mor-share">—</dd></div>
+        </dl>
+        <p class="calc-note">Расчёт по аннуитетной схеме. Рыночные ставки показаны как полная стоимость кредита, поэтому реальный платёж у банка может отличаться.</p>
+      </form>
+
+      <!-- Инфляция -->
+      <form class="calc" id="power-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Инфляция и деньги</h3>
+        <div class="field">
+          <label for="pw-amount">Сумма сегодня, ₽</label>
+          <input id="pw-amount" name="amount" type="number" inputmode="numeric" min="1000" step="1000" value="1000000">
+        </div>
+        <div class="field">
+          <label for="pw-years">Через сколько лет: <output id="pw-years-out">5 лет</output></label>
+          <input id="pw-years" name="years" type="range" min="1" max="20" step="1" value="5">
+        </div>
+        <div class="field">
+          <label for="pw-rate">Инфляция, % в год <span class="hint">цель Банка России 4%</span></label>
+          <input id="pw-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ infl_now|replace(',', '.') }}">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Эти деньги будут стоить в сегодняшних ценах</dt><dd id="pw-worth">—</dd></div>
+          <div><dt>Потеря покупательной способности</dt><dd id="pw-loss">—</dd></div>
+          <div class="sub"><dt>Чтобы сохранить её, нужно будет</dt><dd id="pw-need">—</dd></div>
+        </dl>
+        <p class="calc-note">Показывает, сколько товаров и услуг можно будет купить на сумму через выбранный срок в пересчёте на сегодняшние рубли. Инфляция принимается постоянной.</p>
+      </form>
+
+      <!-- Инвестиции -->
+      <form class="calc wide" id="invest-form" data-report data-title="Инвестиционный калькулятор" autocomplete="off" onsubmit="return false">
+        <div class="calc-fields">
+          <h3>Инвестиционный калькулятор</h3>
+          <div class="field">
+            <label for="inv-start">Начальная сумма, ₽</label>
+            <input id="inv-start" name="start" type="number" inputmode="numeric" min="0" step="10000" value="100000">
+          </div>
+          <div class="field">
+            <label for="inv-monthly">Ежемесячное пополнение, ₽</label>
+            <input id="inv-monthly" name="monthly" type="number" inputmode="numeric" min="0" step="1000" value="10000">
+          </div>
+          <div class="field">
+            <label for="inv-years">Срок: <output id="inv-years-out">10 лет</output></label>
+            <input id="inv-years" name="years" type="range" min="1" max="70" step="1" value="10">
+          </div>
+          <div class="field">
+            <label for="inv-preset">Куда вкладываем</label>
+            <select id="inv-preset" name="preset">
+              {% for label, rate in inv_presets %}<option value="{{ rate }}">{{ label }}</option>{% endfor %}
+              <option value="custom">Своя доходность</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="inv-rate">Доходность, % годовых</label>
+            <input id="inv-rate" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="{{ inv_presets[0][1] }}">
+          </div>
+          <div class="field">
+            <label for="inv-infl">Инфляция, % в год</label>
+            <input id="inv-infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ infl_now|replace(',', '.') }}">
+          </div>
+          <div class="field check">
+            <input id="inv-index" name="index" type="checkbox">
+            <label for="inv-index">Увеличивать пополнение каждый год на инфляцию</label>
+          </div>
+          <dl class="result" aria-live="polite">
+            <div><dt>Итоговая сумма</dt><dd id="inv-final">—</dd></div>
+            <div><dt>Всего вложено</dt><dd id="inv-invested">—</dd></div>
+            <div><dt>Доход</dt><dd id="inv-income">—</dd></div>
+            <div class="sub"><dt>Итог в сегодняшних ценах</dt><dd id="inv-real">—</dd></div>
+            <div class="sub"><dt>Реальная доходность в год</dt><dd id="inv-realrate">—</dd></div>
+          </dl>
+          <p class="calc-note">Проценты начисляются и капитализируются каждый месяц, пополнение вносится в конце месяца. Доходность не гарантирована, налоги и комиссии не учтены.</p>
+        </div>
+        <div class="calc-chart">
+          <div class="legend">
+            <span class="lg lg1">Капитал</span>
+            <span class="lg lg2">Вложено</span>
+            <span class="lg lg3">Капитал в сегодняшних ценах</span>
+          </div>
+          <div class="readout" id="readout-invest" aria-live="polite"></div>
+          <div class="chart" id="chart-invest" data-report data-title="Рост капитала"></div>
+          <p class="chart-note">Наведите курсор на график или нажмите на него, чтобы увидеть значения по годам.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== ИПОТЕКА ПОДРОБНЕЕ ===================== -->
+  <section class="band" id="ipoteka">
+    <div class="sec-head">
+      <h2>Ипотека подробнее</h2>
+      <p>Сравните программы на одних и тех же условиях и посмотрите, что даёт досрочное погашение. Стоимость жилья, взнос и срок берутся из калькулятора ипотеки выше.</p>
+    </div>
+
+    <h3 class="group">Сравнение программ</h3>
+    <p class="chart-note" id="compare-cond"></p>
+    <div class="table-wrap">
+      <table class="regions" id="compare-table" data-report data-title="Сравнение программ ипотеки">
+        <thead>
+          <tr>
+            <th scope="col" class="c-name">Программа</th>
+            <th scope="col" class="num">Ставка</th>
+            <th scope="col" class="num">Платёж в месяц</th>
+            <th scope="col" class="num">Переплата</th>
+            <th scope="col" class="num">Всего выплатите</th>
+          </tr>
+        </thead>
+        <tbody id="compare-body"></tbody>
+      </table>
+    </div>
+    <p class="chart-note">Выделена программа, ставка которой выбрана в калькуляторе. Льготные программы доступны не всем, условия уточняйте в банке.</p>
+
+    <h3 class="group">Досрочное погашение</h3>
+    <form class="calc wide" id="prepay-form" data-report data-title="Досрочное погашение ипотеки" autocomplete="off" onsubmit="return false">
+      <div class="calc-fields">
+        <h3>Что даёт досрочное погашение</h3>
+        <p class="calc-note" id="pp-cond"></p>
+        <div class="field">
+          <label for="pp-monthly">Доплата каждый месяц, ₽</label>
+          <input id="pp-monthly" name="monthly" type="number" inputmode="numeric" min="0" step="1000" value="10000">
+        </div>
+        <div class="field">
+          <label for="pp-once">Разовый платёж, ₽</label>
+          <input id="pp-once" name="once" type="number" inputmode="numeric" min="0" step="50000" value="0">
+        </div>
+        <div class="field">
+          <label for="pp-once-year">Разовый платёж через: <output id="pp-once-year-out">5 лет</output></label>
+          <input id="pp-once-year" name="onceYear" type="range" min="1" max="20" step="1" value="5">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Новый срок кредита</dt><dd id="pp-term">—</dd></div>
+          <div><dt>Закроете раньше на</dt><dd id="pp-faster">—</dd></div>
+          <div><dt>Экономия на процентах</dt><dd id="pp-saved">—</dd></div>
+          <div class="sub"><dt>Всего выплатите</dt><dd id="pp-total">—</dd></div>
+        </dl>
+        <p class="calc-note">Платёж по графику не меняется, срок сокращается. Некоторые банки позволяют вместо этого уменьшить платёж, это нужно оговаривать при досрочном погашении.</p>
+      </div>
+      <div class="calc-chart">
+        <div class="legend">
+          <span class="lg lg1">С досрочным погашением</span>
+          <span class="lg lg2">Без досрочного погашения</span>
+        </div>
+        <div class="readout" id="readout-prepay" aria-live="polite"></div>
+        <div class="chart" id="chart-prepay" data-report data-title="Остаток долга по годам"></div>
+        <p class="chart-note">Остаток долга на конец каждого года кредита.</p>
+      </div>
+    </form>
+
+    <details class="sched">
+      <summary>Платежи по годам</summary>
+      <div class="table-wrap">
+        <table class="regions" id="schedule-table" data-report data-title="Платежи по годам (с учётом досрочного погашения)">
+          <thead>
+            <tr>
+              <th scope="col" class="c-name">Год</th>
+              <th scope="col" class="num">Платежи за год</th>
+              <th scope="col" class="num">Из них проценты</th>
+              <th scope="col" class="num">Остаток долга</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-body"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <h3 class="group">Что важно знать о рынке</h3>
+    <ul class="facts">
+      {% for f in mortgage_facts %}<li>{{ f }}</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- ===================== ЧТО ЭТО ЗНАЧИТ ===================== -->
+  <section class="band" id="vyvody">
+    <div class="sec-head">
+      <h2>Что это значит для вас</h2>
+      <p>Короткие разборы по типичным ситуациям. Цифры в примерах посчитаны по текущим данным с этой страницы.</p>
+    </div>
+
+    <div class="scenarios">
+      {% for s in scenarios %}
+      <article class="scenario">
+        <h3>{{ s.title }}</h3>
+        <p class="s-lead">{{ s.lead }}</p>
+        <ul>
+          {% for p in s.points %}<li>{{ p }}</li>{% endfor %}
+        </ul>
+        <a class="s-link" href="{{ s.link[0] }}">{{ s.link[1] }}</a>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="sources">
+      Источники данных
+      <ul>
+        {% for title, url in sources %}
+        <li><a href="{{ url }}" target="_blank" rel="noopener">{{ title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <p class="note">Информация на странице носит справочный характер и не является индивидуальной инвестиционной рекомендацией. Калькуляторы дают оценку и не заменяют расчёт банка.</p>
+  </section>
+
+  <!-- ===================== ВОПРОСЫ ===================== -->
+  <section class="band" id="voprosy">
+    <div class="sec-head">
+      <h2>Вопросы и ответы</h2>
+      <p>Короткие объяснения терминов и того, как читать цифры на этой странице.</p>
+    </div>
+    <div class="faq">
+      {% for q, a in faq %}
+      <details>
+        <summary>{{ q }}</summary>
+        <p>{{ a }}</p>
+      </details>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ===================== О НАС ===================== -->
+  <section class="band" id="o-nas">
+    <div class="sec-head">
+      <h2>О нас</h2>
+      <p>Мы небольшая команда, которая работает с частными инвесторами и предпринимателями.</p>
+    </div>
+
+    <div class="about">
+      <div>
+        <h3>Чем мы занимаемся</h3>
+        <ul class="list">
+          {% for title, text in team.services %}
+          <li><strong>{{ title }}</strong><span>{{ text }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h3>Наши преимущества</h3>
+        <ul class="list">
+          {% for title, text in team.advantages %}
+          <li><strong>{{ title }}</strong><span>{{ text }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="contact">
+      <p>Напишите нам, и мы ответим на вопросы о ваших планах и о том, чем можем помочь.</p>
+      <div class="addr">
+        <a href="mailto:{{ team.email }}">{{ team.email }}</a>
+        {% if team.phone %}<a href="tel:{{ team.phone|replace(' ', '') }}">{{ team.phone }}</a>{% endif %}
+      </div>
+    </div>
+
+    <footer>© {{ team.year }} {{ team.name }}</footer>
+  </section>
+
+</div>
+
+<div id="report" class="report" aria-hidden="true"></div>
+
+<script id="site-data" type="application/json">{{ site_data|tojson }}</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
