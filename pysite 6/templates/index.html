@@ -32,6 +32,7 @@
       <a href="#regiony">Регионы</a>
       <a href="#kalkulyatory">Калькуляторы</a>
       <a href="#ipoteka">Ипотека</a>
+      <a href="#instrumenty">Налоги и пенсия</a>
       <a href="#vyvody">Что это значит</a>
       <a href="#voprosy">Вопросы</a>
       <a href="#o-nas">О нас</a>
@@ -417,6 +418,151 @@
     <ul class="facts">
       {% for f in mortgage_facts %}<li>{{ f }}</li>{% endfor %}
     </ul>
+  </section>
+
+  <!-- ===================== ЕЩЁ ИНСТРУМЕНТЫ ===================== -->
+  <section class="band" id="instrumenty">
+    <div class="sec-head">
+      <h2>Налоги, пенсия и выбор вложений</h2>
+      <p>Четыре калькулятора для вопросов, которые возникают после первого вклада: сколько заберёт налог, что можно вернуть, хватит ли на пенсию и чем отличаются вклад, облигации и акции. Все расчёты попадают в PDF-отчёт.</p>
+    </div>
+
+    <div class="calcs">
+      <!-- Налог на вклад -->
+      <form class="calc" id="tax-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Налог на проценты по вкладу</h3>
+        <div class="field">
+          <label for="tx-amount">Сумма на вкладах, ₽</label>
+          <input id="tx-amount" name="amount" type="number" inputmode="numeric" min="0" step="10000" value="3000000">
+        </div>
+        <div class="field">
+          <label for="tx-rate">Средняя ставка, % годовых</label>
+          <input id="tx-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ dep_year_rate }}">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Проценты за год</dt><dd id="tx-income">—</dd></div>
+          <div><dt>Не облагается налогом</dt><dd id="tx-free">—</dd></div>
+          <div><dt>Налог к уплате</dt><dd id="tx-tax">—</dd></div>
+          <div class="sub"><dt>Доход после налога</dt><dd id="tx-net">—</dd></div>
+        </dl>
+        <p class="calc-note">Не облагается 1 млн ₽ × наибольшая ключевая ставка на 1-е число месяцев года. Для 2026 года это {{ tax.free_rate|replace('.', ',') }}% ({{ tax_free_text }}); окончательно лимит станет известен 1 января 2027 года. Ставка налога 13% до 2,4 млн ₽ процентов за год и 15% с суммы выше. Банк сам передаёт данные в налоговую, а налог приходит уведомлением до 1 декабря следующего года. Считайте по всем вашим вкладам и счетам вместе.</p>
+      </form>
+
+      <!-- Вычеты -->
+      <form class="calc" id="ded-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Налоговые вычеты</h3>
+        <div class="field">
+          <label for="dd-price">Стоимость купленного жилья, ₽ <span class="hint">учитывается до 2 млн</span></label>
+          <input id="dd-price" name="price" type="number" inputmode="numeric" min="0" step="100000" value="6000000">
+        </div>
+        <div class="field">
+          <label for="dd-int">Проценты по ипотеке за всё время, ₽ <span class="hint">до 3 млн</span></label>
+          <input id="dd-int" name="interest" type="number" inputmode="numeric" min="0" step="100000" value="0">
+        </div>
+        <div class="field">
+          <label for="dd-iis">Взнос на ИИС за год, ₽ <span class="hint">до 400 тыс.</span></label>
+          <input id="dd-iis" name="iis" type="number" inputmode="numeric" min="0" step="10000" value="400000">
+        </div>
+        <div class="field">
+          <label for="dd-income">Ваш доход за год до налога, ₽</label>
+          <input id="dd-income" name="income" type="number" inputmode="numeric" min="0" step="100000" value="1500000">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Можно вернуть за жильё</dt><dd id="dd-r1">—</dd></div>
+          <div><dt>Можно вернуть по процентам ипотеки</dt><dd id="dd-r2">—</dd></div>
+          <div><dt>Вычет по ИИС за этот год</dt><dd id="dd-r3">—</dd></div>
+          <div><dt>Всего к возврату</dt><dd id="dd-total">—</dd></div>
+          <div class="sub"><dt>Уплаченный вами НДФЛ за год</dt><dd id="dd-paid">—</dd></div>
+          <div class="sub"><dt>Жильё и ипотеку вернут за</dt><dd id="dd-years">—</dd></div>
+        </dl>
+        <p class="calc-note">Возврат считается по ставке 13%, налоговой базе она соответствует до 2,4 млн ₽ дохода в год. Вернуть можно только то, что вы уплатили в виде НДФЛ за год: остаток переносится на следующие годы. Вычет по ИИС даёт счёт нового типа (ИИС-3): держать его нужно не менее 5 лет, иначе льготу придётся вернуть. Проверьте условия на сайте ФНС перед подачей декларации.</p>
+      </form>
+
+      <!-- Пенсия -->
+      <form class="calc" id="pen-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Хватит ли на пенсию</h3>
+        <div class="field">
+          <label for="pn-age">Сколько вам лет: <output id="pn-age-out">30 лет</output></label>
+          <input id="pn-age" name="age" type="range" min="18" max="64" step="1" value="30">
+        </div>
+        <div class="field">
+          <label for="pn-ret">С какого возраста нужна пенсия: <output id="pn-ret-out">60 лет</output></label>
+          <input id="pn-ret" name="ret" type="range" min="40" max="75" step="1" value="60">
+        </div>
+        <div class="field">
+          <label for="pn-have">Уже накоплено, ₽</label>
+          <input id="pn-have" name="have" type="number" inputmode="numeric" min="0" step="10000" value="100000">
+        </div>
+        <div class="field">
+          <label for="pn-save">Откладываете в месяц, ₽ <span class="hint">растёт с инфляцией</span></label>
+          <input id="pn-save" name="save" type="number" inputmode="numeric" min="0" step="1000" value="15000">
+        </div>
+        <div class="field">
+          <label for="pn-want">Нужная пенсия в месяц в сегодняшних ценах, ₽</label>
+          <input id="pn-want" name="want" type="number" inputmode="numeric" min="0" step="5000" value="80000">
+        </div>
+        <div class="field">
+          <label for="pn-rate">Доходность, % годовых</label>
+          <input id="pn-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ dep_year_rate }}">
+        </div>
+        <div class="field">
+          <label for="pn-infl">Инфляция, % в год</label>
+          <input id="pn-infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ infl_now|replace(',', '.') }}">
+        </div>
+        <div class="field">
+          <label for="pn-years">Сколько лет получать выплаты: <output id="pn-years-out">25 лет</output></label>
+          <input id="pn-years" name="years" type="range" min="5" max="40" step="1" value="25">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Накопится к пенсии (в сегодняшних ценах)</dt><dd id="pn-cap">—</dd></div>
+          <div><dt>Пенсия от накоплений в месяц</dt><dd id="pn-pension">—</dd></div>
+          <div><dt>Нужно накопить на желаемую пенсию</dt><dd id="pn-need">—</dd></div>
+          <div class="sub"><dt>Чтобы хватило, откладывать в месяц</dt><dd id="pn-must">—</dd></div>
+        </dl>
+        <p class="calc-note" id="pn-note"></p>
+      </form>
+
+      <!-- Сравнение вложений -->
+      <form class="calc" id="cmp-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Вклад, облигации или акции</h3>
+        <div class="field">
+          <label for="cp-amount">Сумма, ₽</label>
+          <input id="cp-amount" name="amount" type="number" inputmode="numeric" min="0" step="10000" value="500000">
+        </div>
+        <div class="field">
+          <label for="cp-years">Срок: <output id="cp-years-out">5 лет</output></label>
+          <input id="cp-years" name="years" type="range" min="1" max="30" step="1" value="5">
+        </div>
+        <div class="field">
+          <label for="cp-r1">Вклад: ставка, % годовых</label>
+          <input id="cp-r1" name="r1" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ dep_year_rate }}">
+        </div>
+        <div class="field">
+          <label for="cp-r2">Облигации: доходность, % годовых <span class="hint">задайте свою</span></label>
+          <input id="cp-r2" name="r2" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ bond_rate }}">
+        </div>
+        <div class="field">
+          <label for="cp-r3">Акции: ожидаемая доходность, % годовых <span class="hint">не гарантирована</span></label>
+          <input id="cp-r3" name="r3" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ stock_rate }}">
+        </div>
+        <div class="table-wrap">
+          <table class="regions" id="cmp-table" style="min-width:0">
+            <thead><tr><th scope="col">Вариант</th><th scope="col" class="num">Итог</th><th scope="col" class="num">В сегодняшних ценах</th></tr></thead>
+            <tbody>
+              <tr><th scope="row" class="c-name">Вклад</th><td class="num" id="cp-v1">—</td><td class="num" id="cp-p1">—</td></tr>
+              <tr><th scope="row" class="c-name">Облигации</th><td class="num" id="cp-v2">—</td><td class="num" id="cp-p2">—</td></tr>
+              <tr><th scope="row" class="c-name">Акции</th><td class="num" id="cp-v3">—</td><td class="num" id="cp-p3">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="facts">
+          <li><strong>Вклад:</strong> доход известен заранее, вклады застрахованы до 1,4 млн ₽ на банк.</li>
+          <li><strong>Облигации:</strong> доход почти известен, но эмитент может не выплатить долг, а цена облигации до погашения колеблется.</li>
+          <li><strong>Акции:</strong> доход не гарантирован, цена может падать на десятки процентов, особенно на коротком сроке.</li>
+        </ul>
+        <p class="calc-note">Расчёт простой: проценты начисляются раз в год и остаются в деле, налоги и комиссии не учтены. Доходности облигаций и акций в полях — примерные, подставьте свои.</p>
+      </form>
+    </div>
   </section>
 
   <!-- ===================== ЧТО ЭТО ЗНАЧИТ ===================== -->

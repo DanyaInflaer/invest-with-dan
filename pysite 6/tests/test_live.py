@@ -286,5 +286,14 @@ class Pwa(unittest.TestCase):
             self.assertIn(key, html)
 
 
+class Tools(unittest.TestCase):
+    def test_tools_section(self):
+        html = site.app.test_client().get("/").get_data(as_text=True)
+        for key in ('id="instrumenty"', 'id="tax-form"', 'id="ded-form"', 'id="pen-form"', 'id="cmp-form"'):
+            self.assertIn(key, html)
+        self.assertNotIn("{{", html)
+        self.assertEqual(site.TAX["free_base"] * site.TAX["free_rate"] / 100, 160_000)
+
+
 if __name__ == "__main__":
     unittest.main()

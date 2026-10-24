@@ -556,7 +556,9 @@
         var s1 = div('sub-title'); s1.textContent = 'Исходные данные'; sec.appendChild(s1);
         sec.appendChild(rowTable('rp-in', ins));
         var s2 = div('sub-title'); s2.textContent = 'Результат'; sec.appendChild(s2);
-        sec.appendChild(rowTable('rp-out', outs));
+        if (outs.length) sec.appendChild(rowTable('rp-out', outs));
+        var inner = node.querySelector('table');          // таблица результата внутри формы (сравнение вложений)
+        if (inner) { var ic = inner.cloneNode(true); ic.removeAttribute('id'); sec.appendChild(ic); }
       } else if (node.tagName === 'TABLE') {
         var tc = node.cloneNode(true);
         tc.removeAttribute('id');
@@ -588,6 +590,107 @@
     msg.textContent = '';
     try { window.print(); } catch (e) { msg.textContent = 'Не удалось открыть окно печати. Нажмите Ctrl+P (на телефоне: меню браузера, «Печать»).'; }
   });
+
+  /* ======================================================================
+     Налоги, вычеты, пенсия и сравнение вложений
+     ====================================================================== */
+  (function () {
+    var T = D.tax;
+    function plural(n, one, few, many) {
+      var a = Math.abs(n) % 100, b = a % 10;
+      if (a > 10 && a < 20) return many;
+      if (b === 1) return one;
+      if (b >= 2 && b <= 4) return few;
+      return many;
+    }
+    function yrs(n) { return n + ' ' + plural(n, 'год', 'года', 'лет'); }
+    function g(id) { return document.getElementById(id); }
+
+    // налог по шкале НДФЛ: 13% до 2,4 млн, 15% до 5 млн и далее
+    function ndfl(income) {
+      var tax = 0, prev = 0;
+      for (var i = 0; i < T.brackets.length; i++) {
+        var top = T.brackets[i][0], rate = T.brackets[i][1];
+        if (top === null || income <= top) { tax += (income - prev) * rate / 100; return tax; }
+        tax += (top - prev) * rate / 100; prev = top;
+      }
+      return tax;
+    }
+
+    /* --- налог на проценты по вкладу --- */
+    function calcTax() {
+      var A = num(g('tx-amount'), 0), r = num(g('tx-rate'), 0);
+      var income = A * r / 100;
+      var free = T.free_base * T.free_rate / 100;
+      var taxable = Math.max(0, income - free);
+      var tax = Math.min(taxable, T.deposit_threshold) * 0.13 + Math.max(0, taxable - T.deposit_threshold) * 0.15;
+      g('tx-income').textContent = rub(income);
+      g('tx-free').textContent = rub(Math.min(income, free));
+      g('tx-tax').textContent = rub(tax);
+      g('tx-net').textContent = rub(income - tax);
+    }
+    ['tx-amount', 'tx-rate'].forEach(function (id) { g(id).addEventListener('input', calcTax); });
+
+    /* --- вычеты --- */
+    function calcDed() {
+      var price = num(g('dd-price'), 0), inter = num(g('dd-int'), 0), iis = num(g('dd-iis'), 0), inc = num(g('dd-income'), 0);
+      var k = T.rate / 100;
+      var r1 = Math.min(price, T.home_limit) * k, r2 = Math.min(inter, T.interest_limit) * k, r3 = Math.min(iis, T.iis_limit) * k;
+      var paid = ndfl(inc);
+      g('dd-r1').textContent = rub(r1);
+      g('dd-r2').textContent = rub(r2);
+      g('dd-r3').textContent = rub(r3);
+      g('dd-total').textContent = rub(r1 + r2 + r3);
+      g('dd-paid').textContent = rub(paid);
+      var y = paid > 0 ? Math.ceil((r1 + r2) / paid) : 0;
+      g('dd-years').textContent = (r1 + r2) === 0 ? '—' : paid > 0 ? yrs(y) : 'нет дохода';
+    }
+    ['dd-price', 'dd-int', 'dd-iis', 'dd-income'].forEach(function (id) { g(id).addEventListener('input', calcDed); });
+
+    /* --- пенсия (в сегодняшних ценах: реальная ставка = (1+r)/(1+инфляция) − 1) --- */
+    var pAge = g('pn-age'), pRet = g('pn-ret'), pYears = g('pn-years');
+    function calcPension() {
+      var age = parseInt(pAge.value, 10), ret = parseInt(pRet.value, 10), pay = parseInt(pYears.value, 10);
+      if (ret <= age) { ret = age + 1; pRet.value = ret; }
+      g('pn-age-out').textContent = yrs(age);
+      g('pn-ret-out').textContent = yrs(ret);
+      g('pn-years-out').textContent = yrs(pay);
+      var have = num(g('pn-have'), 0), save = num(g('pn-save'), 0), want = num(g('pn-want'), 0);
+      var r = num(g('pn-rate'), 0) / 100, inf = num(g('pn-infl'), 0) / 100;
+      var rr = Math.pow((1 + r) / (1 + inf), 1 / 12) - 1;
+      var n = (ret - age) * 12, M = pay * 12;
+      var grow = Math.pow(1 + rr, n);
+      var fv = Math.abs(rr) < 1e-9 ? n : (grow - 1) / rr;                    // накопление взносов
+      var af = Math.abs(rr) < 1e-9 ? M : (1 - Math.pow(1 + rr, -M)) / rr;     // «цена» одного рубля пенсии в месяц
+      var cap = have * grow + save * fv;
+      var need = want * af;
+      var must = Math.max(0, (need - have * grow) / fv);
+      g('pn-cap').textContent = rub(cap);
+      g('pn-pension').textContent = rub(cap / af);
+      g('pn-need').textContent = rub(need);
+      g('pn-must').textContent = cap >= need ? 'уже хватает' : rub(must);
+      var share = need > 0 ? cap / need * 100 : 100;
+      g('pn-note').textContent = (cap >= need
+        ? 'Накоплений хватит на желаемую пенсию, это ' + fmt0.format(share) + '% от нужной суммы.'
+        : 'Накоплений хватит на ' + fmt0.format(share) + '% от желаемой пенсии.') +
+        ' Государственная пенсия и налоги не учтены: государственная пенсия станет дополнением к накоплениям. Пополнения и выплаты растут вместе с инфляцией.';
+    }
+    ['pn-age', 'pn-ret', 'pn-have', 'pn-save', 'pn-want', 'pn-rate', 'pn-infl', 'pn-years'].forEach(function (id) { g(id).addEventListener('input', calcPension); });
+
+    /* --- вклад, облигации, акции --- */
+    function calcCompare() {
+      var A = num(g('cp-amount'), 0), y = parseInt(g('cp-years').value, 10), inf = D.inflation / 100;
+      g('cp-years-out').textContent = yrs(y);
+      [1, 2, 3].forEach(function (i) {
+        var v = A * Math.pow(1 + num(g('cp-r' + i), 0) / 100, y);
+        g('cp-v' + i).textContent = rub(v);
+        g('cp-p' + i).textContent = rub(v / Math.pow(1 + inf, y));
+      });
+    }
+    ['cp-amount', 'cp-years', 'cp-r1', 'cp-r2', 'cp-r3'].forEach(function (id) { g(id).addEventListener('input', calcCompare); });
+
+    calcTax(); calcDed(); calcPension(); calcCompare();
+  })();
 
   /* ======================================================================
      Установка как приложение и работа без сети

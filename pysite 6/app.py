@@ -117,6 +117,17 @@ MONTHS_RATE = [
     ("Мар", "март 2026"), ("Апр", "апрель 2026"), ("Май", "май 2026"),
     ("Июн", "июнь 2026"), ("Июл", "июль 2026"), ("Авг", "август 2026"), ("Сен", "сентябрь 2026"),
 ]
+# Налоги и вычеты (правила на 2026 год; проверьте после изменений в Налоговом кодексе)
+TAX = {
+    "free_base": 1_000_000,       # необлагаемая база для процентов по вкладам, ₽
+    "free_rate": 16.0,            # наибольшая ключевая ставка на 1-е число месяцев 2026 года, %
+    "brackets": [(2_400_000, 13), (5_000_000, 15), (20_000_000, 18), (50_000_000, 20), (None, 22)],
+    "deposit_threshold": 2_400_000,   # проценты свыше этой суммы за год облагаются по 15%
+    "home_limit": 2_000_000, "interest_limit": 3_000_000, "iis_limit": 400_000, "rate": 13,
+}
+BOND_RATE = 14.0      # примерная доходность облигаций для калькулятора сравнения, %
+STOCK_RATE = 16.0     # примерная ожидаемая доходность акций для калькулятора сравнения, %
+
 KEY_SERIES = [16.0, 16.0, 15.5, 15.0, 14.5, 14.5, 14.25, 14.0, 14.0, 14.0]
 INFL_SERIES = [5.59, 6.0, 5.91, 5.86, 5.58, 5.31, 6.02, 5.98, 6.33, 6.35]
 
@@ -490,6 +501,7 @@ def index():
         "mortgagePresets": MORTGAGE_PRESETS,
         "asOf": v["asof"],
         "team": TEAM["name"],
+        "tax": TAX,
     }
     faq = build_faq(v["key"], v["next_meeting"])
     dep_year = next(r["rate"] for r in DEPOSIT_RATES if r["upto_months"] == 12)
@@ -505,6 +517,7 @@ def index():
         people=PEOPLE, invest=v["invest"],
         bars=bars, axis=AXIS, sources=SOURCES,
         regions=region_rows(), russia=RUSSIA_ROW, region_notes=REGION_NOTES,
+        tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
         mortgage_presets=MORTGAGE_PRESETS, deposit_rates=DEPOSIT_RATES,
         scenarios=build_scenarios(v["key"], v["next_meeting"]),
         infl_now=fmt(INFLATION), real_rate=fmt(v["key"] - INFLATION),

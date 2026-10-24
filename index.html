@@ -351,6 +351,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       <a href="#regiony">Регионы</a>
       <a href="#kalkulyatory">Калькуляторы</a>
       <a href="#ipoteka">Ипотека</a>
+      <a href="#instrumenty">Налоги и пенсия</a>
       <a href="#vyvody">Что это значит</a>
       <a href="#voprosy">Вопросы</a>
       <a href="#o-nas">О нас</a>
@@ -866,6 +867,151 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     </ul>
   </section>
 
+  <!-- ===================== ЕЩЁ ИНСТРУМЕНТЫ ===================== -->
+  <section class="band" id="instrumenty">
+    <div class="sec-head">
+      <h2>Налоги, пенсия и выбор вложений</h2>
+      <p>Четыре калькулятора для вопросов, которые возникают после первого вклада: сколько заберёт налог, что можно вернуть, хватит ли на пенсию и чем отличаются вклад, облигации и акции. Все расчёты попадают в PDF-отчёт.</p>
+    </div>
+
+    <div class="calcs">
+      <!-- Налог на вклад -->
+      <form class="calc" id="tax-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Налог на проценты по вкладу</h3>
+        <div class="field">
+          <label for="tx-amount">Сумма на вкладах, ₽</label>
+          <input id="tx-amount" name="amount" type="number" inputmode="numeric" min="0" step="10000" value="3000000">
+        </div>
+        <div class="field">
+          <label for="tx-rate">Средняя ставка, % годовых</label>
+          <input id="tx-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Проценты за год</dt><dd id="tx-income">—</dd></div>
+          <div><dt>Не облагается налогом</dt><dd id="tx-free">—</dd></div>
+          <div><dt>Налог к уплате</dt><dd id="tx-tax">—</dd></div>
+          <div class="sub"><dt>Доход после налога</dt><dd id="tx-net">—</dd></div>
+        </dl>
+        <p class="calc-note">Не облагается 1 млн ₽ × наибольшая ключевая ставка на 1-е число месяцев года. Для 2026 года это 16,0% (160 000 ₽); окончательно лимит станет известен 1 января 2027 года. Ставка налога 13% до 2,4 млн ₽ процентов за год и 15% с суммы выше. Банк сам передаёт данные в налоговую, а налог приходит уведомлением до 1 декабря следующего года. Считайте по всем вашим вкладам и счетам вместе.</p>
+      </form>
+
+      <!-- Вычеты -->
+      <form class="calc" id="ded-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Налоговые вычеты</h3>
+        <div class="field">
+          <label for="dd-price">Стоимость купленного жилья, ₽ <span class="hint">учитывается до 2 млн</span></label>
+          <input id="dd-price" name="price" type="number" inputmode="numeric" min="0" step="100000" value="6000000">
+        </div>
+        <div class="field">
+          <label for="dd-int">Проценты по ипотеке за всё время, ₽ <span class="hint">до 3 млн</span></label>
+          <input id="dd-int" name="interest" type="number" inputmode="numeric" min="0" step="100000" value="0">
+        </div>
+        <div class="field">
+          <label for="dd-iis">Взнос на ИИС за год, ₽ <span class="hint">до 400 тыс.</span></label>
+          <input id="dd-iis" name="iis" type="number" inputmode="numeric" min="0" step="10000" value="400000">
+        </div>
+        <div class="field">
+          <label for="dd-income">Ваш доход за год до налога, ₽</label>
+          <input id="dd-income" name="income" type="number" inputmode="numeric" min="0" step="100000" value="1500000">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Можно вернуть за жильё</dt><dd id="dd-r1">—</dd></div>
+          <div><dt>Можно вернуть по процентам ипотеки</dt><dd id="dd-r2">—</dd></div>
+          <div><dt>Вычет по ИИС за этот год</dt><dd id="dd-r3">—</dd></div>
+          <div><dt>Всего к возврату</dt><dd id="dd-total">—</dd></div>
+          <div class="sub"><dt>Уплаченный вами НДФЛ за год</dt><dd id="dd-paid">—</dd></div>
+          <div class="sub"><dt>Жильё и ипотеку вернут за</dt><dd id="dd-years">—</dd></div>
+        </dl>
+        <p class="calc-note">Возврат считается по ставке 13%, налоговой базе она соответствует до 2,4 млн ₽ дохода в год. Вернуть можно только то, что вы уплатили в виде НДФЛ за год: остаток переносится на следующие годы. Вычет по ИИС даёт счёт нового типа (ИИС-3): держать его нужно не менее 5 лет, иначе льготу придётся вернуть. Проверьте условия на сайте ФНС перед подачей декларации.</p>
+      </form>
+
+      <!-- Пенсия -->
+      <form class="calc" id="pen-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Хватит ли на пенсию</h3>
+        <div class="field">
+          <label for="pn-age">Сколько вам лет: <output id="pn-age-out">30 лет</output></label>
+          <input id="pn-age" name="age" type="range" min="18" max="64" step="1" value="30">
+        </div>
+        <div class="field">
+          <label for="pn-ret">С какого возраста нужна пенсия: <output id="pn-ret-out">60 лет</output></label>
+          <input id="pn-ret" name="ret" type="range" min="40" max="75" step="1" value="60">
+        </div>
+        <div class="field">
+          <label for="pn-have">Уже накоплено, ₽</label>
+          <input id="pn-have" name="have" type="number" inputmode="numeric" min="0" step="10000" value="100000">
+        </div>
+        <div class="field">
+          <label for="pn-save">Откладываете в месяц, ₽ <span class="hint">растёт с инфляцией</span></label>
+          <input id="pn-save" name="save" type="number" inputmode="numeric" min="0" step="1000" value="15000">
+        </div>
+        <div class="field">
+          <label for="pn-want">Нужная пенсия в месяц в сегодняшних ценах, ₽</label>
+          <input id="pn-want" name="want" type="number" inputmode="numeric" min="0" step="5000" value="80000">
+        </div>
+        <div class="field">
+          <label for="pn-rate">Доходность, % годовых</label>
+          <input id="pn-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+        </div>
+        <div class="field">
+          <label for="pn-infl">Инфляция, % в год</label>
+          <input id="pn-infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
+        </div>
+        <div class="field">
+          <label for="pn-years">Сколько лет получать выплаты: <output id="pn-years-out">25 лет</output></label>
+          <input id="pn-years" name="years" type="range" min="5" max="40" step="1" value="25">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Накопится к пенсии (в сегодняшних ценах)</dt><dd id="pn-cap">—</dd></div>
+          <div><dt>Пенсия от накоплений в месяц</dt><dd id="pn-pension">—</dd></div>
+          <div><dt>Нужно накопить на желаемую пенсию</dt><dd id="pn-need">—</dd></div>
+          <div class="sub"><dt>Чтобы хватило, откладывать в месяц</dt><dd id="pn-must">—</dd></div>
+        </dl>
+        <p class="calc-note" id="pn-note"></p>
+      </form>
+
+      <!-- Сравнение вложений -->
+      <form class="calc" id="cmp-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Вклад, облигации или акции</h3>
+        <div class="field">
+          <label for="cp-amount">Сумма, ₽</label>
+          <input id="cp-amount" name="amount" type="number" inputmode="numeric" min="0" step="10000" value="500000">
+        </div>
+        <div class="field">
+          <label for="cp-years">Срок: <output id="cp-years-out">5 лет</output></label>
+          <input id="cp-years" name="years" type="range" min="1" max="30" step="1" value="5">
+        </div>
+        <div class="field">
+          <label for="cp-r1">Вклад: ставка, % годовых</label>
+          <input id="cp-r1" name="r1" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12.73">
+        </div>
+        <div class="field">
+          <label for="cp-r2">Облигации: доходность, % годовых <span class="hint">задайте свою</span></label>
+          <input id="cp-r2" name="r2" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="14.0">
+        </div>
+        <div class="field">
+          <label for="cp-r3">Акции: ожидаемая доходность, % годовых <span class="hint">не гарантирована</span></label>
+          <input id="cp-r3" name="r3" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="16.0">
+        </div>
+        <div class="table-wrap">
+          <table class="regions" id="cmp-table" style="min-width:0">
+            <thead><tr><th scope="col">Вариант</th><th scope="col" class="num">Итог</th><th scope="col" class="num">В сегодняшних ценах</th></tr></thead>
+            <tbody>
+              <tr><th scope="row" class="c-name">Вклад</th><td class="num" id="cp-v1">—</td><td class="num" id="cp-p1">—</td></tr>
+              <tr><th scope="row" class="c-name">Облигации</th><td class="num" id="cp-v2">—</td><td class="num" id="cp-p2">—</td></tr>
+              <tr><th scope="row" class="c-name">Акции</th><td class="num" id="cp-v3">—</td><td class="num" id="cp-p3">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="facts">
+          <li><strong>Вклад:</strong> доход известен заранее, вклады застрахованы до 1,4 млн ₽ на банк.</li>
+          <li><strong>Облигации:</strong> доход почти известен, но эмитент может не выплатить долг, а цена облигации до погашения колеблется.</li>
+          <li><strong>Акции:</strong> доход не гарантирован, цена может падать на десятки процентов, особенно на коротком сроке.</li>
+        </ul>
+        <p class="calc-note">Расчёт простой: проценты начисляются раз в год и остаются в деле, налоги и комиссии не учтены. Доходности облигаций и акций в полях — примерные, подставьте свои.</p>
+      </form>
+    </div>
+  </section>
+
   <!-- ===================== ЧТО ЭТО ЗНАЧИТ ===================== -->
   <section class="band" id="vyvody">
     <div class="sec-head">
@@ -1067,7 +1213,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 
 <div id="report" class="report" aria-hidden="true"></div>
 
-<script id="site-data" type="application/json">{"asOf": "21.10.2026", "avgWage": 109524, "depositRates": [{"label": "\u0434\u043e 90 \u0434\u043d\u0435\u0439", "rate": 12.55, "upto_months": 3}, {"label": "91\u2013180 \u0434\u043d\u0435\u0439", "rate": 12.87, "upto_months": 6}, {"label": "181 \u0434\u0435\u043d\u044c \u2013 1 \u0433\u043e\u0434", "rate": 12.73, "upto_months": 12}, {"label": "\u0441\u0432\u044b\u0448\u0435 1 \u0433\u043e\u0434\u0430", "rate": 11.75, "upto_months": 999}], "inflation": 6.35, "keyRate": 14.0, "mortgagePresets": [{"label": "\u0420\u044b\u043d\u043e\u043a, \u043d\u043e\u0432\u043e\u0441\u0442\u0440\u043e\u0439\u043a\u0438 (\u041f\u0421\u041a 21,28%)", "rate": 21.28}, {"label": "\u0420\u044b\u043d\u043e\u043a, \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u043e\u0435 \u0436\u0438\u043b\u044c\u0451 (\u041f\u0421\u041a 21,83%)", "rate": 21.83}, {"label": "\u041b\u044c\u0433\u043e\u0442\u043d\u0430\u044f \u0438\u043f\u043e\u0442\u0435\u043a\u0430 (\u0434\u043e 6%)", "rate": 6.0}], "rate": {"full": ["\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026", "\u0430\u0432\u0433\u0443\u0441\u0442 2026", "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044c 2026"], "infl": [5.59, 6.0, 5.91, 5.86, 5.58, 5.31, 6.02, 5.98, 6.33, 6.35], "key": [16.0, 16.0, 15.5, 15.0, 14.5, 14.5, 14.25, 14.0, 14.0, 14.0], "labels": ["\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b", "\u0410\u0432\u0433", "\u0421\u0435\u043d"]}, "team": "Growth Syndicate", "wage": {"full": ["\u043e\u043a\u0442\u044f\u0431\u0440\u044c 2025", "\u043d\u043e\u044f\u0431\u0440\u044c 2025", "\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026"], "labels": ["\u041e\u043a\u0442", "\u041d\u043e\u044f", "\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b"], "values": [99.707, 98.192, 139.727, null, null, null, 109.052, 110.216, 114.743, 109.524]}}</script>
+<script id="site-data" type="application/json">{"asOf": "21.10.2026", "avgWage": 109524, "depositRates": [{"label": "\u0434\u043e 90 \u0434\u043d\u0435\u0439", "rate": 12.55, "upto_months": 3}, {"label": "91\u2013180 \u0434\u043d\u0435\u0439", "rate": 12.87, "upto_months": 6}, {"label": "181 \u0434\u0435\u043d\u044c \u2013 1 \u0433\u043e\u0434", "rate": 12.73, "upto_months": 12}, {"label": "\u0441\u0432\u044b\u0448\u0435 1 \u0433\u043e\u0434\u0430", "rate": 11.75, "upto_months": 999}], "inflation": 6.35, "keyRate": 14.0, "mortgagePresets": [{"label": "\u0420\u044b\u043d\u043e\u043a, \u043d\u043e\u0432\u043e\u0441\u0442\u0440\u043e\u0439\u043a\u0438 (\u041f\u0421\u041a 21,28%)", "rate": 21.28}, {"label": "\u0420\u044b\u043d\u043e\u043a, \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u043e\u0435 \u0436\u0438\u043b\u044c\u0451 (\u041f\u0421\u041a 21,83%)", "rate": 21.83}, {"label": "\u041b\u044c\u0433\u043e\u0442\u043d\u0430\u044f \u0438\u043f\u043e\u0442\u0435\u043a\u0430 (\u0434\u043e 6%)", "rate": 6.0}], "rate": {"full": ["\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026", "\u0430\u0432\u0433\u0443\u0441\u0442 2026", "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044c 2026"], "infl": [5.59, 6.0, 5.91, 5.86, 5.58, 5.31, 6.02, 5.98, 6.33, 6.35], "key": [16.0, 16.0, 15.5, 15.0, 14.5, 14.5, 14.25, 14.0, 14.0, 14.0], "labels": ["\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b", "\u0410\u0432\u0433", "\u0421\u0435\u043d"]}, "tax": {"brackets": [[2400000, 13], [5000000, 15], [20000000, 18], [50000000, 20], [null, 22]], "deposit_threshold": 2400000, "free_base": 1000000, "free_rate": 16.0, "home_limit": 2000000, "iis_limit": 400000, "interest_limit": 3000000, "rate": 13}, "team": "Growth Syndicate", "wage": {"full": ["\u043e\u043a\u0442\u044f\u0431\u0440\u044c 2025", "\u043d\u043e\u044f\u0431\u0440\u044c 2025", "\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026"], "labels": ["\u041e\u043a\u0442", "\u041d\u043e\u044f", "\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b"], "values": [99.707, 98.192, 139.727, null, null, null, 109.052, 110.216, 114.743, 109.524]}}</script>
 <script>
 (function () {
   'use strict';
@@ -1627,7 +1773,9 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         var s1 = div('sub-title'); s1.textContent = 'Исходные данные'; sec.appendChild(s1);
         sec.appendChild(rowTable('rp-in', ins));
         var s2 = div('sub-title'); s2.textContent = 'Результат'; sec.appendChild(s2);
-        sec.appendChild(rowTable('rp-out', outs));
+        if (outs.length) sec.appendChild(rowTable('rp-out', outs));
+        var inner = node.querySelector('table');          // таблица результата внутри формы (сравнение вложений)
+        if (inner) { var ic = inner.cloneNode(true); ic.removeAttribute('id'); sec.appendChild(ic); }
       } else if (node.tagName === 'TABLE') {
         var tc = node.cloneNode(true);
         tc.removeAttribute('id');
@@ -1659,6 +1807,107 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     msg.textContent = '';
     try { window.print(); } catch (e) { msg.textContent = 'Не удалось открыть окно печати. Нажмите Ctrl+P (на телефоне: меню браузера, «Печать»).'; }
   });
+
+  /* ======================================================================
+     Налоги, вычеты, пенсия и сравнение вложений
+     ====================================================================== */
+  (function () {
+    var T = D.tax;
+    function plural(n, one, few, many) {
+      var a = Math.abs(n) % 100, b = a % 10;
+      if (a > 10 && a < 20) return many;
+      if (b === 1) return one;
+      if (b >= 2 && b <= 4) return few;
+      return many;
+    }
+    function yrs(n) { return n + ' ' + plural(n, 'год', 'года', 'лет'); }
+    function g(id) { return document.getElementById(id); }
+
+    // налог по шкале НДФЛ: 13% до 2,4 млн, 15% до 5 млн и далее
+    function ndfl(income) {
+      var tax = 0, prev = 0;
+      for (var i = 0; i < T.brackets.length; i++) {
+        var top = T.brackets[i][0], rate = T.brackets[i][1];
+        if (top === null || income <= top) { tax += (income - prev) * rate / 100; return tax; }
+        tax += (top - prev) * rate / 100; prev = top;
+      }
+      return tax;
+    }
+
+    /* --- налог на проценты по вкладу --- */
+    function calcTax() {
+      var A = num(g('tx-amount'), 0), r = num(g('tx-rate'), 0);
+      var income = A * r / 100;
+      var free = T.free_base * T.free_rate / 100;
+      var taxable = Math.max(0, income - free);
+      var tax = Math.min(taxable, T.deposit_threshold) * 0.13 + Math.max(0, taxable - T.deposit_threshold) * 0.15;
+      g('tx-income').textContent = rub(income);
+      g('tx-free').textContent = rub(Math.min(income, free));
+      g('tx-tax').textContent = rub(tax);
+      g('tx-net').textContent = rub(income - tax);
+    }
+    ['tx-amount', 'tx-rate'].forEach(function (id) { g(id).addEventListener('input', calcTax); });
+
+    /* --- вычеты --- */
+    function calcDed() {
+      var price = num(g('dd-price'), 0), inter = num(g('dd-int'), 0), iis = num(g('dd-iis'), 0), inc = num(g('dd-income'), 0);
+      var k = T.rate / 100;
+      var r1 = Math.min(price, T.home_limit) * k, r2 = Math.min(inter, T.interest_limit) * k, r3 = Math.min(iis, T.iis_limit) * k;
+      var paid = ndfl(inc);
+      g('dd-r1').textContent = rub(r1);
+      g('dd-r2').textContent = rub(r2);
+      g('dd-r3').textContent = rub(r3);
+      g('dd-total').textContent = rub(r1 + r2 + r3);
+      g('dd-paid').textContent = rub(paid);
+      var y = paid > 0 ? Math.ceil((r1 + r2) / paid) : 0;
+      g('dd-years').textContent = (r1 + r2) === 0 ? '—' : paid > 0 ? yrs(y) : 'нет дохода';
+    }
+    ['dd-price', 'dd-int', 'dd-iis', 'dd-income'].forEach(function (id) { g(id).addEventListener('input', calcDed); });
+
+    /* --- пенсия (в сегодняшних ценах: реальная ставка = (1+r)/(1+инфляция) − 1) --- */
+    var pAge = g('pn-age'), pRet = g('pn-ret'), pYears = g('pn-years');
+    function calcPension() {
+      var age = parseInt(pAge.value, 10), ret = parseInt(pRet.value, 10), pay = parseInt(pYears.value, 10);
+      if (ret <= age) { ret = age + 1; pRet.value = ret; }
+      g('pn-age-out').textContent = yrs(age);
+      g('pn-ret-out').textContent = yrs(ret);
+      g('pn-years-out').textContent = yrs(pay);
+      var have = num(g('pn-have'), 0), save = num(g('pn-save'), 0), want = num(g('pn-want'), 0);
+      var r = num(g('pn-rate'), 0) / 100, inf = num(g('pn-infl'), 0) / 100;
+      var rr = Math.pow((1 + r) / (1 + inf), 1 / 12) - 1;
+      var n = (ret - age) * 12, M = pay * 12;
+      var grow = Math.pow(1 + rr, n);
+      var fv = Math.abs(rr) < 1e-9 ? n : (grow - 1) / rr;                    // накопление взносов
+      var af = Math.abs(rr) < 1e-9 ? M : (1 - Math.pow(1 + rr, -M)) / rr;     // «цена» одного рубля пенсии в месяц
+      var cap = have * grow + save * fv;
+      var need = want * af;
+      var must = Math.max(0, (need - have * grow) / fv);
+      g('pn-cap').textContent = rub(cap);
+      g('pn-pension').textContent = rub(cap / af);
+      g('pn-need').textContent = rub(need);
+      g('pn-must').textContent = cap >= need ? 'уже хватает' : rub(must);
+      var share = need > 0 ? cap / need * 100 : 100;
+      g('pn-note').textContent = (cap >= need
+        ? 'Накоплений хватит на желаемую пенсию, это ' + fmt0.format(share) + '% от нужной суммы.'
+        : 'Накоплений хватит на ' + fmt0.format(share) + '% от желаемой пенсии.') +
+        ' Государственная пенсия и налоги не учтены: государственная пенсия станет дополнением к накоплениям. Пополнения и выплаты растут вместе с инфляцией.';
+    }
+    ['pn-age', 'pn-ret', 'pn-have', 'pn-save', 'pn-want', 'pn-rate', 'pn-infl', 'pn-years'].forEach(function (id) { g(id).addEventListener('input', calcPension); });
+
+    /* --- вклад, облигации, акции --- */
+    function calcCompare() {
+      var A = num(g('cp-amount'), 0), y = parseInt(g('cp-years').value, 10), inf = D.inflation / 100;
+      g('cp-years-out').textContent = yrs(y);
+      [1, 2, 3].forEach(function (i) {
+        var v = A * Math.pow(1 + num(g('cp-r' + i), 0) / 100, y);
+        g('cp-v' + i).textContent = rub(v);
+        g('cp-p' + i).textContent = rub(v / Math.pow(1 + inf, y));
+      });
+    }
+    ['cp-amount', 'cp-years', 'cp-r1', 'cp-r2', 'cp-r3'].forEach(function (id) { g(id).addEventListener('input', calcCompare); });
+
+    calcTax(); calcDed(); calcPension(); calcCompare();
+  })();
 
   /* ======================================================================
      Установка как приложение и работа без сети
