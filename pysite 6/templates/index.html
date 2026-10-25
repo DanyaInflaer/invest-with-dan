@@ -358,6 +358,70 @@
         <p class="calc-note" id="ln-note">Расчёт ориентировочный: точные условия, график платежей и ПСК указаны в договоре. Дифференцированный платёж в начале выше, но переплата меньше. Банки обычно считают долговую нагрузку по доходу семьи, а не по средней зарплате в стране.</p>
       </form>
 
+      <!-- Накопить на цель -->
+      <form class="calc" id="goal-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Накопить на цель</h3>
+        <div class="field">
+          <label for="gl-goal">Сколько нужно накопить, ₽</label>
+          <input id="gl-goal" name="goal" type="number" inputmode="numeric" min="0" step="50000" value="3000000">
+        </div>
+        <div class="field">
+          <label for="gl-years">Срок: <output id="gl-years-out">5 лет</output></label>
+          <input id="gl-years" name="years" type="range" min="1" max="40" step="1" value="5">
+        </div>
+        <div class="field">
+          <label for="gl-have">Уже накоплено, ₽</label>
+          <input id="gl-have" name="have" type="number" inputmode="numeric" min="0" step="10000" value="0">
+        </div>
+        <div class="field">
+          <label for="gl-rate">Доходность, % годовых</label>
+          <input id="gl-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ dep_year_rate }}">
+        </div>
+        <div class="field">
+          <label for="gl-infl">Инфляция, % в год</label>
+          <input id="gl-infl" data-scn="infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ infl_now|replace(',', '.') }}">
+        </div>
+        <div class="field check">
+          <input id="gl-real" name="real" type="checkbox" checked>
+          <label for="gl-real">Цель задана в сегодняшних ценах (учесть инфляцию)</label>
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Откладывать в месяц</dt><dd id="gl-pay">—</dd></div>
+          <div><dt>Цель через срок, с учётом инфляции</dt><dd id="gl-target">—</dd></div>
+          <div><dt>Вы внесёте сами</dt><dd id="gl-own">—</dd></div>
+          <div class="sub"><dt>Принесут проценты</dt><dd id="gl-interest">—</dd></div>
+        </dl>
+        <p class="calc-note">Пополнения вносятся в конце каждого месяца, проценты начисляются ежемесячно и остаются в накоплениях, налог не учтён. Если цель в сегодняшних ценах, сумма в будущем рассчитывается с поправкой на инфляцию.</p>
+      </form>
+
+      <!-- Конвертер валют -->
+      <form class="calc" id="fx-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Конвертер валют</h3>
+        <div class="field">
+          <label for="fx-amount">Сумма</label>
+          <input id="fx-amount" name="amount" type="number" inputmode="decimal" min="0" step="any" value="1000">
+        </div>
+        <div class="field">
+          <label for="fx-from">Из</label>
+          <select id="fx-from" name="from">
+            <option value="USD">Доллар США (USD)</option><option value="EUR">Евро (EUR)</option>
+            <option value="CNY">Юань (CNY)</option><option value="RUB">Рубль (RUB)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fx-to">В</label>
+          <select id="fx-to" name="to">
+            <option value="RUB" selected>Рубль (RUB)</option><option value="USD">Доллар США (USD)</option>
+            <option value="EUR">Евро (EUR)</option><option value="CNY">Юань (CNY)</option>
+          </select>
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Получится</dt><dd id="fx-out">—</dd></div>
+          <div class="sub"><dt>Курс</dt><dd id="fx-rate">—</dd></div>
+        </dl>
+        <p class="calc-note" id="fx-note"></p>
+      </form>
+
       <!-- Инвестиции -->
       <form class="calc wide" id="invest-form" data-report data-title="Инвестиционный калькулятор" autocomplete="off" onsubmit="return false">
         <div class="calc-fields">

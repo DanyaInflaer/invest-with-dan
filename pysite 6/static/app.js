@@ -673,6 +673,49 @@
   })();
 
   /* ======================================================================
+     Накопить на цель и конвертер валют
+     ====================================================================== */
+  (function () {
+    function g(id) { return document.getElementById(id); }
+    function yrs(n) { var a = n % 100, b = n % 10; return n + ' ' + (a > 10 && a < 20 ? 'лет' : b === 1 ? 'год' : b >= 2 && b <= 4 ? 'года' : 'лет'); }
+
+    function calcGoal() {
+      var goal = num(g('gl-goal'), 0), y = parseInt(g('gl-years').value, 10), have = num(g('gl-have'), 0);
+      var r = num(g('gl-rate'), 0) / 100, inf = num(g('gl-infl'), 0) / 100, real = g('gl-real').checked;
+      g('gl-years-out').textContent = yrs(y);
+      var n = y * 12, m = r / 12;
+      var target = real ? goal * Math.pow(1 + inf, y) : goal;
+      var grow = Math.pow(1 + m, n), fv = m === 0 ? n : (grow - 1) / m;
+      var c = Math.max(0, (target - have * grow) / fv);
+      var own = c * n + have;
+      g('gl-pay').textContent = c === 0 && have > 0 ? 'не нужно, накоплений хватит' : rub(c);
+      g('gl-target').textContent = rub(target);
+      g('gl-own').textContent = rub(own);
+      g('gl-interest').textContent = rub(Math.max(0, target - own));
+    }
+    ['gl-goal', 'gl-years', 'gl-have', 'gl-rate', 'gl-infl', 'gl-real'].forEach(function (id) {
+      g(id).addEventListener('input', calcGoal); g(id).addEventListener('change', calcGoal);
+    });
+
+    var FX = D.fx || {};
+    var fxFmt = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
+    function calcFx() {
+      var a = num(g('fx-amount'), 0), from = g('fx-from').value, to = g('fx-to').value;
+      var rub1 = FX[from], rub2 = FX[to];
+      if (!rub1 || !rub2) return;
+      var out = a * rub1 / rub2, rate = rub1 / rub2;
+      g('fx-out').textContent = fxFmt.format(out) + ' ' + to;
+      g('fx-rate').textContent = from === to ? '1' : '1 ' + from + ' = ' + new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 4 }).format(rate) + ' ' + to;
+      g('fx-note').textContent = 'Официальный курс Банка России на ' + FX.date + (FX.live ? '' : ' (автообновление сейчас недоступно, показаны последние известные значения)') +
+        '. В банке и обменнике курс отличается: смотрите курс покупки и продажи.';
+    }
+    ['fx-amount', 'fx-from', 'fx-to'].forEach(function (id) {
+      g(id).addEventListener('input', calcFx); g(id).addEventListener('change', calcFx);
+    });
+    calcGoal(); calcFx();
+  })();
+
+  /* ======================================================================
      Кредит: аннуитетный и дифференцированный платёж, ПСК
      ====================================================================== */
   (function () {

@@ -143,6 +143,9 @@ SCENARIOS = {
 SCENARIO_NOTES = {"dep": "Вклады и накопления", "bond": "Облигации", "stock": "Акции", "infl": "Инфляция",
                   "loan": "Ставки по кредитам и ипотеке", "house": "Рост цен на жильё", "rent": "Рост аренды"}
 
+# Запасные курсы ЦБ, если автообновление недоступно (20 октября 2026)
+FX_FALLBACK = {"date": "2026-10-20", "USD": 82.85, "EUR": 93.23, "CNY": 12.39}
+
 BOND_RATE = 14.0      # примерная доходность облигаций для калькулятора сравнения, %
 STOCK_RATE = 16.0     # примерная ожидаемая доходность акций для калькулятора сравнения, %
 
@@ -579,6 +582,7 @@ def index():
         "team": TEAM["name"],
         "tax": TAX,
         "scenarios": SCENARIOS, "scenarioNotes": SCENARIO_NOTES,
+        "fx": fx_view(),
     }
     faq = build_faq(v["key"], v["next_meeting"])
     dep_year = next(r["rate"] for r in DEPOSIT_RATES if r["upto_months"] == 12)
@@ -654,6 +658,15 @@ GUIDE_DATE = dt.date(2026, 10, 24)    # дата вечных разборов; 
 
 def _dep_year_rate():
     return next(r["rate"] for r in DEPOSIT_RATES if r["upto_months"] == 12)
+
+
+def fx_view():
+    """Курсы для конвертера: свежие от ЦБ, а без сети запасные."""
+    rates = live_data.get_live().get("rates")
+    src = rates if rates else FX_FALLBACK
+    d = dt.date.fromisoformat(src["date"])
+    return {"USD": src["USD"], "EUR": src["EUR"], "CNY": src["CNY"], "RUB": 1.0,
+            "date": f"{d.day} {MONTHS_GEN[d.month - 1]} {d.year}", "live": bool(rates)}
 
 
 def blog_context(now=None):

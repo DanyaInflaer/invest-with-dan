@@ -377,6 +377,20 @@ class Blog(unittest.TestCase):
             self.assertIn(key, page)
         self.assertGreaterEqual(page.count('data-scn="'), 15)
 
+    def test_goal_and_fx(self):
+        page = site.app.test_client().get("/").get_data(as_text=True)
+        for key in ('id="goal-form"', 'id="fx-form"'):
+            self.assertIn(key, page)
+        live_data.reset_for_tests()
+        fx = site.fx_view()
+        self.assertFalse(fx["live"])
+        self.assertEqual(fx["USD"], site.FX_FALLBACK["USD"])
+        live_data._state.update({"rates": {"date": "2026-10-23", "USD": 80.0, "EUR": 90.0, "CNY": 11.0}})
+        fx = site.fx_view()
+        self.assertTrue(fx["live"])
+        self.assertEqual((fx["USD"], fx["date"]), (80.0, "23 октября 2026"))
+        live_data.reset_for_tests()
+
     def test_main_page_links_blog(self):
         html = site.app.test_client().get("/").get_data(as_text=True)
         self.assertIn('id="razbory"', html)
