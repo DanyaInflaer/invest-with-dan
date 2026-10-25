@@ -468,6 +468,35 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .quiz-actions a.btn { text-decoration: none; display: inline-block; }
 @media (max-width: 760px) { .quiz { padding: 18px; } }
 
+/* ---------- Сценарии ---------- */
+.scn { margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: 4px; box-shadow: 3px 3px 0 var(--line); padding: 22px; }
+.scn h3 { font-family: var(--font-display); font-weight: 600; font-size: 20px; }
+.scn-lead { color: var(--muted); max-width: 70ch; margin-top: 8px; font-size: 15px; }
+.scn-seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px; margin-top: 16px; }
+.scn-btn { font: inherit; text-align: left; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; cursor: pointer; display: grid; gap: 2px; }
+.scn-btn b { font-weight: 600; font-size: 16px; }
+.scn-btn span { color: var(--muted); font-size: 13px; }
+.scn-btn:hover { border-color: var(--accent); }
+.scn-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scn-btn.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.scn-btn.on b::before { content: "● "; color: var(--accent); }
+.scn-desc { margin-top: 14px; font-size: 14px; color: var(--muted); max-width: 80ch; }
+.scn-actions { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.scn-link-row { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
+.scn-link-row input { flex: 1; min-width: 200px; font: inherit; font-family: var(--font-data); font-size: 13px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; }
+.scn-sub { font-family: var(--font-display); font-weight: 600; font-size: 17px; margin: 24px 0 0; }
+.scn .table-wrap { margin-top: 12px; box-shadow: none; }
+.scn table.regions { min-width: 560px; }
+.regions td.scn-cur { background: var(--accent-soft); font-weight: 500; }
+@media screen and (max-width: 640px) { .scn { padding: 16px; } .scn table.regions { min-width: 0; } .regions td.scn-cur { background: transparent; } .regions td.scn-cur::before { color: var(--accent); font-weight: 600; } }
+@media screen and (max-width: 640px) {
+  .regions th.num, .regions td.num { white-space: normal; overflow-wrap: anywhere; min-width: 0; }
+  .regions td::before, .regions th[data-label]::before { flex: 0 0 auto; max-width: 48%; }
+}
+#fork-table td.num { white-space: normal; }
+#fork-table th.c-name { min-width: 150px; }
+@media screen and (min-width: 641px) { #fork-table th.c-name { width: 26%; } #fork-table td.num { width: 24.6%; } }
+
 </style>
 </head>
 <body>
@@ -787,6 +816,32 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       <span class="toolbar-hint" id="pdf-msg" role="status"></span>
     </div>
 
+    <div class="scn" id="scenarios" role="region" aria-labelledby="scn-title">
+      <h3 id="scn-title">Сценарий: пессимистичный, базовый, оптимистичный</h3>
+      <p class="scn-lead">Один выбор меняет ставки, инфляцию и доходность сразу во всех калькуляторах ниже, чтобы вы увидели «вилку» результатов. Свои значения в полях сохраняются: сценарий сдвигает их на выбранную величину.</p>
+      <div class="scn-seg" role="radiogroup" aria-label="Сценарий">
+        <button type="button" class="scn-btn" role="radio" aria-checked="false" data-scn-key="pess"><b>Пессимистичный</b><span>доходы ниже, расходы выше</span></button>
+        <button type="button" class="scn-btn" role="radio" aria-checked="true" data-scn-key="base"><b>Базовый</b><span>значения сегодня</span></button>
+        <button type="button" class="scn-btn" role="radio" aria-checked="false" data-scn-key="opt"><b>Оптимистичный</b><span>доходы выше, расходы ниже</span></button>
+        
+      </div>
+      <p class="scn-desc" id="scn-desc"></p>
+      <div class="scn-actions">
+        <button type="button" class="btn" id="scn-copy">Скопировать ссылку на мои расчёты</button>
+        <button type="button" class="btn" id="scn-reset">Сбросить всё</button>
+        <span class="toolbar-hint" id="scn-status" role="status"></span>
+      </div>
+      <p class="scn-link-row" id="scn-link-row" hidden><label for="scn-link">Ссылка:</label> <input id="scn-link" type="text" readonly></p>
+      <h4 class="scn-sub">Вилка по текущим значениям калькуляторов</h4>
+      <div class="table-wrap">
+        <table class="regions" id="fork-table" data-report data-title="Вилка сценариев">
+          <thead><tr><th scope="col" class="c-name">Показатель</th><th scope="col" class="num">Пессимистичный</th><th scope="col" class="num">Базовый</th><th scope="col" class="num">Оптимистичный</th></tr></thead>
+          <tbody id="fork-body"></tbody>
+        </table>
+      </div>
+      <p class="calc-note">Сценарии условны, это не прогноз: они показывают, насколько результат зависит от условий. Базовый сценарий использует значения сайта на сегодня. Таблица пересчитывается при любом изменении полей.</p>
+    </div>
+
     <div class="calcs">
       <!-- Вклад -->
       <form class="calc" id="deposit-form" data-report autocomplete="off" onsubmit="return false">
@@ -801,7 +856,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="dep-rate">Ставка, % годовых <span class="hint" id="dep-rate-hint"></span></label>
-          <input id="dep-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+          <input id="dep-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
         </div>
         <div class="field check">
           <input id="dep-cap" name="cap" type="checkbox">
@@ -810,7 +865,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         <dl class="result" aria-live="polite">
           <div><dt>Доход за срок</dt><dd id="dep-income">—</dd></div>
           <div><dt>Итоговая сумма</dt><dd id="dep-final">—</dd></div>
-          <div class="sub"><dt>Доход с учётом инфляции 6,35%</dt><dd id="dep-real">—</dd></div>
+          <div class="sub"><dt id="dep-real-label">Доход с учётом инфляции 6,35%</dt><dd id="dep-real">—</dd></div>
         </dl>
         <p class="calc-note" id="dep-warn"></p>
       </form>
@@ -839,7 +894,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="mor-rate">Ставка, % годовых</label>
-          <input id="mor-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="21.28">
+          <input id="mor-rate" data-scn="loan" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="21.28">
         </div>
         <dl class="result" aria-live="polite">
           <div><dt>Платёж в месяц</dt><dd id="mor-pay">—</dd></div>
@@ -863,7 +918,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="pw-rate">Инфляция, % в год <span class="hint">цель Банка России 4%</span></label>
-          <input id="pw-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
+          <input id="pw-rate" data-scn="infl" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
         </div>
         <dl class="result" aria-live="polite">
           <div><dt>Эти деньги будут стоить в сегодняшних ценах</dt><dd id="pw-worth">—</dd></div>
@@ -886,7 +941,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="ln-rate">Ставка, % годовых <span class="hint">возьмите из предложения банка</span></label>
-          <input id="ln-rate" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="25">
+          <input id="ln-rate" data-scn="loan" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="25">
         </div>
         <div class="field">
           <label for="ln-type">Вид платежа</label>
@@ -936,11 +991,11 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
           </div>
           <div class="field">
             <label for="inv-rate">Доходность, % годовых</label>
-            <input id="inv-rate" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="12.73">
+            <input id="inv-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="12.73">
           </div>
           <div class="field">
             <label for="inv-infl">Инфляция, % в год</label>
-            <input id="inv-infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
+            <input id="inv-infl" data-scn="infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
           </div>
           <div class="field check">
             <input id="inv-index" name="index" type="checkbox">
@@ -1070,7 +1125,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="tx-rate">Средняя ставка, % годовых</label>
-          <input id="tx-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+          <input id="tx-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
         </div>
         <dl class="result" aria-live="polite">
           <div><dt>Проценты за год</dt><dd id="tx-income">—</dd></div>
@@ -1136,11 +1191,11 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="pn-rate">Доходность, % годовых</label>
-          <input id="pn-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+          <input id="pn-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
         </div>
         <div class="field">
           <label for="pn-infl">Инфляция, % в год</label>
-          <input id="pn-infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
+          <input id="pn-infl" data-scn="infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
         </div>
         <div class="field">
           <label for="pn-years">Сколько лет получать выплаты: <output id="pn-years-out">25 лет</output></label>
@@ -1168,15 +1223,15 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="cp-r1">Вклад: ставка, % годовых</label>
-          <input id="cp-r1" name="r1" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12.73">
+          <input id="cp-r1" data-scn="dep" name="r1" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12.73">
         </div>
         <div class="field">
           <label for="cp-r2">Облигации: доходность, % годовых <span class="hint">задайте свою</span></label>
-          <input id="cp-r2" name="r2" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="14.0">
+          <input id="cp-r2" data-scn="bond" name="r2" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="14.0">
         </div>
         <div class="field">
           <label for="cp-r3">Акции: ожидаемая доходность, % годовых <span class="hint">не гарантирована</span></label>
-          <input id="cp-r3" name="r3" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="16.0">
+          <input id="cp-r3" data-scn="stock" name="r3" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="16.0">
         </div>
         <div class="table-wrap">
           <table class="regions" id="cmp-table" style="min-width:0">
@@ -1209,7 +1264,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="nt-rate">Ставка, % годовых</label>
-          <input id="nt-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+          <input id="nt-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
         </div>
         <div class="field">
           <label for="nt-cap">Проценты</label>
@@ -1224,7 +1279,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="nt-infl">Инфляция, % в год</label>
-          <input id="nt-infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
+          <input id="nt-infl" data-scn="infl" name="infl" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="6.35">
         </div>
         <dl class="result" aria-live="polite">
           <div><dt>Итог на руки (после налога)</dt><dd id="nt-net">—</dd></div>
@@ -1254,7 +1309,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="rv-rate">Ставка по ипотеке, % годовых</label>
-          <input id="rv-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="21.28">
+          <input id="rv-rate" data-scn="loan" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="21.28">
         </div>
         <div class="field">
           <label for="rv-maint">Содержание квартиры, % от цены в год <span class="hint">налог, ремонт, обслуживание</span></label>
@@ -1262,7 +1317,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="rv-growth">Рост цены квартиры, % в год <span class="hint">прогноз не гарантирован</span></label>
-          <input id="rv-growth" name="growth" type="number" inputmode="decimal" min="-10" max="30" step="0.1" value="6.35">
+          <input id="rv-growth" data-scn="house" name="growth" type="number" inputmode="decimal" min="-10" max="30" step="0.1" value="6.35">
         </div>
         <div class="field">
           <label for="rv-rent">Аренда такой же квартиры в месяц, ₽</label>
@@ -1270,11 +1325,11 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="rv-rentg">Рост аренды, % в год</label>
-          <input id="rv-rentg" name="rentg" type="number" inputmode="decimal" min="0" max="30" step="0.1" value="6.35">
+          <input id="rv-rentg" data-scn="rent" name="rentg" type="number" inputmode="decimal" min="0" max="30" step="0.1" value="6.35">
         </div>
         <div class="field">
           <label for="rv-inv">Доходность, если деньги вложить, % в год <span class="hint">вклад</span></label>
-          <input id="rv-inv" name="inv" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+          <input id="rv-inv" data-scn="dep" name="inv" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
         </div>
         <div class="field">
           <label for="rv-years">Сравниваем через: <output id="rv-years-out">15 лет</output></label>
@@ -1329,7 +1384,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
         </div>
         <div class="field">
           <label for="bd-rate">Ставка по вкладу, % годовых</label>
-          <input id="bd-rate" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
+          <input id="bd-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
         </div>
         <dl class="result" aria-live="polite">
           <div><dt>Остаётся на руки в месяц (после НДФЛ)</dt><dd id="bd-net">—</dd></div>
@@ -1588,7 +1643,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 
 <div id="report" class="report" aria-hidden="true"></div>
 
-<script id="site-data" type="application/json">{"asOf": "21.10.2026", "avgWage": 109524, "depositRates": [{"label": "\u0434\u043e 90 \u0434\u043d\u0435\u0439", "rate": 12.55, "upto_months": 3}, {"label": "91\u2013180 \u0434\u043d\u0435\u0439", "rate": 12.87, "upto_months": 6}, {"label": "181 \u0434\u0435\u043d\u044c \u2013 1 \u0433\u043e\u0434", "rate": 12.73, "upto_months": 12}, {"label": "\u0441\u0432\u044b\u0448\u0435 1 \u0433\u043e\u0434\u0430", "rate": 11.75, "upto_months": 999}], "inflation": 6.35, "keyRate": 14.0, "mortgagePresets": [{"label": "\u0420\u044b\u043d\u043e\u043a, \u043d\u043e\u0432\u043e\u0441\u0442\u0440\u043e\u0439\u043a\u0438 (\u041f\u0421\u041a 21,28%)", "rate": 21.28}, {"label": "\u0420\u044b\u043d\u043e\u043a, \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u043e\u0435 \u0436\u0438\u043b\u044c\u0451 (\u041f\u0421\u041a 21,83%)", "rate": 21.83}, {"label": "\u041b\u044c\u0433\u043e\u0442\u043d\u0430\u044f \u0438\u043f\u043e\u0442\u0435\u043a\u0430 (\u0434\u043e 6%)", "rate": 6.0}], "quiz": [{"correct": 2, "link": ["#dannye", "\u0414\u0430\u043d\u043d\u044b\u0435 \u043f\u043e \u0441\u0442\u0430\u0432\u043a\u0435"], "options": ["\u041d\u0430\u043b\u043e\u0433 \u043d\u0430 \u0434\u043e\u0445\u043e\u0434\u044b \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c", "\u041a\u0443\u0440\u0441 \u0434\u043e\u043b\u043b\u0430\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0443\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u0442 \u0440\u0435\u0433\u0443\u043b\u044f\u0442\u043e\u0440", "\u0421\u0442\u0430\u0432\u043a\u0430, \u043f\u043e \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u0411\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0443\u0435\u0442 \u0431\u0430\u043d\u043a\u0438; \u043e\u0442 \u043d\u0435\u0451 \u0437\u0430\u0432\u0438\u0441\u044f\u0442 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c", "\u041c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u044b\u0439 \u043f\u0440\u043e\u0446\u0435\u043d\u0442, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0431\u0430\u043d\u043a \u043c\u043e\u0436\u0435\u0442 \u0432\u0437\u044f\u0442\u044c \u043f\u043e \u0438\u043f\u043e\u0442\u0435\u043a\u0435"], "q": "\u0427\u0442\u043e \u0442\u0430\u043a\u043e\u0435 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0411\u0430\u043d\u043a\u0430 \u0420\u043e\u0441\u0441\u0438\u0438?", "why": "\u042d\u0442\u043e \u0431\u0430\u0437\u043e\u0432\u0430\u044f \u0446\u0435\u043d\u0430 \u0434\u0435\u043d\u0435\u0433 \u0432 \u044d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0435. \u0411\u0430\u043d\u043a\u0438 \u043e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u0443\u044e\u0442\u0441\u044f \u043d\u0430 \u043d\u0435\u0451, \u043a\u043e\u0433\u0434\u0430 \u0443\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u044e\u0442 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c."}, {"correct": 0, "link": ["razbory/snizhenie-stavki-i-vklad/", "\u0420\u0430\u0437\u0431\u043e\u0440 \u043f\u0440\u043e \u0441\u043d\u0438\u0436\u0435\u043d\u0438\u0435 \u0441\u0442\u0430\u0432\u043a\u0438"], "options": ["\u0421\u043d\u0438\u0436\u0430\u044e\u0442\u0441\u044f, \u0441 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u043e\u0439 \u0432 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043d\u0435\u0434\u0435\u043b\u044c", "\u0420\u0430\u0441\u0442\u0443\u0442", "\u041d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442\u0441\u044f", "\u041c\u0435\u043d\u044f\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e \u0432\u0430\u043b\u044e\u0442\u043d\u044b\u043c \u0432\u043a\u043b\u0430\u0434\u0430\u043c"], "q": "\u041a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0441\u043d\u0438\u0436\u0430\u0435\u0442\u0441\u044f. \u0427\u0442\u043e \u043e\u0431\u044b\u0447\u043d\u043e \u043f\u0440\u043e\u0438\u0441\u0445\u043e\u0434\u0438\u0442 \u0441\u043e \u0441\u0442\u0430\u0432\u043a\u0430\u043c\u0438 \u043f\u043e \u043d\u043e\u0432\u044b\u043c \u0432\u043a\u043b\u0430\u0434\u0430\u043c?", "why": "\u0411\u0430\u043d\u043a\u0438 \u043f\u0440\u0438\u0432\u044f\u0437\u044b\u0432\u0430\u044e\u0442 \u0432\u043a\u043b\u0430\u0434\u044b \u043a \u043a\u043b\u044e\u0447\u0435\u0432\u043e\u0439 \u0441\u0442\u0430\u0432\u043a\u0435, \u043d\u043e \u043f\u043e\u0434\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u044e\u0442\u0441\u044f \u043d\u0435 \u0441\u0440\u0430\u0437\u0443. \u0423\u0436\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u0432\u043a\u043b\u0430\u0434 \u0441 \u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0439 \u0441\u0442\u0430\u0432\u043a\u043e\u0439 \u043d\u0435 \u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f."}, {"correct": 2, "link": ["#dinamika", "\u0413\u0440\u0430\u0444\u0438\u043a \u0441\u0442\u0430\u0432\u043a\u0438"], "options": ["11%", "12,5%", "14%", "16,5%"], "q": "\u041a\u0430\u043a\u0430\u044f \u0441\u0435\u0439\u0447\u0430\u0441 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0411\u0430\u043d\u043a\u0430 \u0420\u043e\u0441\u0441\u0438\u0438?", "why": "\u0421\u0435\u0439\u0447\u0430\u0441 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 14%. \u0417\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043d\u0430 \u0441\u0430\u0439\u0442\u0435 \u043e\u0431\u043d\u043e\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438."}, {"correct": 1, "link": ["#kalkulyatory", "\u041a\u0430\u043b\u044c\u043a\u0443\u043b\u044f\u0442\u043e\u0440 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u0438"], "options": ["\u041e\u043a\u043e\u043b\u043e 20%", "\u041e\u043a\u043e\u043b\u043e 4%", "\u041e\u043a\u043e\u043b\u043e 12%", "\u041e\u043a\u043e\u043b\u043e 8%"], "q": "\u0412\u043a\u043b\u0430\u0434 \u043f\u0440\u0438\u043d\u043e\u0441\u0438\u0442 12% \u0432 \u0433\u043e\u0434, \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f \u0441\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 8%. \u041a\u0430\u043a\u043e\u0432\u0430 \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u0430\u044f \u0440\u0435\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u043e\u0445\u043e\u0434\u043d\u043e\u0441\u0442\u044c?", "why": "\u0420\u0435\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u043e\u0445\u043e\u0434\u043d\u043e\u0441\u0442\u044c \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e \u0440\u0430\u0432\u043d\u0430 \u0441\u0442\u0430\u0432\u043a\u0435 \u043c\u0438\u043d\u0443\u0441 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f: 12 \u2212 8 = 4%. \u0422\u043e\u0447\u043d\u0435\u0435 \u0441\u0447\u0438\u0442\u0430\u044e\u0442 \u0442\u0430\u043a: (1 + 0,12) \u00f7 (1 + 0,08) \u2212 1 \u2248 3,7%."}, {"correct": 3, "link": ["#kalkulyatory", "\u041f\u043e\u0441\u0447\u0438\u0442\u0430\u0442\u044c \u0441\u0430\u043c\u043e\u043c\u0443"], "options": ["\u041d\u0435 \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u0441\u044f", "\u0412\u044b\u0440\u0430\u0441\u0442\u0435\u0442, \u043f\u043e\u0442\u043e\u043c\u0443 \u0447\u0442\u043e \u0446\u0435\u043d\u044b \u0440\u0430\u0441\u0442\u0443\u0442", "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u0441\u044f \u0440\u043e\u0432\u043d\u043e \u043d\u0430 5%", "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u0441\u044f \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e \u0434\u043e 735\u00a0043 \u20bd \u0432 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0438\u0445 \u0446\u0435\u043d\u0430\u0445"], "q": "\u041c\u0438\u043b\u043b\u0438\u043e\u043d \u0440\u0443\u0431\u043b\u0435\u0439 \u043b\u0435\u0436\u0438\u0442 \u0431\u0435\u0437 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0439, \u0430 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f 6,35% \u0432 \u0433\u043e\u0434. \u0427\u0442\u043e \u0431\u0443\u0434\u0435\u0442 \u0441 \u0435\u0433\u043e \u043f\u043e\u043a\u0443\u043f\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0439 \u0441\u043f\u043e\u0441\u043e\u0431\u043d\u043e\u0441\u0442\u044c\u044e \u0437\u0430 5 \u043b\u0435\u0442?", "why": "\u0414\u0435\u043d\u044c\u0433\u0438 \u0442\u0435\u0440\u044f\u044e\u0442 \u0446\u0435\u043d\u043d\u043e\u0441\u0442\u044c \u043f\u043e \u0441\u043b\u043e\u0436\u043d\u043e\u0439 \u0444\u043e\u0440\u043c\u0443\u043b\u0435: 1 000 000 \u00f7 (1 + 0,0635)\u2075 \u2248 735\u00a0043 \u20bd."}, {"correct": 3, "link": ["razbory/nalog-na-vklady-2026/", "\u0420\u0430\u0437\u0431\u043e\u0440 \u043f\u0440\u043e \u043d\u0430\u043b\u043e\u0433 \u043d\u0430 \u0432\u043a\u043b\u0430\u0434\u044b"], "options": ["\u041d\u0438\u043a\u0430\u043a\u0430\u044f, \u043d\u0430\u043b\u043e\u0433 \u043f\u043b\u0430\u0442\u044f\u0442 \u0441\u043e \u0432\u0441\u0435\u0433\u043e \u0434\u043e\u0445\u043e\u0434\u0430", "\u0412\u0441\u0435 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u044b \u0434\u043e 1 \u043c\u043b\u043d \u20bd \u0432 \u0433\u043e\u0434", "\u041f\u0440\u043e\u0446\u0435\u043d\u0442\u044b \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0434\u043e 1,4 \u043c\u043b\u043d \u20bd", "1 \u043c\u043b\u043d \u20bd \u00d7 \u043d\u0430\u0438\u0431\u043e\u043b\u044c\u0448\u0430\u044f \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u043d\u0430 1-\u0435 \u0447\u0438\u0441\u043b\u043e \u043c\u0435\u0441\u044f\u0446\u0435\u0432 \u0433\u043e\u0434\u0430, \u0441\u0435\u0439\u0447\u0430\u0441 \u044d\u0442\u043e 160\u00a0000 \u20bd"], "q": "\u041a\u0430\u043a\u0430\u044f \u0447\u0430\u0441\u0442\u044c \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u043e\u0432 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0432 2026 \u0433\u043e\u0434\u0443 \u043d\u0435 \u043e\u0431\u043b\u0430\u0433\u0430\u0435\u0442\u0441\u044f \u043d\u0430\u043b\u043e\u0433\u043e\u043c?", "why": "\u041d\u0435\u043e\u0431\u043b\u0430\u0433\u0430\u0435\u043c\u0430\u044f \u0441\u0443\u043c\u043c\u0430 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u043a\u0430\u043a 1 \u043c\u043b\u043d \u20bd \u00d7 \u043c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u0430\u044f \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u043d\u0430 1-\u0435 \u0447\u0438\u0441\u043b\u043e \u043c\u0435\u0441\u044f\u0446\u0435\u0432 \u0433\u043e\u0434\u0430. \u0414\u043b\u044f 2026 \u0433\u043e\u0434\u0430 \u044d\u0442\u043e 160\u00a0000 \u20bd, \u0441 \u043e\u0441\u0442\u0430\u0442\u043a\u0430 \u043f\u043b\u0430\u0442\u044f\u0442 13% (\u0434\u043e 2,4 \u043c\u043b\u043d \u20bd \u0434\u043e\u0445\u043e\u0434\u0430, \u0434\u0430\u043b\u044c\u0448\u0435 15%)."}, {"correct": 0, "link": ["#instrumenty", "\u041d\u0430\u043b\u043e\u0433\u0438 \u0438 \u0432\u044b\u0447\u0435\u0442\u044b"], "options": ["\u0414\u043e 1,4 \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u0430 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0414\u043e 700 \u0442\u044b\u0441\u044f\u0447 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0414\u043e 3 \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u043e\u0432 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0411\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u0439"], "q": "\u0414\u043e \u043a\u0430\u043a\u043e\u0439 \u0441\u0443\u043c\u043c\u044b \u0432\u043a\u043b\u0430\u0434\u044b \u0432 \u043e\u0434\u043d\u043e\u043c \u0431\u0430\u043d\u043a\u0435 \u0437\u0430\u0441\u0442\u0440\u0430\u0445\u043e\u0432\u0430\u043d\u044b \u0433\u043e\u0441\u0443\u0434\u0430\u0440\u0441\u0442\u0432\u043e\u043c?", "why": "\u0421\u0442\u0440\u0430\u0445\u043e\u0432\u043e\u0435 \u0432\u043e\u0437\u043c\u0435\u0449\u0435\u043d\u0438\u0435 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0432 \u043e\u0434\u043d\u043e\u043c \u0431\u0430\u043d\u043a\u0435 \u0441\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u0434\u043e 1,4 \u043c\u043b\u043d \u20bd (\u0432\u043c\u0435\u0441\u0442\u0435 \u0441 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u043c\u0438). \u0414\u0435\u043d\u044c\u0433\u0438 \u0441\u0432\u0435\u0440\u0445 \u044d\u0442\u043e\u0439 \u0441\u0443\u043c\u043c\u044b \u043b\u0443\u0447\u0448\u0435 \u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u044c \u043c\u0435\u0436\u0434\u0443 \u0431\u0430\u043d\u043a\u0430\u043c\u0438."}], "rate": {"full": ["\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026", "\u0430\u0432\u0433\u0443\u0441\u0442 2026", "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044c 2026"], "infl": [5.59, 6.0, 5.91, 5.86, 5.58, 5.31, 6.02, 5.98, 6.33, 6.35], "key": [16.0, 16.0, 15.5, 15.0, 14.5, 14.5, 14.25, 14.0, 14.0, 14.0], "labels": ["\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b", "\u0410\u0432\u0433", "\u0421\u0435\u043d"]}, "tax": {"brackets": [[2400000, 13], [5000000, 15], [20000000, 18], [50000000, 20], [null, 22]], "deposit_threshold": 2400000, "free_base": 1000000, "free_rate": 16.0, "home_limit": 2000000, "iis_limit": 400000, "interest_limit": 3000000, "rate": 13}, "team": "Growth Syndicate", "wage": {"full": ["\u043e\u043a\u0442\u044f\u0431\u0440\u044c 2025", "\u043d\u043e\u044f\u0431\u0440\u044c 2025", "\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026"], "labels": ["\u041e\u043a\u0442", "\u041d\u043e\u044f", "\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b"], "values": [99.707, 98.192, 139.727, null, null, null, 109.052, 110.216, 114.743, 109.524]}}</script>
+<script id="site-data" type="application/json">{"asOf": "21.10.2026", "avgWage": 109524, "depositRates": [{"label": "\u0434\u043e 90 \u0434\u043d\u0435\u0439", "rate": 12.55, "upto_months": 3}, {"label": "91\u2013180 \u0434\u043d\u0435\u0439", "rate": 12.87, "upto_months": 6}, {"label": "181 \u0434\u0435\u043d\u044c \u2013 1 \u0433\u043e\u0434", "rate": 12.73, "upto_months": 12}, {"label": "\u0441\u0432\u044b\u0448\u0435 1 \u0433\u043e\u0434\u0430", "rate": 11.75, "upto_months": 999}], "inflation": 6.35, "keyRate": 14.0, "mortgagePresets": [{"label": "\u0420\u044b\u043d\u043e\u043a, \u043d\u043e\u0432\u043e\u0441\u0442\u0440\u043e\u0439\u043a\u0438 (\u041f\u0421\u041a 21,28%)", "rate": 21.28}, {"label": "\u0420\u044b\u043d\u043e\u043a, \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u043e\u0435 \u0436\u0438\u043b\u044c\u0451 (\u041f\u0421\u041a 21,83%)", "rate": 21.83}, {"label": "\u041b\u044c\u0433\u043e\u0442\u043d\u0430\u044f \u0438\u043f\u043e\u0442\u0435\u043a\u0430 (\u0434\u043e 6%)", "rate": 6.0}], "quiz": [{"correct": 2, "link": ["#dannye", "\u0414\u0430\u043d\u043d\u044b\u0435 \u043f\u043e \u0441\u0442\u0430\u0432\u043a\u0435"], "options": ["\u041d\u0430\u043b\u043e\u0433 \u043d\u0430 \u0434\u043e\u0445\u043e\u0434\u044b \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c", "\u041a\u0443\u0440\u0441 \u0434\u043e\u043b\u043b\u0430\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0443\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u0442 \u0440\u0435\u0433\u0443\u043b\u044f\u0442\u043e\u0440", "\u0421\u0442\u0430\u0432\u043a\u0430, \u043f\u043e \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u0411\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0443\u0435\u0442 \u0431\u0430\u043d\u043a\u0438; \u043e\u0442 \u043d\u0435\u0451 \u0437\u0430\u0432\u0438\u0441\u044f\u0442 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c", "\u041c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u044b\u0439 \u043f\u0440\u043e\u0446\u0435\u043d\u0442, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0431\u0430\u043d\u043a \u043c\u043e\u0436\u0435\u0442 \u0432\u0437\u044f\u0442\u044c \u043f\u043e \u0438\u043f\u043e\u0442\u0435\u043a\u0435"], "q": "\u0427\u0442\u043e \u0442\u0430\u043a\u043e\u0435 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0411\u0430\u043d\u043a\u0430 \u0420\u043e\u0441\u0441\u0438\u0438?", "why": "\u042d\u0442\u043e \u0431\u0430\u0437\u043e\u0432\u0430\u044f \u0446\u0435\u043d\u0430 \u0434\u0435\u043d\u0435\u0433 \u0432 \u044d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0435. \u0411\u0430\u043d\u043a\u0438 \u043e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u0443\u044e\u0442\u0441\u044f \u043d\u0430 \u043d\u0435\u0451, \u043a\u043e\u0433\u0434\u0430 \u0443\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u044e\u0442 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c."}, {"correct": 0, "link": ["razbory/snizhenie-stavki-i-vklad/", "\u0420\u0430\u0437\u0431\u043e\u0440 \u043f\u0440\u043e \u0441\u043d\u0438\u0436\u0435\u043d\u0438\u0435 \u0441\u0442\u0430\u0432\u043a\u0438"], "options": ["\u0421\u043d\u0438\u0436\u0430\u044e\u0442\u0441\u044f, \u0441 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u043e\u0439 \u0432 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043d\u0435\u0434\u0435\u043b\u044c", "\u0420\u0430\u0441\u0442\u0443\u0442", "\u041d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442\u0441\u044f", "\u041c\u0435\u043d\u044f\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e \u0432\u0430\u043b\u044e\u0442\u043d\u044b\u043c \u0432\u043a\u043b\u0430\u0434\u0430\u043c"], "q": "\u041a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0441\u043d\u0438\u0436\u0430\u0435\u0442\u0441\u044f. \u0427\u0442\u043e \u043e\u0431\u044b\u0447\u043d\u043e \u043f\u0440\u043e\u0438\u0441\u0445\u043e\u0434\u0438\u0442 \u0441\u043e \u0441\u0442\u0430\u0432\u043a\u0430\u043c\u0438 \u043f\u043e \u043d\u043e\u0432\u044b\u043c \u0432\u043a\u043b\u0430\u0434\u0430\u043c?", "why": "\u0411\u0430\u043d\u043a\u0438 \u043f\u0440\u0438\u0432\u044f\u0437\u044b\u0432\u0430\u044e\u0442 \u0432\u043a\u043b\u0430\u0434\u044b \u043a \u043a\u043b\u044e\u0447\u0435\u0432\u043e\u0439 \u0441\u0442\u0430\u0432\u043a\u0435, \u043d\u043e \u043f\u043e\u0434\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u044e\u0442\u0441\u044f \u043d\u0435 \u0441\u0440\u0430\u0437\u0443. \u0423\u0436\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u0432\u043a\u043b\u0430\u0434 \u0441 \u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0439 \u0441\u0442\u0430\u0432\u043a\u043e\u0439 \u043d\u0435 \u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f."}, {"correct": 2, "link": ["#dinamika", "\u0413\u0440\u0430\u0444\u0438\u043a \u0441\u0442\u0430\u0432\u043a\u0438"], "options": ["11%", "12,5%", "14%", "16,5%"], "q": "\u041a\u0430\u043a\u0430\u044f \u0441\u0435\u0439\u0447\u0430\u0441 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0411\u0430\u043d\u043a\u0430 \u0420\u043e\u0441\u0441\u0438\u0438?", "why": "\u0421\u0435\u0439\u0447\u0430\u0441 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 14%. \u0417\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043d\u0430 \u0441\u0430\u0439\u0442\u0435 \u043e\u0431\u043d\u043e\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438."}, {"correct": 1, "link": ["#kalkulyatory", "\u041a\u0430\u043b\u044c\u043a\u0443\u043b\u044f\u0442\u043e\u0440 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u0438"], "options": ["\u041e\u043a\u043e\u043b\u043e 20%", "\u041e\u043a\u043e\u043b\u043e 4%", "\u041e\u043a\u043e\u043b\u043e 12%", "\u041e\u043a\u043e\u043b\u043e 8%"], "q": "\u0412\u043a\u043b\u0430\u0434 \u043f\u0440\u0438\u043d\u043e\u0441\u0438\u0442 12% \u0432 \u0433\u043e\u0434, \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f \u0441\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 8%. \u041a\u0430\u043a\u043e\u0432\u0430 \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u0430\u044f \u0440\u0435\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u043e\u0445\u043e\u0434\u043d\u043e\u0441\u0442\u044c?", "why": "\u0420\u0435\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u043e\u0445\u043e\u0434\u043d\u043e\u0441\u0442\u044c \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e \u0440\u0430\u0432\u043d\u0430 \u0441\u0442\u0430\u0432\u043a\u0435 \u043c\u0438\u043d\u0443\u0441 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f: 12 \u2212 8 = 4%. \u0422\u043e\u0447\u043d\u0435\u0435 \u0441\u0447\u0438\u0442\u0430\u044e\u0442 \u0442\u0430\u043a: (1 + 0,12) \u00f7 (1 + 0,08) \u2212 1 \u2248 3,7%."}, {"correct": 3, "link": ["#kalkulyatory", "\u041f\u043e\u0441\u0447\u0438\u0442\u0430\u0442\u044c \u0441\u0430\u043c\u043e\u043c\u0443"], "options": ["\u041d\u0435 \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u0441\u044f", "\u0412\u044b\u0440\u0430\u0441\u0442\u0435\u0442, \u043f\u043e\u0442\u043e\u043c\u0443 \u0447\u0442\u043e \u0446\u0435\u043d\u044b \u0440\u0430\u0441\u0442\u0443\u0442", "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u0441\u044f \u0440\u043e\u0432\u043d\u043e \u043d\u0430 5%", "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u0441\u044f \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e \u0434\u043e 735\u00a0043 \u20bd \u0432 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0438\u0445 \u0446\u0435\u043d\u0430\u0445"], "q": "\u041c\u0438\u043b\u043b\u0438\u043e\u043d \u0440\u0443\u0431\u043b\u0435\u0439 \u043b\u0435\u0436\u0438\u0442 \u0431\u0435\u0437 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0439, \u0430 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f 6,35% \u0432 \u0433\u043e\u0434. \u0427\u0442\u043e \u0431\u0443\u0434\u0435\u0442 \u0441 \u0435\u0433\u043e \u043f\u043e\u043a\u0443\u043f\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0439 \u0441\u043f\u043e\u0441\u043e\u0431\u043d\u043e\u0441\u0442\u044c\u044e \u0437\u0430 5 \u043b\u0435\u0442?", "why": "\u0414\u0435\u043d\u044c\u0433\u0438 \u0442\u0435\u0440\u044f\u044e\u0442 \u0446\u0435\u043d\u043d\u043e\u0441\u0442\u044c \u043f\u043e \u0441\u043b\u043e\u0436\u043d\u043e\u0439 \u0444\u043e\u0440\u043c\u0443\u043b\u0435: 1 000 000 \u00f7 (1 + 0,0635)\u2075 \u2248 735\u00a0043 \u20bd."}, {"correct": 3, "link": ["razbory/nalog-na-vklady-2026/", "\u0420\u0430\u0437\u0431\u043e\u0440 \u043f\u0440\u043e \u043d\u0430\u043b\u043e\u0433 \u043d\u0430 \u0432\u043a\u043b\u0430\u0434\u044b"], "options": ["\u041d\u0438\u043a\u0430\u043a\u0430\u044f, \u043d\u0430\u043b\u043e\u0433 \u043f\u043b\u0430\u0442\u044f\u0442 \u0441\u043e \u0432\u0441\u0435\u0433\u043e \u0434\u043e\u0445\u043e\u0434\u0430", "\u0412\u0441\u0435 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u044b \u0434\u043e 1 \u043c\u043b\u043d \u20bd \u0432 \u0433\u043e\u0434", "\u041f\u0440\u043e\u0446\u0435\u043d\u0442\u044b \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0434\u043e 1,4 \u043c\u043b\u043d \u20bd", "1 \u043c\u043b\u043d \u20bd \u00d7 \u043d\u0430\u0438\u0431\u043e\u043b\u044c\u0448\u0430\u044f \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u043d\u0430 1-\u0435 \u0447\u0438\u0441\u043b\u043e \u043c\u0435\u0441\u044f\u0446\u0435\u0432 \u0433\u043e\u0434\u0430, \u0441\u0435\u0439\u0447\u0430\u0441 \u044d\u0442\u043e 160\u00a0000 \u20bd"], "q": "\u041a\u0430\u043a\u0430\u044f \u0447\u0430\u0441\u0442\u044c \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u043e\u0432 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0432 2026 \u0433\u043e\u0434\u0443 \u043d\u0435 \u043e\u0431\u043b\u0430\u0433\u0430\u0435\u0442\u0441\u044f \u043d\u0430\u043b\u043e\u0433\u043e\u043c?", "why": "\u041d\u0435\u043e\u0431\u043b\u0430\u0433\u0430\u0435\u043c\u0430\u044f \u0441\u0443\u043c\u043c\u0430 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u043a\u0430\u043a 1 \u043c\u043b\u043d \u20bd \u00d7 \u043c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u0430\u044f \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u043d\u0430 1-\u0435 \u0447\u0438\u0441\u043b\u043e \u043c\u0435\u0441\u044f\u0446\u0435\u0432 \u0433\u043e\u0434\u0430. \u0414\u043b\u044f 2026 \u0433\u043e\u0434\u0430 \u044d\u0442\u043e 160\u00a0000 \u20bd, \u0441 \u043e\u0441\u0442\u0430\u0442\u043a\u0430 \u043f\u043b\u0430\u0442\u044f\u0442 13% (\u0434\u043e 2,4 \u043c\u043b\u043d \u20bd \u0434\u043e\u0445\u043e\u0434\u0430, \u0434\u0430\u043b\u044c\u0448\u0435 15%)."}, {"correct": 0, "link": ["#instrumenty", "\u041d\u0430\u043b\u043e\u0433\u0438 \u0438 \u0432\u044b\u0447\u0435\u0442\u044b"], "options": ["\u0414\u043e 1,4 \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u0430 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0414\u043e 700 \u0442\u044b\u0441\u044f\u0447 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0414\u043e 3 \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u043e\u0432 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0411\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u0439"], "q": "\u0414\u043e \u043a\u0430\u043a\u043e\u0439 \u0441\u0443\u043c\u043c\u044b \u0432\u043a\u043b\u0430\u0434\u044b \u0432 \u043e\u0434\u043d\u043e\u043c \u0431\u0430\u043d\u043a\u0435 \u0437\u0430\u0441\u0442\u0440\u0430\u0445\u043e\u0432\u0430\u043d\u044b \u0433\u043e\u0441\u0443\u0434\u0430\u0440\u0441\u0442\u0432\u043e\u043c?", "why": "\u0421\u0442\u0440\u0430\u0445\u043e\u0432\u043e\u0435 \u0432\u043e\u0437\u043c\u0435\u0449\u0435\u043d\u0438\u0435 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0432 \u043e\u0434\u043d\u043e\u043c \u0431\u0430\u043d\u043a\u0435 \u0441\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u0434\u043e 1,4 \u043c\u043b\u043d \u20bd (\u0432\u043c\u0435\u0441\u0442\u0435 \u0441 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u043c\u0438). \u0414\u0435\u043d\u044c\u0433\u0438 \u0441\u0432\u0435\u0440\u0445 \u044d\u0442\u043e\u0439 \u0441\u0443\u043c\u043c\u044b \u043b\u0443\u0447\u0448\u0435 \u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u044c \u043c\u0435\u0436\u0434\u0443 \u0431\u0430\u043d\u043a\u0430\u043c\u0438."}], "rate": {"full": ["\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026", "\u0430\u0432\u0433\u0443\u0441\u0442 2026", "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044c 2026"], "infl": [5.59, 6.0, 5.91, 5.86, 5.58, 5.31, 6.02, 5.98, 6.33, 6.35], "key": [16.0, 16.0, 15.5, 15.0, 14.5, 14.5, 14.25, 14.0, 14.0, 14.0], "labels": ["\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b", "\u0410\u0432\u0433", "\u0421\u0435\u043d"]}, "scenarioNotes": {"bond": "\u041e\u0431\u043b\u0438\u0433\u0430\u0446\u0438\u0438", "dep": "\u0412\u043a\u043b\u0430\u0434\u044b \u0438 \u043d\u0430\u043a\u043e\u043f\u043b\u0435\u043d\u0438\u044f", "house": "\u0420\u043e\u0441\u0442 \u0446\u0435\u043d \u043d\u0430 \u0436\u0438\u043b\u044c\u0451", "infl": "\u0418\u043d\u0444\u043b\u044f\u0446\u0438\u044f", "loan": "\u0421\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c \u0438 \u0438\u043f\u043e\u0442\u0435\u043a\u0435", "rent": "\u0420\u043e\u0441\u0442 \u0430\u0440\u0435\u043d\u0434\u044b", "stock": "\u0410\u043a\u0446\u0438\u0438"}, "scenarios": {"base": {"desc": "\u0417\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u0441\u0430\u0439\u0442\u0430 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f: \u0430\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u0441\u0442\u0430\u0432\u043a\u0438 \u0438 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f.", "hint": "\u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u0441\u0435\u0433\u043e\u0434\u043d\u044f", "label": "\u0411\u0430\u0437\u043e\u0432\u044b\u0439", "shift": {"bond": 0, "dep": 0, "house": 0, "infl": 0, "loan": 0, "rent": 0, "stock": 0}}, "opt": {"desc": "\u0411\u043b\u0430\u0433\u043e\u043f\u0440\u0438\u044f\u0442\u043d\u044b\u0439 \u0434\u043b\u044f \u0432\u0430\u0441: \u0432\u043a\u043b\u0430\u0434\u044b \u0438 \u0438\u043d\u0432\u0435\u0441\u0442\u0438\u0446\u0438\u0438 \u043f\u0440\u0438\u043d\u043e\u0441\u044f\u0442 \u0431\u043e\u043b\u044c\u0448\u0435, \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f \u0438 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c \u043d\u0438\u0436\u0435, \u0436\u0438\u043b\u044c\u0451 \u0434\u043e\u0440\u043e\u0436\u0430\u0435\u0442 \u0431\u044b\u0441\u0442\u0440\u0435\u0435, \u0430\u0440\u0435\u043d\u0434\u0430 \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u0435\u0435.", "hint": "\u0434\u043e\u0445\u043e\u0434\u044b \u0432\u044b\u0448\u0435, \u0440\u0430\u0441\u0445\u043e\u0434\u044b \u043d\u0438\u0436\u0435", "label": "\u041e\u043f\u0442\u0438\u043c\u0438\u0441\u0442\u0438\u0447\u043d\u044b\u0439", "shift": {"bond": 1, "dep": 2, "house": 2, "infl": -2, "loan": -3, "rent": -2, "stock": 5}}, "pess": {"desc": "\u041d\u0435\u0431\u043b\u0430\u0433\u043e\u043f\u0440\u0438\u044f\u0442\u043d\u044b\u0439 \u0434\u043b\u044f \u0432\u0430\u0441: \u0432\u043a\u043b\u0430\u0434\u044b \u0438 \u0438\u043d\u0432\u0435\u0441\u0442\u0438\u0446\u0438\u0438 \u043f\u0440\u0438\u043d\u043e\u0441\u044f\u0442 \u043c\u0435\u043d\u044c\u0448\u0435, \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f \u0438 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c \u0432\u044b\u0448\u0435, \u0436\u0438\u043b\u044c\u0451 \u0434\u043e\u0440\u043e\u0436\u0430\u0435\u0442 \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u0435\u0435, \u0430\u0440\u0435\u043d\u0434\u0430 \u0431\u044b\u0441\u0442\u0440\u0435\u0435.", "hint": "\u0434\u043e\u0445\u043e\u0434\u044b \u043d\u0438\u0436\u0435, \u0440\u0430\u0441\u0445\u043e\u0434\u044b \u0432\u044b\u0448\u0435", "label": "\u041f\u0435\u0441\u0441\u0438\u043c\u0438\u0441\u0442\u0438\u0447\u043d\u044b\u0439", "shift": {"bond": -3, "dep": -4, "house": -3, "infl": 3, "loan": 3, "rent": 3, "stock": -8}}}, "tax": {"brackets": [[2400000, 13], [5000000, 15], [20000000, 18], [50000000, 20], [null, 22]], "deposit_threshold": 2400000, "free_base": 1000000, "free_rate": 16.0, "home_limit": 2000000, "iis_limit": 400000, "interest_limit": 3000000, "rate": 13}, "team": "Growth Syndicate", "wage": {"full": ["\u043e\u043a\u0442\u044f\u0431\u0440\u044c 2025", "\u043d\u043e\u044f\u0431\u0440\u044c 2025", "\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026"], "labels": ["\u041e\u043a\u0442", "\u041d\u043e\u044f", "\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b"], "values": [99.707, 98.192, 139.727, null, null, null, 109.052, 110.216, 114.743, 109.524]}}</script>
 <script>
 (function () {
   'use strict';
@@ -1596,6 +1651,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
   var D = JSON.parse(document.getElementById('site-data').textContent);
   var NS = 'http://www.w3.org/2000/svg';
   var redrawers = [];          // функции, которые перерисовывают графики при изменении ширины окна
+  var SC = { shift: {}, current: 'base' };   // выбранный сценарий и его сдвиги (п. п.)
   var extrasReady = false;     // становится true, когда готов раздел «Ипотека подробнее»
 
   /* ---------- форматирование ---------- */
@@ -1797,7 +1853,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     var P = num(dAmount, 0), m = parseInt(dMonths.value, 10), r = num(dRate, 0);
     dMonthsOut.textContent = monthsText(m);
     var b = bucketFor(m);
-    if (!rateEdited) { dRate.value = b.rate; r = b.rate; }
+    if (!rateEdited) { r = Math.max(0, b.rate + (SC.shift.dep || 0)); dRate.value = Math.round(r * 100) / 100; }
     dRateHint.textContent = rateEdited ? '' : 'средняя максимальная для срока: ' + b.label;
     var final = dCap.checked ? P * Math.pow(1 + r / 100 / 12, m) : P * (1 + r / 100 * m / 12);
     var income = final - P;
@@ -1805,6 +1861,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     document.getElementById('dep-income').textContent = rub(income);
     document.getElementById('dep-final').textContent = rub(final);
     document.getElementById('dep-real').textContent = (real < 0 ? '−' : '') + rub(Math.abs(real));
+    document.getElementById('dep-real-label').textContent = 'Доход с учётом инфляции ' + fmtN.format(D.inflation) + '%';
     document.getElementById('dep-warn').textContent =
       r > D.keyRate ? 'Ставка выше ключевой (' + pct(D.keyRate) + '). Такие предложения обычно действуют на ограниченный срок или при условиях.' : '';
   }
@@ -2126,7 +2183,8 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     var when = new Date().toLocaleString('ru-RU', { dateStyle: 'long', timeStyle: 'short' });
     var p1 = document.createElement('p'); p1.textContent = (D.team ? D.team + ' · ' : '') + when;
     var p2 = document.createElement('p');
-    p2.textContent = 'Исходные данные: ключевая ставка ' + pct(D.keyRate) + ', инфляция за год ' + pct(D.inflation) + '.' + (D.asOf ? ' Данные на ' + D.asOf + '.' : '');
+    p2.textContent = 'Исходные данные: ключевая ставка ' + pct(D.keyRate) + ', инфляция за год ' + pct(D.inflation) + '.' + (D.asOf ? ' Данные на ' + D.asOf + '.' : '') +
+      (SC.current !== 'base' && D.scenarios[SC.current] ? ' Сценарий: ' + D.scenarios[SC.current].label.toLowerCase() + '.' : '');
     head.appendChild(p1); head.appendChild(p2);
     root.appendChild(head);
 
@@ -2595,6 +2653,230 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       new MutationObserver(function () { labelTable(t); }).observe(tb, { childList: true });
     });
   });
+
+  /* ======================================================================
+     Сценарии (пессимистичный / базовый / оптимистичный), «вилка» и ссылка на расчёты
+     ====================================================================== */
+  (function () {
+    var bar = document.getElementById('scenarios');
+    if (!bar || !D.scenarios) return;
+    var KEYS = ['pess', 'base', 'opt'];
+    var BASE_INFL = D.inflation;
+    var busy = false;
+    var STORE = 'calc-state-v1';
+    var SKIP = { 'mor-preset': 1, 'inv-preset': 1 };          // подбираются по ставке сами
+
+    var scnFields = Array.prototype.slice.call(document.querySelectorAll('[data-scn]'));
+    var allFields = Array.prototype.slice.call(document.querySelectorAll('.calc input[id], .calc select[id]'))
+      .filter(function (f) { return !SKIP[f.id] && !f.readOnly; });
+    var defaults = {};                                           // значения при загрузке страницы
+    allFields.forEach(function (f) { defaults[f.id] = f.type === 'checkbox' ? f.checked : f.value; });
+
+    function round2(v) { return Math.round(v * 100) / 100; }
+    function limits(f) {
+      var mn = parseFloat(f.getAttribute('min')), mx = parseFloat(f.getAttribute('max'));
+      return [isFinite(mn) ? mn : 0, isFinite(mx) ? mx : Infinity];
+    }
+    function clamp(f, v) { var l = limits(f); return Math.min(l[1], Math.max(l[0], v)); }
+    function shiftOf(key, kind) { return (D.scenarios[key].shift[kind]) || 0; }
+    function fire(f) { f.dispatchEvent(new Event('input', { bubbles: true })); }
+    function recalcAll() {
+      Array.prototype.forEach.call(document.querySelectorAll('.calc'), function (form) {
+        var first = form.querySelector('input[id]'); if (first) fire(first);
+      });
+      ['mor-rate', 'inv-rate'].forEach(function (id) { fire(document.getElementById(id)); });   // заодно подбирают выбранную программу
+    }
+
+    // применяет сценарий: сдвигает значения относительно прежнего сценария, чтобы свои правки не терялись
+    function applyScenario(key, opts) {
+      opts = opts || {};
+      var prev = SC.current;
+      scnFields.forEach(function (f) {
+        var kind = f.getAttribute('data-scn');
+        var v = parseFloat(f.value);
+        if (!isFinite(v)) return;
+        f.value = round2(clamp(f, v + shiftOf(key, kind) - shiftOf(prev, kind)));
+      });
+      SC.current = key; SC.shift = D.scenarios[key].shift;
+      D.inflation = Math.max(0, round2(BASE_INFL + shiftOf(key, 'infl')));
+      paintBar();
+      if (!opts.silent) { busy = true; recalcAll(); busy = false; computeFork(); schedule(); }
+    }
+
+    function paintBar() {
+      Array.prototype.forEach.call(bar.querySelectorAll('.scn-btn'), function (b) {
+        var on = b.getAttribute('data-scn-key') === SC.current;
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+        b.classList.toggle('on', on);
+        b.tabIndex = on ? 0 : -1;
+      });
+      var sc = D.scenarios[SC.current], notes = D.scenarioNotes || {}, parts = [];
+      Object.keys(notes).forEach(function (k) {
+        var d = sc.shift[k] || 0;
+        if (d) parts.push(notes[k] + ' ' + (d > 0 ? '+' : '−') + Math.abs(d) + '\u00a0п.\u00a0п.');
+      });
+      document.getElementById('scn-desc').textContent = sc.desc + (parts.length ? ' Сдвиги: ' + parts.join(', ') + '.' : '');
+    }
+
+    /* ---- вилка: считаем те же калькуляторы при трёх сценариях и возвращаем всё обратно ---- */
+    var FORK = [
+      ['Вклад: итоговая сумма', 'dep-final'], ['Вклад: доход с учётом инфляции', 'dep-real'],
+      ['Ипотека: платёж в месяц', 'mor-pay'], ['Кредит: платёж в месяц', 'ln-pay'],
+      ['Инвестиции: итоговая сумма', 'inv-final'], ['Инвестиции: итог в сегодняшних ценах', 'inv-real'],
+      ['Вклад на руки: итог', 'nt-net'], ['Вклад на руки: реальная доходность', 'nt-ryield'],
+      ['Пенсия от накоплений в месяц', 'pn-pension'], ['Аренда или ипотека', 'rv-verdict']
+    ];
+    var forkBody = document.getElementById('fork-body');
+    var forkBusy = false;
+    function computeFork() {
+      if (forkBusy) return;
+      forkBusy = true; busy = true;
+      var cur = SC.current, curShift = SC.shift, curInfl = D.inflation, saved = {};
+      scnFields.forEach(function (f) { saved[f.id] = f.value; });
+      var savedRate = dRateValue();
+      var out = {};
+      KEYS.forEach(function (k) {
+        scnFields.forEach(function (f) {
+          var kind = f.getAttribute('data-scn'), v = parseFloat(saved[f.id]);
+          if (isFinite(v)) f.value = round2(clamp(f, v + shiftOf(k, kind) - shiftOf(cur, kind)));
+        });
+        SC.shift = D.scenarios[k].shift; D.inflation = Math.max(0, round2(BASE_INFL + shiftOf(k, 'infl')));
+        recalcAll();
+        out[k] = FORK.map(function (row) { return (document.getElementById(row[1]).textContent || '').trim(); });
+      });
+      scnFields.forEach(function (f) { f.value = saved[f.id]; });
+      SC.shift = curShift; D.inflation = curInfl; SC.current = cur;
+      recalcAll();
+      if (!rateEdited) dRateRestore(savedRate);
+      forkBusy = false; busy = false;
+      forkBody.textContent = '';
+      FORK.forEach(function (row, i) {
+        var tr = document.createElement('tr');
+        var th = document.createElement('th'); th.scope = 'row'; th.className = 'c-name'; th.textContent = row[0]; tr.appendChild(th);
+        KEYS.forEach(function (k) {
+          var td = document.createElement('td'); td.className = 'num' + (k === cur ? ' scn-cur' : ''); td.textContent = out[k][i]; tr.appendChild(td);
+        });
+        forkBody.appendChild(tr);
+      });
+    }
+    function dRateValue() { return dRate.value; }
+    function dRateRestore(v) { dRate.value = v; }
+
+    /* ---- состояние в ссылке и в localStorage ---- */
+    function currentState() {
+      var st = {}, defScn = SC.current;
+      allFields.forEach(function (f) {
+        var def = defaults[f.id], v = f.type === 'checkbox' ? f.checked : f.value;
+        if (f.id === 'dep-rate') { if (!rateEdited) return; st[f.id] = v; return; }
+        if (f.hasAttribute('data-scn')) {
+          var kind = f.getAttribute('data-scn');
+          var expect = round2(clamp(f, parseFloat(def) + shiftOf(defScn, kind)));
+          if (Math.abs(parseFloat(v) - expect) < 0.005) return;
+          st[f.id] = v; return;
+        }
+        if (f.type === 'checkbox') { if (v !== def) st[f.id] = v ? '1' : '0'; return; }
+        if (String(v) !== String(def)) st[f.id] = v;
+      });
+      var qs = new URLSearchParams();
+      if (SC.current !== 'base') qs.set('s', SC.current);
+      Object.keys(st).forEach(function (k) { qs.set(k, st[k] === true ? '1' : st[k] === false ? '0' : st[k]); });
+      return qs.toString();
+    }
+    var timer = null;
+    function schedule() { clearTimeout(timer); timer = setTimeout(save, 350); }
+    function save() {
+      var qs = currentState();
+      try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); } catch (e) {}
+      try { if (qs) localStorage.setItem(STORE, qs); else localStorage.removeItem(STORE); } catch (e) {}
+    }
+    function applyQuery(qs) {
+      var q = new URLSearchParams(qs), n = 0;
+      busy = true;
+      var s = q.get('s');
+      if (s && KEYS.indexOf(s) >= 0 && s !== SC.current) applyScenario(s, { silent: true });
+      allFields.forEach(function (f) {
+        if (!q.has(f.id)) return;
+        var raw = q.get(f.id);
+        if (f.type === 'checkbox') { f.checked = raw === '1'; n++; return; }
+        if (f.tagName === 'SELECT') {
+          var ok = Array.prototype.some.call(f.options, function (o) { return o.value === raw; });
+          if (ok) { f.value = raw; n++; }
+          return;
+        }
+        var v = parseFloat(raw);
+        if (!isFinite(v)) return;
+        f.value = round2(clamp(f, v)); n++;
+        if (f.id === 'dep-rate') rateEdited = true;
+      });
+      recalcAll();
+      busy = false;
+      paintBar(); computeFork();
+      return n;
+    }
+    function resetAll() {
+      busy = true;
+      SC.current = 'base'; SC.shift = D.scenarios.base.shift; D.inflation = BASE_INFL;
+      allFields.forEach(function (f) { if (f.type === 'checkbox') f.checked = defaults[f.id]; else f.value = defaults[f.id]; });
+      rateEdited = false;
+      recalcAll();
+      busy = false;
+      paintBar(); computeFork();
+      try { history.replaceState(null, '', location.pathname + location.hash); localStorage.removeItem(STORE); } catch (e) {}
+    }
+
+    /* ---- события ---- */
+    Array.prototype.forEach.call(bar.querySelectorAll('.scn-btn'), function (b, i, all) {
+      b.addEventListener('click', function () { applyScenario(b.getAttribute('data-scn-key')); setStatus(''); });
+      b.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        var nb = all[(i + d + all.length) % all.length];
+        nb.focus(); nb.click();
+      });
+    });
+    var statusEl = document.getElementById('scn-status');
+    function setStatus(t) { statusEl.textContent = t; }
+    var fieldTimer = null;
+    document.addEventListener('input', function (e) {
+      if (busy || !e.target || !e.target.closest || !e.target.closest('.calc')) return;
+      schedule();
+      // пока человек печатает ставку, вилку не пересчитываем (это временно меняет поле); пересчёт будет по окончании ввода
+      if (e.target.hasAttribute('data-scn') && e.target.type === 'number') return;
+      clearTimeout(fieldTimer); fieldTimer = setTimeout(computeFork, 450);
+    });
+    document.addEventListener('change', function (e) {
+      if (busy || !e.target || !e.target.closest || !e.target.closest('.calc')) return;
+      schedule();
+      clearTimeout(fieldTimer); fieldTimer = setTimeout(computeFork, 450);
+    });
+    document.getElementById('scn-reset').addEventListener('click', function () { resetAll(); setStatus('Все значения сброшены.'); });
+    document.getElementById('scn-copy').addEventListener('click', function () {
+      clearTimeout(timer); save();
+      var qs = currentState();
+      var url = location.origin === 'null' || location.protocol === 'file:' ? location.href.split(/[?#]/)[0] : location.origin + location.pathname;
+      url += (qs ? '?' + qs : '') + '#kalkulyatory';
+      var row = document.getElementById('scn-link-row'), inp = document.getElementById('scn-link');
+      inp.value = url; row.hidden = false;
+      function manual() { inp.focus(); inp.select(); setStatus('Скопируйте ссылку вручную (Ctrl+C).'); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { setStatus('Ссылка скопирована.'); }, manual);
+      } else manual();
+    });
+
+    /* ---- запуск ---- */
+    paintBar();
+    var fromUrl = location.search.length > 1;
+    var qsInit = fromUrl ? location.search.slice(1) : (function () { try { return localStorage.getItem(STORE) || ''; } catch (e) { return ''; } })();
+    if (qsInit) {
+      var n = applyQuery(qsInit);
+      if (fromUrl) setStatus('Открыты расчёты по ссылке' + (n ? ' (изменено полей: ' + n + ')' : '') + '. Кнопка «Сбросить всё» вернёт значения по умолчанию.');
+      else setStatus('Восстановлены ваши последние расчёты. «Сбросить всё» вернёт значения по умолчанию.');
+      if (fromUrl && n) setTimeout(function () { var el = document.getElementById('scenarios'); if (el && !location.hash) el.scrollIntoView(); }, 0);
+    } else {
+      computeFork();
+    }
+  })();
 })();
 
 </script>

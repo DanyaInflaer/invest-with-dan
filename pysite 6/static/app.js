@@ -4,6 +4,7 @@
   var D = JSON.parse(document.getElementById('site-data').textContent);
   var NS = 'http://www.w3.org/2000/svg';
   var redrawers = [];          // функции, которые перерисовывают графики при изменении ширины окна
+  var SC = { shift: {}, current: 'base' };   // выбранный сценарий и его сдвиги (п. п.)
   var extrasReady = false;     // становится true, когда готов раздел «Ипотека подробнее»
 
   /* ---------- форматирование ---------- */
@@ -205,7 +206,7 @@
     var P = num(dAmount, 0), m = parseInt(dMonths.value, 10), r = num(dRate, 0);
     dMonthsOut.textContent = monthsText(m);
     var b = bucketFor(m);
-    if (!rateEdited) { dRate.value = b.rate; r = b.rate; }
+    if (!rateEdited) { r = Math.max(0, b.rate + (SC.shift.dep || 0)); dRate.value = Math.round(r * 100) / 100; }
     dRateHint.textContent = rateEdited ? '' : 'средняя максимальная для срока: ' + b.label;
     var final = dCap.checked ? P * Math.pow(1 + r / 100 / 12, m) : P * (1 + r / 100 * m / 12);
     var income = final - P;
@@ -213,6 +214,7 @@
     document.getElementById('dep-income').textContent = rub(income);
     document.getElementById('dep-final').textContent = rub(final);
     document.getElementById('dep-real').textContent = (real < 0 ? '−' : '') + rub(Math.abs(real));
+    document.getElementById('dep-real-label').textContent = 'Доход с учётом инфляции ' + fmtN.format(D.inflation) + '%';
     document.getElementById('dep-warn').textContent =
       r > D.keyRate ? 'Ставка выше ключевой (' + pct(D.keyRate) + '). Такие предложения обычно действуют на ограниченный срок или при условиях.' : '';
   }
@@ -534,7 +536,8 @@
     var when = new Date().toLocaleString('ru-RU', { dateStyle: 'long', timeStyle: 'short' });
     var p1 = document.createElement('p'); p1.textContent = (D.team ? D.team + ' · ' : '') + when;
     var p2 = document.createElement('p');
-    p2.textContent = 'Исходные данные: ключевая ставка ' + pct(D.keyRate) + ', инфляция за год ' + pct(D.inflation) + '.' + (D.asOf ? ' Данные на ' + D.asOf + '.' : '');
+    p2.textContent = 'Исходные данные: ключевая ставка ' + pct(D.keyRate) + ', инфляция за год ' + pct(D.inflation) + '.' + (D.asOf ? ' Данные на ' + D.asOf + '.' : '') +
+      (SC.current !== 'base' && D.scenarios[SC.current] ? ' Сценарий: ' + D.scenarios[SC.current].label.toLowerCase() + '.' : '');
     head.appendChild(p1); head.appendChild(p2);
     root.appendChild(head);
 
@@ -1003,4 +1006,228 @@
       new MutationObserver(function () { labelTable(t); }).observe(tb, { childList: true });
     });
   });
+
+  /* ======================================================================
+     Сценарии (пессимистичный / базовый / оптимистичный), «вилка» и ссылка на расчёты
+     ====================================================================== */
+  (function () {
+    var bar = document.getElementById('scenarios');
+    if (!bar || !D.scenarios) return;
+    var KEYS = ['pess', 'base', 'opt'];
+    var BASE_INFL = D.inflation;
+    var busy = false;
+    var STORE = 'calc-state-v1';
+    var SKIP = { 'mor-preset': 1, 'inv-preset': 1 };          // подбираются по ставке сами
+
+    var scnFields = Array.prototype.slice.call(document.querySelectorAll('[data-scn]'));
+    var allFields = Array.prototype.slice.call(document.querySelectorAll('.calc input[id], .calc select[id]'))
+      .filter(function (f) { return !SKIP[f.id] && !f.readOnly; });
+    var defaults = {};                                           // значения при загрузке страницы
+    allFields.forEach(function (f) { defaults[f.id] = f.type === 'checkbox' ? f.checked : f.value; });
+
+    function round2(v) { return Math.round(v * 100) / 100; }
+    function limits(f) {
+      var mn = parseFloat(f.getAttribute('min')), mx = parseFloat(f.getAttribute('max'));
+      return [isFinite(mn) ? mn : 0, isFinite(mx) ? mx : Infinity];
+    }
+    function clamp(f, v) { var l = limits(f); return Math.min(l[1], Math.max(l[0], v)); }
+    function shiftOf(key, kind) { return (D.scenarios[key].shift[kind]) || 0; }
+    function fire(f) { f.dispatchEvent(new Event('input', { bubbles: true })); }
+    function recalcAll() {
+      Array.prototype.forEach.call(document.querySelectorAll('.calc'), function (form) {
+        var first = form.querySelector('input[id]'); if (first) fire(first);
+      });
+      ['mor-rate', 'inv-rate'].forEach(function (id) { fire(document.getElementById(id)); });   // заодно подбирают выбранную программу
+    }
+
+    // применяет сценарий: сдвигает значения относительно прежнего сценария, чтобы свои правки не терялись
+    function applyScenario(key, opts) {
+      opts = opts || {};
+      var prev = SC.current;
+      scnFields.forEach(function (f) {
+        var kind = f.getAttribute('data-scn');
+        var v = parseFloat(f.value);
+        if (!isFinite(v)) return;
+        f.value = round2(clamp(f, v + shiftOf(key, kind) - shiftOf(prev, kind)));
+      });
+      SC.current = key; SC.shift = D.scenarios[key].shift;
+      D.inflation = Math.max(0, round2(BASE_INFL + shiftOf(key, 'infl')));
+      paintBar();
+      if (!opts.silent) { busy = true; recalcAll(); busy = false; computeFork(); schedule(); }
+    }
+
+    function paintBar() {
+      Array.prototype.forEach.call(bar.querySelectorAll('.scn-btn'), function (b) {
+        var on = b.getAttribute('data-scn-key') === SC.current;
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+        b.classList.toggle('on', on);
+        b.tabIndex = on ? 0 : -1;
+      });
+      var sc = D.scenarios[SC.current], notes = D.scenarioNotes || {}, parts = [];
+      Object.keys(notes).forEach(function (k) {
+        var d = sc.shift[k] || 0;
+        if (d) parts.push(notes[k] + ' ' + (d > 0 ? '+' : '−') + Math.abs(d) + '\u00a0п.\u00a0п.');
+      });
+      document.getElementById('scn-desc').textContent = sc.desc + (parts.length ? ' Сдвиги: ' + parts.join(', ') + '.' : '');
+    }
+
+    /* ---- вилка: считаем те же калькуляторы при трёх сценариях и возвращаем всё обратно ---- */
+    var FORK = [
+      ['Вклад: итоговая сумма', 'dep-final'], ['Вклад: доход с учётом инфляции', 'dep-real'],
+      ['Ипотека: платёж в месяц', 'mor-pay'], ['Кредит: платёж в месяц', 'ln-pay'],
+      ['Инвестиции: итоговая сумма', 'inv-final'], ['Инвестиции: итог в сегодняшних ценах', 'inv-real'],
+      ['Вклад на руки: итог', 'nt-net'], ['Вклад на руки: реальная доходность', 'nt-ryield'],
+      ['Пенсия от накоплений в месяц', 'pn-pension'], ['Аренда или ипотека', 'rv-verdict']
+    ];
+    var forkBody = document.getElementById('fork-body');
+    var forkBusy = false;
+    function computeFork() {
+      if (forkBusy) return;
+      forkBusy = true; busy = true;
+      var cur = SC.current, curShift = SC.shift, curInfl = D.inflation, saved = {};
+      scnFields.forEach(function (f) { saved[f.id] = f.value; });
+      var savedRate = dRateValue();
+      var out = {};
+      KEYS.forEach(function (k) {
+        scnFields.forEach(function (f) {
+          var kind = f.getAttribute('data-scn'), v = parseFloat(saved[f.id]);
+          if (isFinite(v)) f.value = round2(clamp(f, v + shiftOf(k, kind) - shiftOf(cur, kind)));
+        });
+        SC.shift = D.scenarios[k].shift; D.inflation = Math.max(0, round2(BASE_INFL + shiftOf(k, 'infl')));
+        recalcAll();
+        out[k] = FORK.map(function (row) { return (document.getElementById(row[1]).textContent || '').trim(); });
+      });
+      scnFields.forEach(function (f) { f.value = saved[f.id]; });
+      SC.shift = curShift; D.inflation = curInfl; SC.current = cur;
+      recalcAll();
+      if (!rateEdited) dRateRestore(savedRate);
+      forkBusy = false; busy = false;
+      forkBody.textContent = '';
+      FORK.forEach(function (row, i) {
+        var tr = document.createElement('tr');
+        var th = document.createElement('th'); th.scope = 'row'; th.className = 'c-name'; th.textContent = row[0]; tr.appendChild(th);
+        KEYS.forEach(function (k) {
+          var td = document.createElement('td'); td.className = 'num' + (k === cur ? ' scn-cur' : ''); td.textContent = out[k][i]; tr.appendChild(td);
+        });
+        forkBody.appendChild(tr);
+      });
+    }
+    function dRateValue() { return dRate.value; }
+    function dRateRestore(v) { dRate.value = v; }
+
+    /* ---- состояние в ссылке и в localStorage ---- */
+    function currentState() {
+      var st = {}, defScn = SC.current;
+      allFields.forEach(function (f) {
+        var def = defaults[f.id], v = f.type === 'checkbox' ? f.checked : f.value;
+        if (f.id === 'dep-rate') { if (!rateEdited) return; st[f.id] = v; return; }
+        if (f.hasAttribute('data-scn')) {
+          var kind = f.getAttribute('data-scn');
+          var expect = round2(clamp(f, parseFloat(def) + shiftOf(defScn, kind)));
+          if (Math.abs(parseFloat(v) - expect) < 0.005) return;
+          st[f.id] = v; return;
+        }
+        if (f.type === 'checkbox') { if (v !== def) st[f.id] = v ? '1' : '0'; return; }
+        if (String(v) !== String(def)) st[f.id] = v;
+      });
+      var qs = new URLSearchParams();
+      if (SC.current !== 'base') qs.set('s', SC.current);
+      Object.keys(st).forEach(function (k) { qs.set(k, st[k] === true ? '1' : st[k] === false ? '0' : st[k]); });
+      return qs.toString();
+    }
+    var timer = null;
+    function schedule() { clearTimeout(timer); timer = setTimeout(save, 350); }
+    function save() {
+      var qs = currentState();
+      try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); } catch (e) {}
+      try { if (qs) localStorage.setItem(STORE, qs); else localStorage.removeItem(STORE); } catch (e) {}
+    }
+    function applyQuery(qs) {
+      var q = new URLSearchParams(qs), n = 0;
+      busy = true;
+      var s = q.get('s');
+      if (s && KEYS.indexOf(s) >= 0 && s !== SC.current) applyScenario(s, { silent: true });
+      allFields.forEach(function (f) {
+        if (!q.has(f.id)) return;
+        var raw = q.get(f.id);
+        if (f.type === 'checkbox') { f.checked = raw === '1'; n++; return; }
+        if (f.tagName === 'SELECT') {
+          var ok = Array.prototype.some.call(f.options, function (o) { return o.value === raw; });
+          if (ok) { f.value = raw; n++; }
+          return;
+        }
+        var v = parseFloat(raw);
+        if (!isFinite(v)) return;
+        f.value = round2(clamp(f, v)); n++;
+        if (f.id === 'dep-rate') rateEdited = true;
+      });
+      recalcAll();
+      busy = false;
+      paintBar(); computeFork();
+      return n;
+    }
+    function resetAll() {
+      busy = true;
+      SC.current = 'base'; SC.shift = D.scenarios.base.shift; D.inflation = BASE_INFL;
+      allFields.forEach(function (f) { if (f.type === 'checkbox') f.checked = defaults[f.id]; else f.value = defaults[f.id]; });
+      rateEdited = false;
+      recalcAll();
+      busy = false;
+      paintBar(); computeFork();
+      try { history.replaceState(null, '', location.pathname + location.hash); localStorage.removeItem(STORE); } catch (e) {}
+    }
+
+    /* ---- события ---- */
+    Array.prototype.forEach.call(bar.querySelectorAll('.scn-btn'), function (b, i, all) {
+      b.addEventListener('click', function () { applyScenario(b.getAttribute('data-scn-key')); setStatus(''); });
+      b.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        var nb = all[(i + d + all.length) % all.length];
+        nb.focus(); nb.click();
+      });
+    });
+    var statusEl = document.getElementById('scn-status');
+    function setStatus(t) { statusEl.textContent = t; }
+    var fieldTimer = null;
+    document.addEventListener('input', function (e) {
+      if (busy || !e.target || !e.target.closest || !e.target.closest('.calc')) return;
+      schedule();
+      // пока человек печатает ставку, вилку не пересчитываем (это временно меняет поле); пересчёт будет по окончании ввода
+      if (e.target.hasAttribute('data-scn') && e.target.type === 'number') return;
+      clearTimeout(fieldTimer); fieldTimer = setTimeout(computeFork, 450);
+    });
+    document.addEventListener('change', function (e) {
+      if (busy || !e.target || !e.target.closest || !e.target.closest('.calc')) return;
+      schedule();
+      clearTimeout(fieldTimer); fieldTimer = setTimeout(computeFork, 450);
+    });
+    document.getElementById('scn-reset').addEventListener('click', function () { resetAll(); setStatus('Все значения сброшены.'); });
+    document.getElementById('scn-copy').addEventListener('click', function () {
+      clearTimeout(timer); save();
+      var qs = currentState();
+      var url = location.origin === 'null' || location.protocol === 'file:' ? location.href.split(/[?#]/)[0] : location.origin + location.pathname;
+      url += (qs ? '?' + qs : '') + '#kalkulyatory';
+      var row = document.getElementById('scn-link-row'), inp = document.getElementById('scn-link');
+      inp.value = url; row.hidden = false;
+      function manual() { inp.focus(); inp.select(); setStatus('Скопируйте ссылку вручную (Ctrl+C).'); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { setStatus('Ссылка скопирована.'); }, manual);
+      } else manual();
+    });
+
+    /* ---- запуск ---- */
+    paintBar();
+    var fromUrl = location.search.length > 1;
+    var qsInit = fromUrl ? location.search.slice(1) : (function () { try { return localStorage.getItem(STORE) || ''; } catch (e) { return ''; } })();
+    if (qsInit) {
+      var n = applyQuery(qsInit);
+      if (fromUrl) setStatus('Открыты расчёты по ссылке' + (n ? ' (изменено полей: ' + n + ')' : '') + '. Кнопка «Сбросить всё» вернёт значения по умолчанию.');
+      else setStatus('Восстановлены ваши последние расчёты. «Сбросить всё» вернёт значения по умолчанию.');
+      if (fromUrl && n) setTimeout(function () { var el = document.getElementById('scenarios'); if (el && !location.hash) el.scrollIntoView(); }, 0);
+    } else {
+      computeFork();
+    }
+  })();
 })();

@@ -365,6 +365,18 @@ class Blog(unittest.TestCase):
         self.assertGreater(len({q["correct"] for q in quiz}), 2)               # верные ответы на разных местах
         self.assertIn('id="kviz"', site.app.test_client().get("/").get_data(as_text=True))
 
+    def test_scenarios(self):
+        for k in ("pess", "base", "opt"):
+            self.assertIn(k, site.SCENARIOS)
+        self.assertTrue(all(v == 0 for v in site.SCENARIOS["base"]["shift"].values()))
+        shifts = {name: sc["shift"] for name, sc in site.SCENARIOS.items()}
+        for kind in site.SCENARIO_NOTES:
+            self.assertLess(shifts["pess"][kind] if kind in ("dep", "bond", "stock", "house") else -shifts["pess"][kind], 1)
+        page = site.app.test_client().get("/").get_data(as_text=True)
+        for key in ('id="scenarios"', 'data-scn-key="pess"', 'data-scn-key="opt"', 'id="fork-body"', 'id="scn-copy"', 'id="scn-reset"'):
+            self.assertIn(key, page)
+        self.assertGreaterEqual(page.count('data-scn="'), 15)
+
     def test_main_page_links_blog(self):
         html = site.app.test_client().get("/").get_data(as_text=True)
         self.assertIn('id="razbory"', html)

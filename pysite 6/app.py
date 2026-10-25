@@ -126,6 +126,23 @@ TAX = {
     "deposit_threshold": 2_400_000,   # проценты свыше этой суммы за год облагаются по 15%
     "home_limit": 2_000_000, "interest_limit": 3_000_000, "iis_limit": 400_000, "rate": 13,
 }
+# Сценарии: на сколько процентных пунктов сдвигаются значения относительно базового.
+# dep: ставки по вкладам и доходность накоплений; bond/stock: облигации и акции; infl: инфляция;
+# loan: ставки по кредитам; house: рост цен на жильё; rent: рост аренды.
+SCENARIOS = {
+    "pess": {"label": "Пессимистичный", "hint": "доходы ниже, расходы выше",
+             "desc": "Неблагоприятный для вас: вклады и инвестиции приносят меньше, инфляция и ставки по кредитам выше, жильё дорожает медленнее, аренда быстрее.",
+             "shift": {"dep": -4, "bond": -3, "stock": -8, "infl": 3, "loan": 3, "house": -3, "rent": 3}},
+    "base": {"label": "Базовый", "hint": "значения сегодня",
+             "desc": "Значения сайта на сегодня: актуальные ставки и инфляция.",
+             "shift": {"dep": 0, "bond": 0, "stock": 0, "infl": 0, "loan": 0, "house": 0, "rent": 0}},
+    "opt": {"label": "Оптимистичный", "hint": "доходы выше, расходы ниже",
+            "desc": "Благоприятный для вас: вклады и инвестиции приносят больше, инфляция и ставки по кредитам ниже, жильё дорожает быстрее, аренда медленнее.",
+            "shift": {"dep": 2, "bond": 1, "stock": 5, "infl": -2, "loan": -3, "house": 2, "rent": -2}},
+}
+SCENARIO_NOTES = {"dep": "Вклады и накопления", "bond": "Облигации", "stock": "Акции", "infl": "Инфляция",
+                  "loan": "Ставки по кредитам и ипотеке", "house": "Рост цен на жильё", "rent": "Рост аренды"}
+
 BOND_RATE = 14.0      # примерная доходность облигаций для калькулятора сравнения, %
 STOCK_RATE = 16.0     # примерная ожидаемая доходность акций для калькулятора сравнения, %
 
@@ -561,6 +578,7 @@ def index():
         "asOf": v["asof"],
         "team": TEAM["name"],
         "tax": TAX,
+        "scenarios": SCENARIOS, "scenarioNotes": SCENARIO_NOTES,
     }
     faq = build_faq(v["key"], v["next_meeting"])
     dep_year = next(r["rate"] for r in DEPOSIT_RATES if r["upto_months"] == 12)
@@ -576,7 +594,7 @@ def index():
         people=PEOPLE, invest=v["invest"],
         bars=bars, axis=AXIS, sources=SOURCES,
         regions=region_rows(), russia=RUSSIA_ROW, region_notes=REGION_NOTES,
-        latest_posts=get_posts()[:3], tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
+        scn_defs=SCENARIOS, latest_posts=get_posts()[:3], tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
         mortgage_presets=MORTGAGE_PRESETS, deposit_rates=DEPOSIT_RATES,
         scenarios=build_scenarios(v["key"], v["next_meeting"]),
         infl_now=fmt(INFLATION), real_rate=fmt(v["key"] - INFLATION),
