@@ -48,7 +48,7 @@
       <div class="eyebrow">Россия · данные на {{ asof }}</div>
       <h1>Здравствуйте! Мы команда {{ team.name }}</h1>
       <p class="lead">Мы рады, что вы зашли. Мы помогаем разобраться, куда движется российская экономика, как живут люди в стране и что это значит для тех, кто думает о вложениях.</p>
-      <p class="lead">Ниже собраны свежие цифры, графики за год, сравнение регионов и четыре калькулятора (вклад, ипотека, инфляция, инвестиции) с сохранением расчётов в PDF. В конце страницы мы рассказываем о себе и о том, чем можем быть полезны.</p>
+      <p class="lead">Ниже собраны свежие цифры, графики за год, сравнение регионов и калькуляторы (вклад, ипотека, кредит, инфляция, инвестиции, налоги, пенсия) с сохранением расчётов в PDF. В конце страницы мы рассказываем о себе и о том, чем можем быть полезны.</p>
       <p class="sign"><span>{{ team.signer }}</span><span>от лица всей команды</span></p>
     </div>
     <aside class="glance" aria-label="Коротко">
@@ -293,6 +293,44 @@
           <div class="sub"><dt>Чтобы сохранить её, нужно будет</dt><dd id="pw-need">—</dd></div>
         </dl>
         <p class="calc-note">Показывает, сколько товаров и услуг можно будет купить на сумму через выбранный срок в пересчёте на сегодняшние рубли. Инфляция принимается постоянной.</p>
+      </form>
+
+      <!-- Кредит -->
+      <form class="calc" id="loan-form" data-report autocomplete="off" onsubmit="return false">
+        <h3>Кредит</h3>
+        <div class="field">
+          <label for="ln-amount">Сколько берёте, ₽</label>
+          <input id="ln-amount" name="amount" type="number" inputmode="numeric" min="1000" step="10000" value="500000">
+        </div>
+        <div class="field">
+          <label for="ln-months">Срок: <output id="ln-months-out">36 мес.</output></label>
+          <input id="ln-months" name="months" type="range" min="3" max="120" step="1" value="36">
+        </div>
+        <div class="field">
+          <label for="ln-rate">Ставка, % годовых <span class="hint">возьмите из предложения банка</span></label>
+          <input id="ln-rate" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="25">
+        </div>
+        <div class="field">
+          <label for="ln-type">Вид платежа</label>
+          <select id="ln-type" name="type">
+            <option value="annuity">Аннуитетный (платёж каждый месяц одинаковый)</option>
+            <option value="diff">Дифференцированный (платёж уменьшается)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ln-fee">Разовая комиссия или страховка, % от суммы</label>
+          <input id="ln-fee" name="fee" type="number" inputmode="decimal" min="0" max="30" step="0.1" value="0">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt id="ln-pay-label">Платёж в месяц</dt><dd id="ln-pay">—</dd></div>
+          <div><dt>Переплата по процентам</dt><dd id="ln-over">—</dd></div>
+          <div><dt>Комиссия и страховка</dt><dd id="ln-feesum">—</dd></div>
+          <div><dt>Всего выплатите банку</dt><dd id="ln-total">—</dd></div>
+          <div class="sub"><dt>Полная стоимость кредита (ПСК)</dt><dd id="ln-psk">—</dd></div>
+          <div class="sub"><dt>Платёж к средней зарплате по России</dt><dd id="ln-share">—</dd></div>
+          <div class="sub"><dt id="ln-alt-label">Другой вид платежа</dt><dd id="ln-alt">—</dd></div>
+        </dl>
+        <p class="calc-note" id="ln-note">Расчёт ориентировочный: точные условия, график платежей и ПСК указаны в договоре. Дифференцированный платёж в начале выше, но переплата меньше. Банки обычно считают долговую нагрузку по доходу семьи, а не по средней зарплате в стране.</p>
       </form>
 
       <!-- Инвестиции -->

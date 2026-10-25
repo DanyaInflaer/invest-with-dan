@@ -291,6 +291,7 @@ class Pwa(unittest.TestCase):
 class Tools(unittest.TestCase):
     def test_tools_section(self):
         html = site.app.test_client().get("/").get_data(as_text=True)
+        self.assertIn('id="loan-form"', site.app.test_client().get("/").get_data(as_text=True))
         for key in ('id="instrumenty"', 'id="tax-form"', 'id="ded-form"', 'id="pen-form"', 'id="cmp-form"'):
             self.assertIn(key, html)
         self.assertNotIn("{{", html)

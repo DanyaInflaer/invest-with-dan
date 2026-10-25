@@ -592,6 +592,60 @@
   });
 
   /* ======================================================================
+     Кредит: аннуитетный и дифференцированный платёж, ПСК
+     ====================================================================== */
+  (function () {
+    function g(id) { return document.getElementById(id); }
+    function schedule(S, n, i, type) {                       // платежи по месяцам
+      var pays = [], bal = S, k;
+      if (type === 'diff') {
+        for (k = 0; k < n; k++) { pays.push(S / n + bal * i); bal -= S / n; }
+      } else {
+        var a = i === 0 ? S / n : S * i / (1 - Math.pow(1 + i, -n));
+        for (k = 0; k < n; k++) pays.push(a);
+      }
+      return pays;
+    }
+    function psk(received, pays) {                           // месячная ставка, при которой выдача равна платежам
+      var lo = 0, hi = 1, k;
+      function pv(r) { var v = 0; for (k = 0; k < pays.length; k++) v += pays[k] / Math.pow(1 + r, k + 1); return v; }
+      if (pv(0) <= received) return 0;
+      for (var it = 0; it < 80; it++) { var mid = (lo + hi) / 2; if (pv(mid) > received) lo = mid; else hi = mid; }
+      return (lo + hi) / 2 * 12 * 100;
+    }
+    function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+    function calcLoan() {
+      var S = num(g('ln-amount'), 0), n = parseInt(g('ln-months').value, 10), r = num(g('ln-rate'), 0);
+      var feePct = num(g('ln-fee'), 0), type = g('ln-type').value;
+      g('ln-months-out').textContent = monthsText(n);
+      var i = r / 100 / 12, fee = S * feePct / 100;
+      var pays = schedule(S, n, i, type), total = sum(pays);
+      var alt = schedule(S, n, i, type === 'diff' ? 'annuity' : 'diff');
+      if (type === 'diff') {
+        g('ln-pay-label').textContent = 'Платёж в месяц (первый и последний)';
+        g('ln-pay').textContent = rub(pays[0]) + ' → ' + rub(pays[n - 1]);
+        g('ln-alt-label').textContent = 'При аннуитетном платеже: ежемесячно, переплата';
+        g('ln-alt').textContent = rub(alt[0]) + ', ' + rub(Math.max(0, sum(alt) - S));
+      } else {
+        g('ln-pay-label').textContent = 'Платёж в месяц';
+        g('ln-pay').textContent = rub(pays[0]);
+        g('ln-alt-label').textContent = 'При дифференцированном платеже: первый платёж, переплата';
+        g('ln-alt').textContent = rub(alt[0]) + ', ' + rub(Math.max(0, sum(alt) - S));
+      }
+      g('ln-over').textContent = rub(Math.max(0, total - S));
+      g('ln-feesum').textContent = rub(fee);
+      g('ln-total').textContent = rub(total + fee);
+      g('ln-psk').textContent = S > 0 ? fmtN.format(psk(S - fee, pays)) + '%' : '—';
+      g('ln-share').textContent = fmt1.format(pays[0] / D.avgWage * 100) + '%';
+    }
+    ['ln-amount', 'ln-months', 'ln-rate', 'ln-type', 'ln-fee'].forEach(function (id) {
+      g(id).addEventListener('input', calcLoan);
+      g(id).addEventListener('change', calcLoan);
+    });
+    calcLoan();
+  })();
+
+  /* ======================================================================
      Налоги, вычеты, пенсия и сравнение вложений
      ====================================================================== */
   (function () {
