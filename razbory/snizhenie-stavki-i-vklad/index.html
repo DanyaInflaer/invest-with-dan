@@ -439,6 +439,35 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
   .regions tbody tr > :last-child, .regions tbody tr:last-child > :last-child { border-bottom: 0; }
 }
 
+/* ---------- Квиз ---------- */
+.quiz { margin-top: 28px; max-width: 760px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: 3px 3px 0 var(--line); padding: 24px; }
+.quiz-head { display: flex; align-items: center; gap: 16px; font-family: var(--font-data); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.quiz-bar { flex: 1; height: 6px; background: var(--accent-soft); border-radius: 3px; overflow: hidden; }
+.quiz-bar i { display: block; height: 100%; background: var(--accent); }
+.quiz-q { font-family: var(--font-display); font-weight: 600; font-size: clamp(19px, 2.6vw, 24px); line-height: 1.3; margin-top: 20px; }
+.quiz-q:focus { outline: none; }
+.quiz-opts { display: grid; gap: 10px; margin-top: 18px; }
+.q-opt { font: inherit; font-size: 16px; text-align: left; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 12px 16px; cursor: pointer; line-height: 1.45; }
+.q-opt:hover:not(:disabled) { border-color: var(--accent); }
+.q-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.q-opt:disabled { cursor: default; opacity: 0.75; }
+.q-opt.right { opacity: 1; border-color: var(--pos); background: var(--accent-soft); }
+.q-opt.wrong { opacity: 1; border-color: var(--neg); }
+.q-mark { font-weight: 700; }
+.q-opt.right .q-mark { color: var(--pos); }
+.q-opt.wrong .q-mark { color: var(--neg); }
+.quiz-fb { margin-top: 18px; padding: 14px 16px; border-left: 4px solid var(--line); background: var(--bg); font-size: 15px; }
+.quiz-fb.ok { border-left-color: var(--pos); }
+.quiz-fb.bad { border-left-color: var(--neg); }
+.quiz-link { display: inline-block; margin-top: 8px; font-weight: 500; }
+.quiz-next { margin-top: 14px; display: block; }
+.quiz-result h3 { font-family: var(--font-display); font-weight: 600; font-size: 26px; }
+.quiz-result h3:focus { outline: none; }
+.quiz-result p { margin-top: 10px; font-size: 17px; }
+.quiz-actions { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+.quiz-actions a.btn { text-decoration: none; display: inline-block; }
+@media (max-width: 760px) { .quiz { padding: 18px; } }
+
 </style>
 </head>
 <body>

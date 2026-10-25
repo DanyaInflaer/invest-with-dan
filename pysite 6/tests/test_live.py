@@ -352,6 +352,17 @@ class Blog(unittest.TestCase):
             self.assertIn("localStorage", html, url)
         self.assertIn('id="regions-sort"', c.get("/").get_data(as_text=True))
 
+    def test_quiz(self):
+        quiz = site.build_quiz(14.0, 6.35)
+        self.assertEqual(len(quiz), 7)
+        for q in quiz:
+            self.assertTrue(0 <= q["correct"] < len(q["options"]))
+            self.assertEqual(len(set(q["options"])), len(q["options"]))
+            self.assertTrue(q["why"])
+        self.assertEqual(quiz[2]["options"][quiz[2]["correct"]], "14%")       # верный ответ про текущую ставку
+        self.assertGreater(len({q["correct"] for q in quiz}), 2)               # верные ответы на разных местах
+        self.assertIn('id="kviz"', site.app.test_client().get("/").get_data(as_text=True))
+
     def test_main_page_links_blog(self):
         html = site.app.test_client().get("/").get_data(as_text=True)
         self.assertIn('id="razbory"', html)

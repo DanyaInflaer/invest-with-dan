@@ -592,6 +592,84 @@
   });
 
   /* ======================================================================
+     Мини-квиз «Проверь себя»
+     ====================================================================== */
+  (function () {
+    var host = document.getElementById('quiz');
+    var Q = D.quiz || [];
+    if (!host || !Q.length) return;
+    var idx = 0, score = 0;
+
+    function h(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+
+    function render() {
+      host.textContent = '';
+      if (idx >= Q.length) return result();
+      var q = Q[idx];
+      var head = h('div', 'quiz-head');
+      head.appendChild(h('span', 'quiz-step', 'Вопрос ' + (idx + 1) + ' из ' + Q.length));
+      var bar = h('div', 'quiz-bar'); var fill = h('i'); fill.style.width = (idx / Q.length * 100) + '%'; bar.appendChild(fill);
+      head.appendChild(bar);
+      host.appendChild(head);
+
+      var title = h('h3', 'quiz-q', q.q); title.id = 'quiz-q'; title.tabIndex = -1;
+      host.appendChild(title);
+      var list = h('div', 'quiz-opts'); list.setAttribute('role', 'group'); list.setAttribute('aria-labelledby', 'quiz-q');
+      var fb = h('div', 'quiz-fb'); fb.hidden = true;
+      var opts = [];
+      q.options.forEach(function (text, i) {
+        var b = h('button', 'q-opt', text); b.type = 'button';
+        b.addEventListener('click', function () { answer(i); });
+        opts.push(b); list.appendChild(b);
+      });
+      host.appendChild(list); host.appendChild(fb);
+
+      function answer(i) {
+        var ok = i === q.correct;
+        if (ok) score++;
+        opts.forEach(function (b, k) {
+          b.disabled = true;
+          if (k === q.correct) { b.classList.add('right'); b.insertBefore(h('span', 'q-mark', '✓ '), b.firstChild); }
+          else if (k === i) { b.classList.add('wrong'); b.insertBefore(h('span', 'q-mark', '✕ '), b.firstChild); }
+        });
+        fb.hidden = false; fb.className = 'quiz-fb ' + (ok ? 'ok' : 'bad');
+        fb.appendChild(h('strong', null, ok ? 'Верно!' : 'Не совсем.'));
+        fb.appendChild(document.createTextNode(' ' + q.why));
+        if (q.link) {
+          var a = h('a', 'quiz-link', q.link[1] + ' →'); a.href = q.link[0];
+          fb.appendChild(document.createElement('br')); fb.appendChild(a);
+        }
+        var next = h('button', 'btn primary quiz-next', idx + 1 < Q.length ? 'Следующий вопрос' : 'Узнать результат');
+        next.type = 'button';
+        next.addEventListener('click', function () { idx++; render(); var t = document.getElementById('quiz-q') || host.querySelector('.quiz-result h3'); if (t) t.focus(); });
+        fb.appendChild(next);
+        next.focus();
+      }
+    }
+
+    function result() {
+      var n = Q.length, pctDone = score / n;
+      var msg = pctDone === 1 ? 'Отлично! Вы уверенно ориентируетесь в теме.'
+        : pctDone >= 0.7 ? 'Хороший результат. Есть что уточнить, но база крепкая.'
+        : pctDone >= 0.4 ? 'Неплохое начало. Разборы и калькуляторы ниже помогут подтянуть знания.'
+        : 'Это нормально: тема непростая. Начните с разборов, там всё объяснено на примерах.';
+      var box = h('div', 'quiz-result');
+      var t = h('h3', null, 'Ваш результат: ' + score + ' из ' + n); t.tabIndex = -1;
+      box.appendChild(t);
+      box.appendChild(h('p', null, msg));
+      var row = h('div', 'quiz-actions');
+      var again = h('button', 'btn primary', 'Пройти ещё раз'); again.type = 'button';
+      again.addEventListener('click', function () { idx = 0; score = 0; render(); var tt = document.getElementById('quiz-q'); if (tt) tt.focus(); });
+      var a1 = h('a', 'btn', 'Читать разборы'); a1.href = 'razbory/';
+      var a2 = h('a', 'btn', 'Открыть калькуляторы'); a2.href = '#kalkulyatory';
+      row.appendChild(again); row.appendChild(a1); row.appendChild(a2);
+      box.appendChild(row);
+      host.appendChild(box);
+    }
+    render();
+  })();
+
+  /* ======================================================================
      Кредит: аннуитетный и дифференцированный платёж, ПСК
      ====================================================================== */
   (function () {

@@ -439,6 +439,35 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
   .regions tbody tr > :last-child, .regions tbody tr:last-child > :last-child { border-bottom: 0; }
 }
 
+/* ---------- Квиз ---------- */
+.quiz { margin-top: 28px; max-width: 760px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: 3px 3px 0 var(--line); padding: 24px; }
+.quiz-head { display: flex; align-items: center; gap: 16px; font-family: var(--font-data); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.quiz-bar { flex: 1; height: 6px; background: var(--accent-soft); border-radius: 3px; overflow: hidden; }
+.quiz-bar i { display: block; height: 100%; background: var(--accent); }
+.quiz-q { font-family: var(--font-display); font-weight: 600; font-size: clamp(19px, 2.6vw, 24px); line-height: 1.3; margin-top: 20px; }
+.quiz-q:focus { outline: none; }
+.quiz-opts { display: grid; gap: 10px; margin-top: 18px; }
+.q-opt { font: inherit; font-size: 16px; text-align: left; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 12px 16px; cursor: pointer; line-height: 1.45; }
+.q-opt:hover:not(:disabled) { border-color: var(--accent); }
+.q-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.q-opt:disabled { cursor: default; opacity: 0.75; }
+.q-opt.right { opacity: 1; border-color: var(--pos); background: var(--accent-soft); }
+.q-opt.wrong { opacity: 1; border-color: var(--neg); }
+.q-mark { font-weight: 700; }
+.q-opt.right .q-mark { color: var(--pos); }
+.q-opt.wrong .q-mark { color: var(--neg); }
+.quiz-fb { margin-top: 18px; padding: 14px 16px; border-left: 4px solid var(--line); background: var(--bg); font-size: 15px; }
+.quiz-fb.ok { border-left-color: var(--pos); }
+.quiz-fb.bad { border-left-color: var(--neg); }
+.quiz-link { display: inline-block; margin-top: 8px; font-weight: 500; }
+.quiz-next { margin-top: 14px; display: block; }
+.quiz-result h3 { font-family: var(--font-display); font-weight: 600; font-size: 26px; }
+.quiz-result h3:focus { outline: none; }
+.quiz-result p { margin-top: 10px; font-size: 17px; }
+.quiz-actions { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+.quiz-actions a.btn { text-decoration: none; display: inline-block; }
+@media (max-width: 760px) { .quiz { padding: 18px; } }
+
 </style>
 </head>
 <body>
@@ -455,6 +484,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       <a href="#ipoteka">Ипотека</a>
       <a href="#instrumenty">Налоги и пенсия</a>
       <a href="#vyvody">Что это значит</a>
+      <a href="#kviz">Проверь себя</a>
       <a href="#razbory">Разборы</a>
       <a href="#voprosy">Вопросы</a>
       <a href="#o-nas">О нас</a>
@@ -1270,6 +1300,17 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     <p class="note">Информация на странице носит справочный характер и не является индивидуальной инвестиционной рекомендацией. Калькуляторы дают оценку и не заменяют расчёт банка.</p>
   </section>
 
+  <!-- ===================== КВИЗ ===================== -->
+  <section class="band" id="kviz">
+    <div class="sec-head">
+      <h2>Проверь себя</h2>
+      <p>Семь коротких вопросов про ставку, инфляцию и налоги. После каждого ответа показываем, как правильно и почему.</p>
+    </div>
+    <div class="quiz" id="quiz" aria-live="polite">
+      <noscript><p>Для квиза нужен JavaScript.</p></noscript>
+    </div>
+  </section>
+
   <!-- ===================== РАЗБОРЫ ===================== -->
   <section class="band" id="razbory">
     <div class="sec-head">
@@ -1399,7 +1440,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 
 <div id="report" class="report" aria-hidden="true"></div>
 
-<script id="site-data" type="application/json">{"asOf": "21.10.2026", "avgWage": 109524, "depositRates": [{"label": "\u0434\u043e 90 \u0434\u043d\u0435\u0439", "rate": 12.55, "upto_months": 3}, {"label": "91\u2013180 \u0434\u043d\u0435\u0439", "rate": 12.87, "upto_months": 6}, {"label": "181 \u0434\u0435\u043d\u044c \u2013 1 \u0433\u043e\u0434", "rate": 12.73, "upto_months": 12}, {"label": "\u0441\u0432\u044b\u0448\u0435 1 \u0433\u043e\u0434\u0430", "rate": 11.75, "upto_months": 999}], "inflation": 6.35, "keyRate": 14.0, "mortgagePresets": [{"label": "\u0420\u044b\u043d\u043e\u043a, \u043d\u043e\u0432\u043e\u0441\u0442\u0440\u043e\u0439\u043a\u0438 (\u041f\u0421\u041a 21,28%)", "rate": 21.28}, {"label": "\u0420\u044b\u043d\u043e\u043a, \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u043e\u0435 \u0436\u0438\u043b\u044c\u0451 (\u041f\u0421\u041a 21,83%)", "rate": 21.83}, {"label": "\u041b\u044c\u0433\u043e\u0442\u043d\u0430\u044f \u0438\u043f\u043e\u0442\u0435\u043a\u0430 (\u0434\u043e 6%)", "rate": 6.0}], "rate": {"full": ["\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026", "\u0430\u0432\u0433\u0443\u0441\u0442 2026", "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044c 2026"], "infl": [5.59, 6.0, 5.91, 5.86, 5.58, 5.31, 6.02, 5.98, 6.33, 6.35], "key": [16.0, 16.0, 15.5, 15.0, 14.5, 14.5, 14.25, 14.0, 14.0, 14.0], "labels": ["\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b", "\u0410\u0432\u0433", "\u0421\u0435\u043d"]}, "tax": {"brackets": [[2400000, 13], [5000000, 15], [20000000, 18], [50000000, 20], [null, 22]], "deposit_threshold": 2400000, "free_base": 1000000, "free_rate": 16.0, "home_limit": 2000000, "iis_limit": 400000, "interest_limit": 3000000, "rate": 13}, "team": "Growth Syndicate", "wage": {"full": ["\u043e\u043a\u0442\u044f\u0431\u0440\u044c 2025", "\u043d\u043e\u044f\u0431\u0440\u044c 2025", "\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026"], "labels": ["\u041e\u043a\u0442", "\u041d\u043e\u044f", "\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b"], "values": [99.707, 98.192, 139.727, null, null, null, 109.052, 110.216, 114.743, 109.524]}}</script>
+<script id="site-data" type="application/json">{"asOf": "21.10.2026", "avgWage": 109524, "depositRates": [{"label": "\u0434\u043e 90 \u0434\u043d\u0435\u0439", "rate": 12.55, "upto_months": 3}, {"label": "91\u2013180 \u0434\u043d\u0435\u0439", "rate": 12.87, "upto_months": 6}, {"label": "181 \u0434\u0435\u043d\u044c \u2013 1 \u0433\u043e\u0434", "rate": 12.73, "upto_months": 12}, {"label": "\u0441\u0432\u044b\u0448\u0435 1 \u0433\u043e\u0434\u0430", "rate": 11.75, "upto_months": 999}], "inflation": 6.35, "keyRate": 14.0, "mortgagePresets": [{"label": "\u0420\u044b\u043d\u043e\u043a, \u043d\u043e\u0432\u043e\u0441\u0442\u0440\u043e\u0439\u043a\u0438 (\u041f\u0421\u041a 21,28%)", "rate": 21.28}, {"label": "\u0420\u044b\u043d\u043e\u043a, \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u043e\u0435 \u0436\u0438\u043b\u044c\u0451 (\u041f\u0421\u041a 21,83%)", "rate": 21.83}, {"label": "\u041b\u044c\u0433\u043e\u0442\u043d\u0430\u044f \u0438\u043f\u043e\u0442\u0435\u043a\u0430 (\u0434\u043e 6%)", "rate": 6.0}], "quiz": [{"correct": 2, "link": ["#dannye", "\u0414\u0430\u043d\u043d\u044b\u0435 \u043f\u043e \u0441\u0442\u0430\u0432\u043a\u0435"], "options": ["\u041d\u0430\u043b\u043e\u0433 \u043d\u0430 \u0434\u043e\u0445\u043e\u0434\u044b \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c", "\u041a\u0443\u0440\u0441 \u0434\u043e\u043b\u043b\u0430\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0443\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u0442 \u0440\u0435\u0433\u0443\u043b\u044f\u0442\u043e\u0440", "\u0421\u0442\u0430\u0432\u043a\u0430, \u043f\u043e \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u0411\u0430\u043d\u043a \u0420\u043e\u0441\u0441\u0438\u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0443\u0435\u0442 \u0431\u0430\u043d\u043a\u0438; \u043e\u0442 \u043d\u0435\u0451 \u0437\u0430\u0432\u0438\u0441\u044f\u0442 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c", "\u041c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u044b\u0439 \u043f\u0440\u043e\u0446\u0435\u043d\u0442, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0431\u0430\u043d\u043a \u043c\u043e\u0436\u0435\u0442 \u0432\u0437\u044f\u0442\u044c \u043f\u043e \u0438\u043f\u043e\u0442\u0435\u043a\u0435"], "q": "\u0427\u0442\u043e \u0442\u0430\u043a\u043e\u0435 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0411\u0430\u043d\u043a\u0430 \u0420\u043e\u0441\u0441\u0438\u0438?", "why": "\u042d\u0442\u043e \u0431\u0430\u0437\u043e\u0432\u0430\u044f \u0446\u0435\u043d\u0430 \u0434\u0435\u043d\u0435\u0433 \u0432 \u044d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0435. \u0411\u0430\u043d\u043a\u0438 \u043e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u0443\u044e\u0442\u0441\u044f \u043d\u0430 \u043d\u0435\u0451, \u043a\u043e\u0433\u0434\u0430 \u0443\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u044e\u0442 \u0441\u0442\u0430\u0432\u043a\u0438 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c."}, {"correct": 0, "link": ["razbory/snizhenie-stavki-i-vklad/", "\u0420\u0430\u0437\u0431\u043e\u0440 \u043f\u0440\u043e \u0441\u043d\u0438\u0436\u0435\u043d\u0438\u0435 \u0441\u0442\u0430\u0432\u043a\u0438"], "options": ["\u0421\u043d\u0438\u0436\u0430\u044e\u0442\u0441\u044f, \u0441 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u043e\u0439 \u0432 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043d\u0435\u0434\u0435\u043b\u044c", "\u0420\u0430\u0441\u0442\u0443\u0442", "\u041d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442\u0441\u044f", "\u041c\u0435\u043d\u044f\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e \u0432\u0430\u043b\u044e\u0442\u043d\u044b\u043c \u0432\u043a\u043b\u0430\u0434\u0430\u043c"], "q": "\u041a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0441\u043d\u0438\u0436\u0430\u0435\u0442\u0441\u044f. \u0427\u0442\u043e \u043e\u0431\u044b\u0447\u043d\u043e \u043f\u0440\u043e\u0438\u0441\u0445\u043e\u0434\u0438\u0442 \u0441\u043e \u0441\u0442\u0430\u0432\u043a\u0430\u043c\u0438 \u043f\u043e \u043d\u043e\u0432\u044b\u043c \u0432\u043a\u043b\u0430\u0434\u0430\u043c?", "why": "\u0411\u0430\u043d\u043a\u0438 \u043f\u0440\u0438\u0432\u044f\u0437\u044b\u0432\u0430\u044e\u0442 \u0432\u043a\u043b\u0430\u0434\u044b \u043a \u043a\u043b\u044e\u0447\u0435\u0432\u043e\u0439 \u0441\u0442\u0430\u0432\u043a\u0435, \u043d\u043e \u043f\u043e\u0434\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u044e\u0442\u0441\u044f \u043d\u0435 \u0441\u0440\u0430\u0437\u0443. \u0423\u0436\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u0432\u043a\u043b\u0430\u0434 \u0441 \u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0439 \u0441\u0442\u0430\u0432\u043a\u043e\u0439 \u043d\u0435 \u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f."}, {"correct": 2, "link": ["#dinamika", "\u0413\u0440\u0430\u0444\u0438\u043a \u0441\u0442\u0430\u0432\u043a\u0438"], "options": ["11%", "12,5%", "14%", "16,5%"], "q": "\u041a\u0430\u043a\u0430\u044f \u0441\u0435\u0439\u0447\u0430\u0441 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0411\u0430\u043d\u043a\u0430 \u0420\u043e\u0441\u0441\u0438\u0438?", "why": "\u0421\u0435\u0439\u0447\u0430\u0441 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 14%. \u0417\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043d\u0430 \u0441\u0430\u0439\u0442\u0435 \u043e\u0431\u043d\u043e\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438."}, {"correct": 1, "link": ["#kalkulyatory", "\u041a\u0430\u043b\u044c\u043a\u0443\u043b\u044f\u0442\u043e\u0440 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u0438"], "options": ["\u041e\u043a\u043e\u043b\u043e 20%", "\u041e\u043a\u043e\u043b\u043e 4%", "\u041e\u043a\u043e\u043b\u043e 12%", "\u041e\u043a\u043e\u043b\u043e 8%"], "q": "\u0412\u043a\u043b\u0430\u0434 \u043f\u0440\u0438\u043d\u043e\u0441\u0438\u0442 12% \u0432 \u0433\u043e\u0434, \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f \u0441\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 8%. \u041a\u0430\u043a\u043e\u0432\u0430 \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u0430\u044f \u0440\u0435\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u043e\u0445\u043e\u0434\u043d\u043e\u0441\u0442\u044c?", "why": "\u0420\u0435\u0430\u043b\u044c\u043d\u0430\u044f \u0434\u043e\u0445\u043e\u0434\u043d\u043e\u0441\u0442\u044c \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e \u0440\u0430\u0432\u043d\u0430 \u0441\u0442\u0430\u0432\u043a\u0435 \u043c\u0438\u043d\u0443\u0441 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f: 12 \u2212 8 = 4%. \u0422\u043e\u0447\u043d\u0435\u0435 \u0441\u0447\u0438\u0442\u0430\u044e\u0442 \u0442\u0430\u043a: (1 + 0,12) \u00f7 (1 + 0,08) \u2212 1 \u2248 3,7%."}, {"correct": 3, "link": ["#kalkulyatory", "\u041f\u043e\u0441\u0447\u0438\u0442\u0430\u0442\u044c \u0441\u0430\u043c\u043e\u043c\u0443"], "options": ["\u041d\u0435 \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u0441\u044f", "\u0412\u044b\u0440\u0430\u0441\u0442\u0435\u0442, \u043f\u043e\u0442\u043e\u043c\u0443 \u0447\u0442\u043e \u0446\u0435\u043d\u044b \u0440\u0430\u0441\u0442\u0443\u0442", "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u0441\u044f \u0440\u043e\u0432\u043d\u043e \u043d\u0430 5%", "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u0441\u044f \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e \u0434\u043e 735\u00a0043 \u20bd \u0432 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0438\u0445 \u0446\u0435\u043d\u0430\u0445"], "q": "\u041c\u0438\u043b\u043b\u0438\u043e\u043d \u0440\u0443\u0431\u043b\u0435\u0439 \u043b\u0435\u0436\u0438\u0442 \u0431\u0435\u0437 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0439, \u0430 \u0438\u043d\u0444\u043b\u044f\u0446\u0438\u044f 6,35% \u0432 \u0433\u043e\u0434. \u0427\u0442\u043e \u0431\u0443\u0434\u0435\u0442 \u0441 \u0435\u0433\u043e \u043f\u043e\u043a\u0443\u043f\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0439 \u0441\u043f\u043e\u0441\u043e\u0431\u043d\u043e\u0441\u0442\u044c\u044e \u0437\u0430 5 \u043b\u0435\u0442?", "why": "\u0414\u0435\u043d\u044c\u0433\u0438 \u0442\u0435\u0440\u044f\u044e\u0442 \u0446\u0435\u043d\u043d\u043e\u0441\u0442\u044c \u043f\u043e \u0441\u043b\u043e\u0436\u043d\u043e\u0439 \u0444\u043e\u0440\u043c\u0443\u043b\u0435: 1 000 000 \u00f7 (1 + 0,0635)\u2075 \u2248 735\u00a0043 \u20bd."}, {"correct": 3, "link": ["razbory/nalog-na-vklady-2026/", "\u0420\u0430\u0437\u0431\u043e\u0440 \u043f\u0440\u043e \u043d\u0430\u043b\u043e\u0433 \u043d\u0430 \u0432\u043a\u043b\u0430\u0434\u044b"], "options": ["\u041d\u0438\u043a\u0430\u043a\u0430\u044f, \u043d\u0430\u043b\u043e\u0433 \u043f\u043b\u0430\u0442\u044f\u0442 \u0441\u043e \u0432\u0441\u0435\u0433\u043e \u0434\u043e\u0445\u043e\u0434\u0430", "\u0412\u0441\u0435 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u044b \u0434\u043e 1 \u043c\u043b\u043d \u20bd \u0432 \u0433\u043e\u0434", "\u041f\u0440\u043e\u0446\u0435\u043d\u0442\u044b \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0434\u043e 1,4 \u043c\u043b\u043d \u20bd", "1 \u043c\u043b\u043d \u20bd \u00d7 \u043d\u0430\u0438\u0431\u043e\u043b\u044c\u0448\u0430\u044f \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u043d\u0430 1-\u0435 \u0447\u0438\u0441\u043b\u043e \u043c\u0435\u0441\u044f\u0446\u0435\u0432 \u0433\u043e\u0434\u0430, \u0441\u0435\u0439\u0447\u0430\u0441 \u044d\u0442\u043e 160\u00a0000 \u20bd"], "q": "\u041a\u0430\u043a\u0430\u044f \u0447\u0430\u0441\u0442\u044c \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u043e\u0432 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0432 2026 \u0433\u043e\u0434\u0443 \u043d\u0435 \u043e\u0431\u043b\u0430\u0433\u0430\u0435\u0442\u0441\u044f \u043d\u0430\u043b\u043e\u0433\u043e\u043c?", "why": "\u041d\u0435\u043e\u0431\u043b\u0430\u0433\u0430\u0435\u043c\u0430\u044f \u0441\u0443\u043c\u043c\u0430 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u043a\u0430\u043a 1 \u043c\u043b\u043d \u20bd \u00d7 \u043c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u0430\u044f \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u043d\u0430 1-\u0435 \u0447\u0438\u0441\u043b\u043e \u043c\u0435\u0441\u044f\u0446\u0435\u0432 \u0433\u043e\u0434\u0430. \u0414\u043b\u044f 2026 \u0433\u043e\u0434\u0430 \u044d\u0442\u043e 160\u00a0000 \u20bd, \u0441 \u043e\u0441\u0442\u0430\u0442\u043a\u0430 \u043f\u043b\u0430\u0442\u044f\u0442 13% (\u0434\u043e 2,4 \u043c\u043b\u043d \u20bd \u0434\u043e\u0445\u043e\u0434\u0430, \u0434\u0430\u043b\u044c\u0448\u0435 15%)."}, {"correct": 0, "link": ["#instrumenty", "\u041d\u0430\u043b\u043e\u0433\u0438 \u0438 \u0432\u044b\u0447\u0435\u0442\u044b"], "options": ["\u0414\u043e 1,4 \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u0430 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0414\u043e 700 \u0442\u044b\u0441\u044f\u0447 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0414\u043e 3 \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u043e\u0432 \u0440\u0443\u0431\u043b\u0435\u0439", "\u0411\u0435\u0437 \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0438\u0439"], "q": "\u0414\u043e \u043a\u0430\u043a\u043e\u0439 \u0441\u0443\u043c\u043c\u044b \u0432\u043a\u043b\u0430\u0434\u044b \u0432 \u043e\u0434\u043d\u043e\u043c \u0431\u0430\u043d\u043a\u0435 \u0437\u0430\u0441\u0442\u0440\u0430\u0445\u043e\u0432\u0430\u043d\u044b \u0433\u043e\u0441\u0443\u0434\u0430\u0440\u0441\u0442\u0432\u043e\u043c?", "why": "\u0421\u0442\u0440\u0430\u0445\u043e\u0432\u043e\u0435 \u0432\u043e\u0437\u043c\u0435\u0449\u0435\u043d\u0438\u0435 \u043f\u043e \u0432\u043a\u043b\u0430\u0434\u0430\u043c \u0432 \u043e\u0434\u043d\u043e\u043c \u0431\u0430\u043d\u043a\u0435 \u0441\u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u0434\u043e 1,4 \u043c\u043b\u043d \u20bd (\u0432\u043c\u0435\u0441\u0442\u0435 \u0441 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u043c\u0438). \u0414\u0435\u043d\u044c\u0433\u0438 \u0441\u0432\u0435\u0440\u0445 \u044d\u0442\u043e\u0439 \u0441\u0443\u043c\u043c\u044b \u043b\u0443\u0447\u0448\u0435 \u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u044c \u043c\u0435\u0436\u0434\u0443 \u0431\u0430\u043d\u043a\u0430\u043c\u0438."}], "rate": {"full": ["\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026", "\u0430\u0432\u0433\u0443\u0441\u0442 2026", "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044c 2026"], "infl": [5.59, 6.0, 5.91, 5.86, 5.58, 5.31, 6.02, 5.98, 6.33, 6.35], "key": [16.0, 16.0, 15.5, 15.0, 14.5, 14.5, 14.25, 14.0, 14.0, 14.0], "labels": ["\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b", "\u0410\u0432\u0433", "\u0421\u0435\u043d"]}, "tax": {"brackets": [[2400000, 13], [5000000, 15], [20000000, 18], [50000000, 20], [null, 22]], "deposit_threshold": 2400000, "free_base": 1000000, "free_rate": 16.0, "home_limit": 2000000, "iis_limit": 400000, "interest_limit": 3000000, "rate": 13}, "team": "Growth Syndicate", "wage": {"full": ["\u043e\u043a\u0442\u044f\u0431\u0440\u044c 2025", "\u043d\u043e\u044f\u0431\u0440\u044c 2025", "\u0434\u0435\u043a\u0430\u0431\u0440\u044c 2025", "\u044f\u043d\u0432\u0430\u0440\u044c 2026", "\u0444\u0435\u0432\u0440\u0430\u043b\u044c 2026", "\u043c\u0430\u0440\u0442 2026", "\u0430\u043f\u0440\u0435\u043b\u044c 2026", "\u043c\u0430\u0439 2026", "\u0438\u044e\u043d\u044c 2026", "\u0438\u044e\u043b\u044c 2026"], "labels": ["\u041e\u043a\u0442", "\u041d\u043e\u044f", "\u0414\u0435\u043a", "\u042f\u043d\u0432", "\u0424\u0435\u0432", "\u041c\u0430\u0440", "\u0410\u043f\u0440", "\u041c\u0430\u0439", "\u0418\u044e\u043d", "\u0418\u044e\u043b"], "values": [99.707, 98.192, 139.727, null, null, null, 109.052, 110.216, 114.743, 109.524]}}</script>
 <script>
 (function () {
   'use strict';
@@ -1993,6 +2034,84 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     msg.textContent = '';
     try { window.print(); } catch (e) { msg.textContent = 'Не удалось открыть окно печати. Нажмите Ctrl+P (на телефоне: меню браузера, «Печать»).'; }
   });
+
+  /* ======================================================================
+     Мини-квиз «Проверь себя»
+     ====================================================================== */
+  (function () {
+    var host = document.getElementById('quiz');
+    var Q = D.quiz || [];
+    if (!host || !Q.length) return;
+    var idx = 0, score = 0;
+
+    function h(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+
+    function render() {
+      host.textContent = '';
+      if (idx >= Q.length) return result();
+      var q = Q[idx];
+      var head = h('div', 'quiz-head');
+      head.appendChild(h('span', 'quiz-step', 'Вопрос ' + (idx + 1) + ' из ' + Q.length));
+      var bar = h('div', 'quiz-bar'); var fill = h('i'); fill.style.width = (idx / Q.length * 100) + '%'; bar.appendChild(fill);
+      head.appendChild(bar);
+      host.appendChild(head);
+
+      var title = h('h3', 'quiz-q', q.q); title.id = 'quiz-q'; title.tabIndex = -1;
+      host.appendChild(title);
+      var list = h('div', 'quiz-opts'); list.setAttribute('role', 'group'); list.setAttribute('aria-labelledby', 'quiz-q');
+      var fb = h('div', 'quiz-fb'); fb.hidden = true;
+      var opts = [];
+      q.options.forEach(function (text, i) {
+        var b = h('button', 'q-opt', text); b.type = 'button';
+        b.addEventListener('click', function () { answer(i); });
+        opts.push(b); list.appendChild(b);
+      });
+      host.appendChild(list); host.appendChild(fb);
+
+      function answer(i) {
+        var ok = i === q.correct;
+        if (ok) score++;
+        opts.forEach(function (b, k) {
+          b.disabled = true;
+          if (k === q.correct) { b.classList.add('right'); b.insertBefore(h('span', 'q-mark', '✓ '), b.firstChild); }
+          else if (k === i) { b.classList.add('wrong'); b.insertBefore(h('span', 'q-mark', '✕ '), b.firstChild); }
+        });
+        fb.hidden = false; fb.className = 'quiz-fb ' + (ok ? 'ok' : 'bad');
+        fb.appendChild(h('strong', null, ok ? 'Верно!' : 'Не совсем.'));
+        fb.appendChild(document.createTextNode(' ' + q.why));
+        if (q.link) {
+          var a = h('a', 'quiz-link', q.link[1] + ' →'); a.href = q.link[0];
+          fb.appendChild(document.createElement('br')); fb.appendChild(a);
+        }
+        var next = h('button', 'btn primary quiz-next', idx + 1 < Q.length ? 'Следующий вопрос' : 'Узнать результат');
+        next.type = 'button';
+        next.addEventListener('click', function () { idx++; render(); var t = document.getElementById('quiz-q') || host.querySelector('.quiz-result h3'); if (t) t.focus(); });
+        fb.appendChild(next);
+        next.focus();
+      }
+    }
+
+    function result() {
+      var n = Q.length, pctDone = score / n;
+      var msg = pctDone === 1 ? 'Отлично! Вы уверенно ориентируетесь в теме.'
+        : pctDone >= 0.7 ? 'Хороший результат. Есть что уточнить, но база крепкая.'
+        : pctDone >= 0.4 ? 'Неплохое начало. Разборы и калькуляторы ниже помогут подтянуть знания.'
+        : 'Это нормально: тема непростая. Начните с разборов, там всё объяснено на примерах.';
+      var box = h('div', 'quiz-result');
+      var t = h('h3', null, 'Ваш результат: ' + score + ' из ' + n); t.tabIndex = -1;
+      box.appendChild(t);
+      box.appendChild(h('p', null, msg));
+      var row = h('div', 'quiz-actions');
+      var again = h('button', 'btn primary', 'Пройти ещё раз'); again.type = 'button';
+      again.addEventListener('click', function () { idx = 0; score = 0; render(); var tt = document.getElementById('quiz-q'); if (tt) tt.focus(); });
+      var a1 = h('a', 'btn', 'Читать разборы'); a1.href = 'razbory/';
+      var a2 = h('a', 'btn', 'Открыть калькуляторы'); a2.href = '#kalkulyatory';
+      row.appendChild(again); row.appendChild(a1); row.appendChild(a2);
+      box.appendChild(row);
+      host.appendChild(box);
+    }
+    render();
+  })();
 
   /* ======================================================================
      Кредит: аннуитетный и дифференцированный платёж, ПСК
