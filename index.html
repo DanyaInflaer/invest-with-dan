@@ -53,7 +53,8 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="theme-color" content="#F5F0E6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1714" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap"></noscript>
 <style>
 /* Layout: широкая колонка, крупный заголовок слева, сводка справа; данные сеткой карточек и одной шкалой "цена денег"; в конце блок о команде */
 :root {
@@ -497,9 +498,23 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 #fork-table th.c-name { min-width: 150px; }
 @media screen and (min-width: 641px) { #fork-table th.c-name { width: 26%; } #fork-table td.num { width: 24.6%; } }
 
+/* ---------- Доступность и удобство на телефоне ---------- */
+.skip { position: absolute; left: 8px; top: -60px; z-index: 20; background: var(--accent); color: var(--bg); padding: 10px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
+.skip:focus { top: 8px; }
+.nav a { padding-block: 6px; }
+@media (max-width: 760px) {
+  .nav { gap: 2px 6px; }
+  .nav a { display: inline-flex; align-items: center; min-height: 40px; padding-inline: 8px; }
+  .theme-btn, .btn { min-height: 40px; }
+  .tab { min-height: 44px; }
+  .faq summary { padding-block: 16px; }
+}
+html { -webkit-text-size-adjust: 100%; }
+
 </style>
 </head>
 <body>
+<a class="skip" href="#main">К содержимому</a>
 <div class="wrap">
 
   <header class="topbar">
@@ -521,6 +536,8 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false" aria-label="Тёмная тема"><span class="ti" aria-hidden="true"></span><span class="tl">Тёмная тема</span></button>
     <button type="button" class="btn" id="install-btn" hidden>Установить приложение</button>
   </header>
+
+  <main id="main">
 
   <section class="hero" id="privet">
     <div>
@@ -1700,9 +1717,10 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       </div>
     </div>
 
-    <footer>© 2026 Growth Syndicate</footer>
   </section>
+  </main>
 
+  <footer>© 2026 Growth Syndicate</footer>
 </div>
 
 <div id="report" class="report" aria-hidden="true"></div>
@@ -1715,6 +1733,8 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
   var D = JSON.parse(document.getElementById('site-data').textContent);
   var NS = 'http://www.w3.org/2000/svg';
   var redrawers = [];          // функции, которые перерисовывают графики при изменении ширины окна
+  var chartForcers = [];                    // функции, которые дорисовывают отложенные графики
+  var SKIP_DRAW = false;                    // true, пока «вилка» пересчитывает калькуляторы: графики не перерисовываем
   var SC = { shift: {}, current: 'base' };   // выбранный сценарий и его сдвиги (п. п.)
   var extrasReady = false;     // становится true, когда готов раздел «Ипотека подробнее»
 
@@ -2017,9 +2037,16 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
   // График с несколькими линиями и подсказкой по годам. Возвращает функцию отрисовки.
   function multiChart(hostId, readoutId) {
     var host = $(hostId), readout = $(readoutId), idx = null, last = null;
-    return function (cfg) {
+    var visible = !('IntersectionObserver' in window);     // рисуем график, когда до него доскроллили (экономит время загрузки)
+    if (!visible) {
+      new IntersectionObserver(function (entries, ob) {
+        if (entries.some(function (e) { return e.isIntersecting; })) { visible = true; ob.disconnect(); if (last) draw(); }
+      }, { rootMargin: '500px' }).observe(host);
+    }
+    chartForcers.push(function () { visible = true; if (last) draw(); });   // перед печатью рисуем все графики
+    function draw(cfg) {
       last = cfg || last;
-      if (!last) return;
+      if (!last || SKIP_DRAW || !visible) return;
       cfg = last;
       var n = cfg.labels.length;
       if (idx === null || idx > n - 1) idx = n - 1;
@@ -2047,7 +2074,8 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       }
       bindPick(f, n, X, function () { return idx; }, show);
       show(idx);
-    };
+    }
+    return draw;
   }
 
   /* ======================================================================
@@ -2297,7 +2325,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
   }
 
   // Отчёт собирается при печати: и по кнопке, и по Ctrl+P
-  window.addEventListener('beforeprint', function () { buildReport(); document.body.classList.add('printing'); });
+  window.addEventListener('beforeprint', function () { chartForcers.forEach(function (fn) { fn(); }); buildReport(); document.body.classList.add('printing'); });
   window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); $('report').textContent = ''; });
   $('pdf-btn').addEventListener('click', function () {
     var msg = $('pdf-msg');
@@ -2779,6 +2807,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     var defaults = {};                                           // значения при загрузке страницы
     allFields.forEach(function (f) { defaults[f.id] = f.type === 'checkbox' ? f.checked : f.value; });
 
+    function idle(fn) { (window.requestIdleCallback || function (f) { setTimeout(f, 200); })(fn, { timeout: 1500 }); }
     function round2(v) { return Math.round(v * 100) / 100; }
     function limits(f) {
       var mn = parseFloat(f.getAttribute('min')), mx = parseFloat(f.getAttribute('max'));
@@ -2837,7 +2866,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
     var forkBusy = false;
     function computeFork() {
       if (forkBusy) return;
-      forkBusy = true; busy = true;
+      forkBusy = true; busy = true; SKIP_DRAW = true;
       var cur = SC.current, curShift = SC.shift, curInfl = D.inflation, saved = {};
       scnFields.forEach(function (f) { saved[f.id] = f.value; });
       var savedRate = dRateValue();
@@ -2853,6 +2882,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       });
       scnFields.forEach(function (f) { f.value = saved[f.id]; });
       SC.shift = curShift; D.inflation = curInfl; SC.current = cur;
+      SKIP_DRAW = false;
       recalcAll();
       if (!rateEdited) dRateRestore(savedRate);
       forkBusy = false; busy = false;
@@ -2917,7 +2947,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       });
       recalcAll();
       busy = false;
-      paintBar(); computeFork();
+      paintBar(); idle(computeFork);
       return n;
     }
     function resetAll() {
@@ -2981,7 +3011,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       else setStatus('Восстановлены ваши последние расчёты. «Сбросить всё» вернёт значения по умолчанию.');
       if (fromUrl && n) setTimeout(function () { var el = document.getElementById('scenarios'); if (el && !location.hash) el.scrollIntoView(); }, 0);
     } else {
-      computeFork();
+      idle(computeFork);              // вилку считаем, когда браузер свободен, чтобы страница открывалась быстрее
     }
   })();
 })();

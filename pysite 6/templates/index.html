@@ -18,10 +18,12 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="theme-color" content="#F5F0E6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1714" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap"></noscript>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+<a class="skip" href="#main">К содержимому</a>
 <div class="wrap">
 
   <header class="topbar">
@@ -43,6 +45,8 @@
     <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false" aria-label="Тёмная тема"><span class="ti" aria-hidden="true"></span><span class="tl">Тёмная тема</span></button>
     <button type="button" class="btn" id="install-btn" hidden>Установить приложение</button>
   </header>
+
+  <main id="main">
 
   <section class="hero" id="privet">
     <div>
@@ -967,9 +971,10 @@
       </div>
     </div>
 
-    <footer>© {{ team.year }} {{ team.name }}</footer>
   </section>
+  </main>
 
+  <footer>© {{ team.year }} {{ team.name }}</footer>
 </div>
 
 <div id="report" class="report" aria-hidden="true"></div>

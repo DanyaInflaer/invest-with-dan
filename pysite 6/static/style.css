@@ -439,3 +439,16 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 #fork-table td.num { white-space: normal; }
 #fork-table th.c-name { min-width: 150px; }
 @media screen and (min-width: 641px) { #fork-table th.c-name { width: 26%; } #fork-table td.num { width: 24.6%; } }
+
+/* ---------- Доступность и удобство на телефоне ---------- */
+.skip { position: absolute; left: 8px; top: -60px; z-index: 20; background: var(--accent); color: var(--bg); padding: 10px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
+.skip:focus { top: 8px; }
+.nav a { padding-block: 6px; }
+@media (max-width: 760px) {
+  .nav { gap: 2px 6px; }
+  .nav a { display: inline-flex; align-items: center; min-height: 40px; padding-inline: 8px; }
+  .theme-btn, .btn { min-height: 40px; }
+  .tab { min-height: 44px; }
+  .faq summary { padding-block: 16px; }
+}
+html { -webkit-text-size-adjust: 100%; }

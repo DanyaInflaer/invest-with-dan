@@ -4,6 +4,8 @@
   var D = JSON.parse(document.getElementById('site-data').textContent);
   var NS = 'http://www.w3.org/2000/svg';
   var redrawers = [];          // функции, которые перерисовывают графики при изменении ширины окна
+  var chartForcers = [];                    // функции, которые дорисовывают отложенные графики
+  var SKIP_DRAW = false;                    // true, пока «вилка» пересчитывает калькуляторы: графики не перерисовываем
   var SC = { shift: {}, current: 'base' };   // выбранный сценарий и его сдвиги (п. п.)
   var extrasReady = false;     // становится true, когда готов раздел «Ипотека подробнее»
 
@@ -306,9 +308,16 @@
   // График с несколькими линиями и подсказкой по годам. Возвращает функцию отрисовки.
   function multiChart(hostId, readoutId) {
     var host = $(hostId), readout = $(readoutId), idx = null, last = null;
-    return function (cfg) {
+    var visible = !('IntersectionObserver' in window);     // рисуем график, когда до него доскроллили (экономит время загрузки)
+    if (!visible) {
+      new IntersectionObserver(function (entries, ob) {
+        if (entries.some(function (e) { return e.isIntersecting; })) { visible = true; ob.disconnect(); if (last) draw(); }
+      }, { rootMargin: '500px' }).observe(host);
+    }
+    chartForcers.push(function () { visible = true; if (last) draw(); });   // перед печатью рисуем все графики
+    function draw(cfg) {
       last = cfg || last;
-      if (!last) return;
+      if (!last || SKIP_DRAW || !visible) return;
       cfg = last;
       var n = cfg.labels.length;
       if (idx === null || idx > n - 1) idx = n - 1;
@@ -336,7 +345,8 @@
       }
       bindPick(f, n, X, function () { return idx; }, show);
       show(idx);
-    };
+    }
+    return draw;
   }
 
   /* ======================================================================
@@ -586,7 +596,7 @@
   }
 
   // Отчёт собирается при печати: и по кнопке, и по Ctrl+P
-  window.addEventListener('beforeprint', function () { buildReport(); document.body.classList.add('printing'); });
+  window.addEventListener('beforeprint', function () { chartForcers.forEach(function (fn) { fn(); }); buildReport(); document.body.classList.add('printing'); });
   window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); $('report').textContent = ''; });
   $('pdf-btn').addEventListener('click', function () {
     var msg = $('pdf-msg');
@@ -1068,6 +1078,7 @@
     var defaults = {};                                           // значения при загрузке страницы
     allFields.forEach(function (f) { defaults[f.id] = f.type === 'checkbox' ? f.checked : f.value; });
 
+    function idle(fn) { (window.requestIdleCallback || function (f) { setTimeout(f, 200); })(fn, { timeout: 1500 }); }
     function round2(v) { return Math.round(v * 100) / 100; }
     function limits(f) {
       var mn = parseFloat(f.getAttribute('min')), mx = parseFloat(f.getAttribute('max'));
@@ -1126,7 +1137,7 @@
     var forkBusy = false;
     function computeFork() {
       if (forkBusy) return;
-      forkBusy = true; busy = true;
+      forkBusy = true; busy = true; SKIP_DRAW = true;
       var cur = SC.current, curShift = SC.shift, curInfl = D.inflation, saved = {};
       scnFields.forEach(function (f) { saved[f.id] = f.value; });
       var savedRate = dRateValue();
@@ -1142,6 +1153,7 @@
       });
       scnFields.forEach(function (f) { f.value = saved[f.id]; });
       SC.shift = curShift; D.inflation = curInfl; SC.current = cur;
+      SKIP_DRAW = false;
       recalcAll();
       if (!rateEdited) dRateRestore(savedRate);
       forkBusy = false; busy = false;
@@ -1206,7 +1218,7 @@
       });
       recalcAll();
       busy = false;
-      paintBar(); computeFork();
+      paintBar(); idle(computeFork);
       return n;
     }
     function resetAll() {
@@ -1270,7 +1282,7 @@
       else setStatus('Восстановлены ваши последние расчёты. «Сбросить всё» вернёт значения по умолчанию.');
       if (fromUrl && n) setTimeout(function () { var el = document.getElementById('scenarios'); if (el && !location.hash) el.scrollIntoView(); }, 0);
     } else {
-      computeFork();
+      idle(computeFork);              // вилку считаем, когда браузер свободен, чтобы страница открывалась быстрее
     }
   })();
 })();

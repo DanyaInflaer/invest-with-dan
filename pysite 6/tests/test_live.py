@@ -391,6 +391,16 @@ class Blog(unittest.TestCase):
         self.assertEqual((fx["USD"], fx["date"]), (80.0, "23 октября 2026"))
         live_data.reset_for_tests()
 
+    def test_accessibility_landmarks(self):
+        c = site.app.test_client()
+        for url in ("/", "/razbory/", "/razbory/inflyaciya-i-vklad/"):
+            html = c.get(url).get_data(as_text=True)
+            self.assertIn('<main id="main">', html, url)
+            self.assertIn('class="skip"', html, url)
+            self.assertIn('media="print" onload', html, url)      # шрифты не блокируют показ страницы
+        home = c.get("/").get_data(as_text=True)
+        self.assertEqual(home.count("<h1"), 1)
+
     def test_main_page_links_blog(self):
         html = site.app.test_client().get("/").get_data(as_text=True)
         self.assertIn('id="razbory"', html)
