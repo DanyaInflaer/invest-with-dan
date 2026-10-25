@@ -821,6 +821,111 @@
     }
     ['cp-amount', 'cp-years', 'cp-r1', 'cp-r2', 'cp-r3'].forEach(function (id) { g(id).addEventListener('input', calcCompare); });
 
+    /* --- вклад «на руки» --- */
+    function depTax(inc) {
+      var free = T.free_base * T.free_rate / 100, taxable = Math.max(0, inc - free);
+      return Math.min(taxable, T.deposit_threshold) * 0.13 + Math.max(0, taxable - T.deposit_threshold) * 0.15;
+    }
+    function neg(x) { return rub(x).replace('-', '−'); }
+    function calcNet() {
+      var A = num(g('nt-amount'), 0), y = parseInt(g('nt-years').value, 10), r = num(g('nt-rate'), 0) / 100;
+      var other = num(g('nt-other'), 0), inf = num(g('nt-infl'), 0) / 100, cap = g('nt-cap').value === 'm';
+      g('nt-years-out').textContent = yrs(y);
+      var bal = A, gross = 0, taxSum = 0, m = r / 12, k, start, income, tax;
+      for (var year = 1; year <= y; year++) {
+        start = bal;
+        if (cap) { for (k = 0; k < 12; k++) bal *= 1 + m; income = bal - start; }
+        else { income = A * r; bal += income; }
+        tax = depTax(income + other) - depTax(other);              // налог именно с этого вклада
+        bal -= tax; gross += income; taxSum += tax;
+      }
+      g('nt-net').textContent = rub(bal);
+      g('nt-gross').textContent = rub(gross);
+      g('nt-tax').textContent = rub(taxSum);
+      g('nt-real').textContent = rub(bal / Math.pow(1 + inf, y));
+      var yld = A > 0 ? (Math.pow(bal / A, 1 / y) - 1) * 100 : 0;
+      var ry = A > 0 ? ((1 + yld / 100) / (1 + inf) - 1) * 100 : 0;
+      g('nt-yield').textContent = fmtN.format(yld) + '%';
+      g('nt-ryield').textContent = fmtN.format(ry).replace('-', '−') + '%';
+    }
+    ['nt-amount', 'nt-years', 'nt-rate', 'nt-cap', 'nt-other', 'nt-infl'].forEach(function (id) {
+      g(id).addEventListener('input', calcNet); g(id).addEventListener('change', calcNet);
+    });
+
+    /* --- аренда или ипотека --- */
+    function calcRent() {
+      var price = num(g('rv-price'), 0), downP = parseInt(g('rv-down').value, 10), term = parseInt(g('rv-term').value, 10);
+      var rate = num(g('rv-rate'), 0) / 100, maint = num(g('rv-maint'), 0) / 100, growth = parseFloat(g('rv-growth').value);
+      var rent0 = num(g('rv-rent'), 0), rentG = num(g('rv-rentg'), 0) / 100, invR = num(g('rv-inv'), 0) / 100;
+      var H = parseInt(g('rv-years').value, 10), inf = D.inflation / 100;
+      if (!isFinite(growth)) growth = 0; growth /= 100;
+      g('rv-down-out').textContent = downP + '%';
+      g('rv-term-out').textContent = yrs(term);
+      g('rv-years-out').textContent = yrs(H);
+      var down = price * downP / 100, loan = price - down, n = term * 12, i = rate / 12;
+      var pay = n === 0 ? 0 : (i === 0 ? loan / n : loan * i / (1 - Math.pow(1 + i, -n)));
+      var mg = Math.pow(1 + growth, 1 / 12), mi = Math.pow(1 + invR, 1 / 12);
+      var bal = loan, rentInv = down, buyExtra = 0, value = price, be = null;
+      var wb = [], wr = [];                                           // капитал по годам
+      for (var t = 1; t <= 360; t++) {
+        var maintM = value * maint / 12;                              // содержание от текущей стоимости
+        var rentT = rent0 * Math.pow(1 + rentG, Math.floor((t - 1) / 12));
+        var ownOut = (t <= n ? pay : 0) + maintM;
+        var diff = ownOut - rentT;
+        rentInv = rentInv * mi + Math.max(diff, 0);
+        buyExtra = buyExtra * mi + Math.max(-diff, 0);
+        if (t <= n) bal = Math.max(0, bal * (1 + i) - pay);
+        value *= mg;
+        if (t % 12 === 0) {
+          wb.push(value - bal + buyExtra); wr.push(rentInv);
+          if (be === null && value - bal + buyExtra >= rentInv) be = t / 12;
+        }
+      }
+      var bH = wb[H - 1], rH = wr[H - 1], deflate = Math.pow(1 + inf, H), delta = bH - rH;
+      g('rv-pay').textContent = rub(pay);
+      g('rv-own').textContent = rub(pay + price * maint / 12);
+      g('rv-rentnow').textContent = rub(rent0);
+      g('rv-wb-label').textContent = 'Капитал владельца через ' + yrs(H);
+      g('rv-wr-label').textContent = 'Капитал арендатора через ' + yrs(H);
+      g('rv-wb').textContent = rub(bH) + ' (' + rub(bH / deflate) + ' сегодня)';
+      g('rv-wr').textContent = rub(rH) + ' (' + rub(rH / deflate) + ' сегодня)';
+      g('rv-verdict').textContent = (delta >= 0 ? 'Покупка выгоднее на ' : 'Аренда выгоднее на ') + rub(Math.abs(delta));
+      g('rv-be').textContent = be === null ? 'не выигрывает за 30 лет' : yrs(be);
+    }
+    ['rv-price', 'rv-down', 'rv-term', 'rv-rate', 'rv-maint', 'rv-growth', 'rv-rent', 'rv-rentg', 'rv-inv', 'rv-years'].forEach(function (id) {
+      g(id).addEventListener('input', calcRent);
+    });
+
+    /* --- бюджет семьи --- */
+    function calcBudget() {
+      var gross = num(g('bd-gross'), 0), loan = num(g('bd-loan'), 0), comm = num(g('bd-comm'), 0), food = num(g('bd-food'), 0);
+      var trans = num(g('bd-trans'), 0), other = num(g('bd-other'), 0), save = num(g('bd-save'), 0), have = num(g('bd-have'), 0);
+      var r = num(g('bd-rate'), 0) / 100;
+      var tax = ndfl(gross * 12) / 12, net = gross - tax;
+      var fixed = loan + comm + food + trans + other, left = net - fixed, free = left - save;
+      var rm = Math.pow(1 + r, 1 / 12) - 1, gr = Math.pow(1 + rm, 12);
+      var year = have * gr + save * (rm === 0 ? 12 : (gr - 1) / rm);
+      g('bd-net').textContent = rub(net);
+      g('bd-tax').textContent = rub(tax);
+      g('bd-fixed').textContent = rub(fixed);
+      g('bd-free').textContent = neg(free);
+      g('bd-free').className = free < 0 ? 'neg' : '';
+      var dti = net > 0 ? loan / net * 100 : 0, sr = net > 0 ? save / net * 100 : 0;
+      g('bd-dti').textContent = fmt1.format(dti) + '%';
+      g('bd-rate-out').textContent = fmt1.format(sr) + '%';
+      g('bd-year').textContent = rub(year);
+      g('bd-cushion').textContent = fixed > 0 ? fmt1.format(have / fixed) : '—';
+      var note;
+      if (free < 0) note = 'Расходов и откладываемой суммы больше, чем остаётся на руки: не хватает ' + rub(-free) + ' в месяц. Стоит сократить расходы или сумму на вклад.';
+      else if (dti > 50) note = 'Платежи по кредитам занимают больше половины дохода на руки, это высокая нагрузка. Проверьте возможность досрочного погашения или рефинансирования.';
+      else note = 'Ориентиры, которые часто называют финансовые консультанты: платежи по кредитам до 30–35% дохода, откладывать от 10% дохода, подушка безопасности на 3–6 месяцев расходов.';
+      g('bd-note').textContent = note + ' НДФЛ посчитан для одного человека по прогрессивной шкале с учётом всего годового дохода; если доход получают двое, налог будет меньше. Налог на проценты по вкладу здесь не учтён.';
+    }
+    ['bd-gross', 'bd-loan', 'bd-comm', 'bd-food', 'bd-trans', 'bd-other', 'bd-save', 'bd-have', 'bd-rate'].forEach(function (id) {
+      g(id).addEventListener('input', calcBudget);
+    });
+
+    calcNet(); calcRent(); calcBudget();
     calcTax(); calcDed(); calcPension(); calcCompare();
   })();
 
