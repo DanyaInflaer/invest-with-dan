@@ -348,3 +348,36 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .more ul { list-style: none; padding: 0; }
 .more .btn, .post-cta .btn { text-decoration: none; display: inline-block; }
 .topbar a.brand { color: var(--fg); text-decoration: none; }
+
+/* ---------- Переключатель темы ---------- */
+.theme-btn { font: inherit; font-size: 13px; font-weight: 500; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+.theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-btn .ti { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.regions-sort-field { display: none; margin-top: 20px; max-width: 420px; }
+.field select { appearance: auto; }
+
+/* ---------- Таблицы на телефоне: карточки вместо горизонтальной прокрутки ---------- */
+@media screen and (max-width: 640px) {
+  .table-wrap { overflow: visible; background: none; border: 0; box-shadow: none; }
+  table.regions { display: block; min-width: 0 !important; width: 100%; }
+  table.regions thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  table.regions tbody { display: grid; gap: 12px; }
+  table.regions tr { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: 3px 3px 0 var(--line); padding: 4px 14px 6px; }
+  table.regions .pinned { border-color: var(--accent); }
+  table.regions .pinned th, table.regions .pinned td { background: transparent; }
+  .regions th, .regions td, .regions tbody tr:last-child th, .regions tbody tr:last-child td { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line); text-align: right; }
+  .regions tbody tr > :last-child { border-bottom: 0; }
+  .regions td::before, .regions th[data-label]::before { content: attr(data-label); color: var(--muted); font-family: var(--font-body); font-size: 13px; text-align: left; font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .regions tbody th.c-name { display: block; text-align: left; font-family: var(--font-display); font-weight: 600; font-size: 17px; padding: 10px 0 8px; }
+  .regions tbody th.c-name::before { content: none; }
+  .regions .ratio { gap: 8px; }
+  .regions-sort-field { display: grid; }
+}
+@media screen and (max-width: 640px) {
+  #schedule-table tbody th.c-name { font-size: 15px; }
+  #schedule-table tbody th.c-name::before { content: "Год "; display: inline; font-family: inherit; color: inherit; font-size: inherit; font-weight: inherit; }
+}
+@media screen and (max-width: 640px) {
+  .regions tbody tr > :last-child, .regions tbody tr:last-child > :last-child { border-bottom: 0; }
+}

@@ -1,0 +1,36 @@
+<script>
+(function () {
+  var KEY = 'theme', root = document.documentElement;
+  function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function save(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function systemDark() { return !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
+  function isDark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : systemDark(); }
+  var saved = stored();
+  if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);   // до отрисовки, без мигания
+
+  function paint() {
+    var dark = isDark(), btn = document.getElementById('theme-btn');
+    var metas = document.querySelectorAll('meta[name="theme-color"]');
+    for (var i = 0; i < metas.length; i++) metas[i].setAttribute('content', dark ? '#0F1714' : '#F5F0E6');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    btn.querySelector('.tl').textContent = dark ? 'Светлая тема' : 'Тёмная тема';
+    btn.setAttribute('aria-label', dark ? 'Включить светлую тему' : 'Включить тёмную тему');
+    btn.setAttribute('data-mode', dark ? 'dark' : 'light');
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('theme-btn');
+    if (btn) btn.addEventListener('click', function () {
+      var next = isDark() ? 'light' : 'dark';
+      root.setAttribute('data-theme', next); save(next); paint();
+      window.dispatchEvent(new Event('resize'));        // графики перерисуются в новых цветах
+    });
+    paint();
+  });
+  if (window.matchMedia) {
+    var mq = matchMedia('(prefers-color-scheme: dark)');
+    var onChange = function () { if (!root.getAttribute('data-theme')) paint(); };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+  }
+})();
+</script>

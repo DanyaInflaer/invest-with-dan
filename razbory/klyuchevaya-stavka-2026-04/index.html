@@ -14,6 +14,42 @@
 <meta name="theme-color" content="#F5F0E6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1714" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230F5C45'/%3E%3Cpath d='M6 22l7-8 5 4 8-10' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script>
+(function () {
+  var KEY = 'theme', root = document.documentElement;
+  function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function save(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function systemDark() { return !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
+  function isDark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : systemDark(); }
+  var saved = stored();
+  if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);   // до отрисовки, без мигания
+
+  function paint() {
+    var dark = isDark(), btn = document.getElementById('theme-btn');
+    var metas = document.querySelectorAll('meta[name="theme-color"]');
+    for (var i = 0; i < metas.length; i++) metas[i].setAttribute('content', dark ? '#0F1714' : '#F5F0E6');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    btn.querySelector('.tl').textContent = dark ? 'Светлая тема' : 'Тёмная тема';
+    btn.setAttribute('aria-label', dark ? 'Включить светлую тему' : 'Включить тёмную тему');
+    btn.setAttribute('data-mode', dark ? 'dark' : 'light');
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('theme-btn');
+    if (btn) btn.addEventListener('click', function () {
+      var next = isDark() ? 'light' : 'dark';
+      root.setAttribute('data-theme', next); save(next); paint();
+      window.dispatchEvent(new Event('resize'));        // графики перерисуются в новых цветах
+    });
+    paint();
+  });
+  if (window.matchMedia) {
+    var mq = matchMedia('(prefers-color-scheme: dark)');
+    var onChange = function () { if (!root.getAttribute('data-theme')) paint(); };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+  }
+})();
+</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "author": {"@type": "Organization", "name": "Growth Syndicate"}, "datePublished": "2026-04-01", "description": "\u041a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0441\u043d\u0438\u0436\u0435\u043d\u0430 \u0441 15% \u0434\u043e 14,5% (\u0430\u043f\u0440\u0435\u043b\u044c 2026). \u0427\u0442\u043e \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u0441\u044f \u0434\u043b\u044f \u0432\u043a\u043b\u0430\u0434\u043e\u0432, \u0438\u043f\u043e\u0442\u0435\u043a\u0438 \u0438 \u0440\u0435\u0430\u043b\u044c\u043d\u043e\u0439 \u0434\u043e\u0445\u043e\u0434\u043d\u043e\u0441\u0442\u0438, \u0441 \u0440\u0430\u0441\u0447\u0451\u0442\u0430\u043c\u0438 \u0432 \u0440\u0443\u0431\u043b\u044f\u0445.", "headline": "\u041a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0441\u0442\u0430\u0432\u043a\u0430 \u0441\u043d\u0438\u0436\u0435\u043d\u0430 \u0434\u043e 14,5%: \u0447\u0442\u043e \u044d\u0442\u043e \u0437\u043d\u0430\u0447\u0438\u0442 \u0434\u043b\u044f \u0432\u043a\u043b\u0430\u0434\u0430 \u0438 \u0438\u043f\u043e\u0442\u0435\u043a\u0438", "inLanguage": "ru", "mainEntityOfPage": "https://danyainflaer.github.io/invest-with-dan/razbory/klyuchevaya-stavka-2026-04/"}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -370,6 +406,39 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 .more .btn, .post-cta .btn { text-decoration: none; display: inline-block; }
 .topbar a.brand { color: var(--fg); text-decoration: none; }
 
+/* ---------- Переключатель темы ---------- */
+.theme-btn { font: inherit; font-size: 13px; font-weight: 500; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+.theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-btn .ti { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.regions-sort-field { display: none; margin-top: 20px; max-width: 420px; }
+.field select { appearance: auto; }
+
+/* ---------- Таблицы на телефоне: карточки вместо горизонтальной прокрутки ---------- */
+@media screen and (max-width: 640px) {
+  .table-wrap { overflow: visible; background: none; border: 0; box-shadow: none; }
+  table.regions { display: block; min-width: 0 !important; width: 100%; }
+  table.regions thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  table.regions tbody { display: grid; gap: 12px; }
+  table.regions tr { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; box-shadow: 3px 3px 0 var(--line); padding: 4px 14px 6px; }
+  table.regions .pinned { border-color: var(--accent); }
+  table.regions .pinned th, table.regions .pinned td { background: transparent; }
+  .regions th, .regions td, .regions tbody tr:last-child th, .regions tbody tr:last-child td { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line); text-align: right; }
+  .regions tbody tr > :last-child { border-bottom: 0; }
+  .regions td::before, .regions th[data-label]::before { content: attr(data-label); color: var(--muted); font-family: var(--font-body); font-size: 13px; text-align: left; font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .regions tbody th.c-name { display: block; text-align: left; font-family: var(--font-display); font-weight: 600; font-size: 17px; padding: 10px 0 8px; }
+  .regions tbody th.c-name::before { content: none; }
+  .regions .ratio { gap: 8px; }
+  .regions-sort-field { display: grid; }
+}
+@media screen and (max-width: 640px) {
+  #schedule-table tbody th.c-name { font-size: 15px; }
+  #schedule-table tbody th.c-name::before { content: "Год "; display: inline; font-family: inherit; color: inherit; font-size: inherit; font-weight: inherit; }
+}
+@media screen and (max-width: 640px) {
+  .regions tbody tr > :last-child, .regions tbody tr:last-child > :last-child { border-bottom: 0; }
+}
+
 </style>
 </head>
 <body>
@@ -382,6 +451,7 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
       <a href="../../razbory/">Разборы</a>
       <a href="../../#o-nas">О нас</a>
     </nav>
+    <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false" aria-label="Тёмная тема"><span class="ti" aria-hidden="true"></span><span class="tl">Тёмная тема</span></button>
   </header>
   <main>
 

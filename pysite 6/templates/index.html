@@ -13,6 +13,7 @@
 <meta property="og:url" content="{{ site_url }}">
 {% endif %}<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230F5C45'/%3E%3Cpath d='M6 22l7-8 5 4 8-10' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script type="application/ld+json">{{ faq_ld|tojson }}</script>
+{% include "_theme.html" %}
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="theme-color" content="#F5F0E6" media="(prefers-color-scheme: light)">
@@ -38,6 +39,7 @@
       <a href="#voprosy">Вопросы</a>
       <a href="#o-nas">О нас</a>
     </nav>
+    <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false" aria-label="Тёмная тема"><span class="ti" aria-hidden="true"></span><span class="tl">Тёмная тема</span></button>
     <button type="button" class="btn" id="install-btn" hidden>Установить приложение</button>
   </header>
 
@@ -143,6 +145,20 @@
       <p>Зарплаты, безработица и инфляция заметно различаются от региона к региону. Нажмите на название столбца, чтобы отсортировать таблицу.</p>
     </div>
 
+    <div class="field regions-sort-field">
+      <label for="regions-sort">Сортировка</label>
+      <select id="regions-sort">
+        <option value="">По умолчанию</option>
+        <option value="wage:desc">Зарплата: сначала больше</option>
+        <option value="wage:asc">Зарплата: сначала меньше</option>
+        <option value="ratio:desc">К средней по России: сначала больше</option>
+        <option value="ratio:asc">К средней по России: сначала меньше</option>
+        <option value="unemp:asc">Безработица: сначала ниже</option>
+        <option value="unemp:desc">Безработица: сначала выше</option>
+        <option value="infl:asc">Инфляция: сначала ниже</option>
+        <option value="infl:desc">Инфляция: сначала выше</option>
+      </select>
+    </div>
     <div class="table-wrap">
       <table class="regions" id="regions-table">
         <thead>

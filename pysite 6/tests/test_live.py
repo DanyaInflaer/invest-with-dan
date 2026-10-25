@@ -343,6 +343,14 @@ class Blog(unittest.TestCase):
             del os.environ["SITE_URL"]
         self.assertIn("https://example.com/site/razbory/snizhenie-stavki-i-vklad/", xml)
 
+    def test_theme_toggle_everywhere(self):
+        c = site.app.test_client()
+        for url in ("/", "/razbory/", "/razbory/inflyaciya-i-vklad/"):
+            html = c.get(url).get_data(as_text=True)
+            self.assertIn('id="theme-btn"', html, url)
+            self.assertIn("localStorage", html, url)
+        self.assertIn('id="regions-sort"', c.get("/").get_data(as_text=True))
+
     def test_main_page_links_blog(self):
         html = site.app.test_client().get("/").get_data(as_text=True)
         self.assertIn('id="razbory"', html)

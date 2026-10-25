@@ -715,23 +715,55 @@
   var table = document.getElementById('regions-table');
   var tbody = table.tBodies[0];
   var sortState = { key: null, dir: 'desc' };
+  function applySort(key, dir) {
+    sortState.key = key; sortState.dir = dir;
+    Array.prototype.forEach.call(table.querySelectorAll('button.sort'), function (b) {
+      if (b.getAttribute('data-key') === key) b.setAttribute('data-dir', dir); else b.removeAttribute('data-dir');
+    });
+    var rows = Array.prototype.filter.call(tbody.rows, function (r) { return !r.classList.contains('pinned'); });
+    rows.sort(function (a, b) {
+      var va = parseFloat(a.getAttribute('data-' + key)), vb = parseFloat(b.getAttribute('data-' + key));
+      var na = isNaN(va), nb = isNaN(vb);
+      if (na && nb) return 0;
+      if (na) return 1;
+      if (nb) return -1;
+      return dir === 'desc' ? vb - va : va - vb;
+    });
+    rows.forEach(function (r) { tbody.appendChild(r); });
+  }
   Array.prototype.forEach.call(table.querySelectorAll('button.sort'), function (btn) {
     btn.addEventListener('click', function () {
       var key = btn.getAttribute('data-key');
-      sortState.dir = sortState.key === key && sortState.dir === 'desc' ? 'asc' : 'desc';
-      sortState.key = key;
-      Array.prototype.forEach.call(table.querySelectorAll('button.sort'), function (b) { b.removeAttribute('data-dir'); });
-      btn.setAttribute('data-dir', sortState.dir);
-      var rows = Array.prototype.filter.call(tbody.rows, function (r) { return !r.classList.contains('pinned'); });
-      rows.sort(function (a, b) {
-        var va = parseFloat(a.getAttribute('data-' + key)), vb = parseFloat(b.getAttribute('data-' + key));
-        var na = isNaN(va), nb = isNaN(vb);
-        if (na && nb) return 0;
-        if (na) return 1;
-        if (nb) return -1;
-        return sortState.dir === 'desc' ? vb - va : va - vb;
+      var dir = sortState.key === key && sortState.dir === 'desc' ? 'asc' : 'desc';
+      applySort(key, dir);
+      var sel = document.getElementById('regions-sort');
+      if (sel) sel.value = key + ':' + dir;
+    });
+  });
+  var sortSel = document.getElementById('regions-sort');       // выбор сортировки на телефоне
+  if (sortSel) sortSel.addEventListener('change', function () {
+    if (!sortSel.value) return;
+    var parts = sortSel.value.split(':');
+    applySort(parts[0], parts[1]);
+  });
+
+  /* ---------- подписи ячеек: на узком экране таблица превращается в карточки ---------- */
+  function labelTable(t) {
+    var heads = Array.prototype.map.call(t.querySelectorAll('thead th'), function (th) {
+      return (th.textContent || '').replace(/\s+/g, ' ').trim();
+    });
+    Array.prototype.forEach.call(t.tBodies, function (tb) {
+      Array.prototype.forEach.call(tb.rows, function (tr) {
+        Array.prototype.forEach.call(tr.cells, function (c, i) {
+          if (heads[i] && c.getAttribute('data-label') !== heads[i]) c.setAttribute('data-label', heads[i]);
+        });
       });
-      rows.forEach(function (r) { tbody.appendChild(r); });
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('table.regions'), function (t) {
+    labelTable(t);
+    Array.prototype.forEach.call(t.tBodies, function (tb) {
+      new MutationObserver(function () { labelTable(t); }).observe(tb, { childList: true });
     });
   });
 })();
