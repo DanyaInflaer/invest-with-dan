@@ -37,7 +37,7 @@ jobs:
         run: python build_static.py --require-live
         env:
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: pysite 6/dist
 
