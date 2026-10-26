@@ -401,6 +401,24 @@ class Blog(unittest.TestCase):
         home = c.get("/").get_data(as_text=True)
         self.assertEqual(home.count("<h1"), 1)
 
+    def test_calendar(self):
+        self.assertEqual(len(site.MEETINGS), 8)
+        self.assertEqual(sorted(site.MEETINGS), site.MEETINGS)
+        cal = site.calendar_view(dt.date(2026, 10, 26))
+        self.assertEqual([m["status"] for m in cal], ["past"] * 7 + ["next"])
+        self.assertEqual(cal[0]["decision"], "Ставка снижена с 16% до 15,5%")
+        self.assertEqual(cal[5]["decision"], "Ставка сохранена на уровне 14%")
+        self.assertEqual(cal[0]["weekday"], "пятница")
+        self.assertIsNone(cal[-1]["decision"])
+        self.assertEqual(site.calendar_view(dt.date(2026, 12, 18))[-1]["status"], "next")     # в день заседания оно ещё «следующее»
+        self.assertEqual(site.calendar_view(dt.date(2027, 1, 1))[-1]["status"], "past")
+        page = site.app.test_client().get("/").get_data(as_text=True)
+        self.assertEqual(page.count('class="cal-item '), 8)
+        self.assertIn('id="cal-ics"', page)
+        # точные даты в автоматических разборах берутся из календаря заседаний
+        dates = {p["slug"]: p["date"] for p in site.get_posts() if p["kind"] == "auto"}
+        self.assertEqual(dates["klyuchevaya-stavka-2026-06"], "2026-06-19")
+
     def test_main_page_links_blog(self):
         html = site.app.test_client().get("/").get_data(as_text=True)
         self.assertIn('id="razbory"', html)

@@ -511,6 +511,27 @@ h1, h2, h3, .brand { letter-spacing: -0.015em; }
 }
 html { -webkit-text-size-adjust: 100%; }
 
+/* ---------- Календарь ЦБ ---------- */
+.cal-next { margin-top: 28px; background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: 4px; box-shadow: 3px 3px 0 var(--line); padding: 24px; }
+.cal-k { font-family: var(--font-data); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.cal-date { font-family: var(--font-display); font-weight: 600; font-size: clamp(26px, 4vw, 38px); line-height: 1.15; margin-top: 8px; }
+.cal-left { font-size: 18px; margin-top: 6px; color: var(--accent); font-weight: 600; }
+.cal-actions { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.cal-actions a.btn { text-decoration: none; display: inline-block; }
+.cal-list { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 0; border-top: 2px solid var(--fg); }
+.cal-item { display: grid; grid-template-columns: 190px 1fr; gap: 8px 24px; padding: 16px 12px; border-bottom: 1px solid var(--line); align-items: baseline; }
+.cal-when b { font-family: var(--font-display); font-weight: 600; font-size: 19px; }
+.cal-when span { display: block; color: var(--muted); font-size: 14px; }
+.cal-what { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.cal-badge { font-family: var(--font-data); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; background: var(--accent-soft); color: var(--accent); }
+.cal-item.past .cal-badge { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.cal-item.past .cal-when b { color: var(--muted); }
+.cal-item.next { background: var(--accent-soft); box-shadow: inset 4px 0 0 var(--accent); }
+.cal-item.next .cal-badge { background: var(--accent); color: var(--bg); }
+.cal-dec { font-size: 16px; }
+@media (max-width: 640px) { .cal-item { grid-template-columns: 1fr; gap: 4px; } .cal-next { padding: 18px; } }
+.cal-list + .calc-note { margin-top: 16px; }
+
 </style>
 </head>
 <body>
@@ -559,33 +580,33 @@ html { -webkit-text-size-adjust: 100%; }
   </article>
   
   <article class="post-card">
-    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-07-01">июль 2026</time></p>
+    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-07-24">24 июля 2026</time></p>
     <h2><a href="../razbory/klyuchevaya-stavka-2026-07/">Ключевая ставка снижена до 14%: что это значит для вклада и ипотеки</a></h2>
-    <p>Ключевая ставка снижена с 14,25% до 14% (июль 2026). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+    <p>Ключевая ставка снижена с 14,25% до 14% (24 июля). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
   </article>
   
   <article class="post-card">
-    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-06-01">июнь 2026</time></p>
+    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-06-19">19 июня 2026</time></p>
     <h2><a href="../razbory/klyuchevaya-stavka-2026-06/">Ключевая ставка снижена до 14,25%: что это значит для вклада и ипотеки</a></h2>
-    <p>Ключевая ставка снижена с 14,5% до 14,25% (июнь 2026). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+    <p>Ключевая ставка снижена с 14,5% до 14,25% (19 июня). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
   </article>
   
   <article class="post-card">
-    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-04-01">апрель 2026</time></p>
+    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-04-24">24 апреля 2026</time></p>
     <h2><a href="../razbory/klyuchevaya-stavka-2026-04/">Ключевая ставка снижена до 14,5%: что это значит для вклада и ипотеки</a></h2>
-    <p>Ключевая ставка снижена с 15% до 14,5% (апрель 2026). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+    <p>Ключевая ставка снижена с 15% до 14,5% (24 апреля). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
   </article>
   
   <article class="post-card">
-    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-03-01">март 2026</time></p>
+    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-03-20">20 марта 2026</time></p>
     <h2><a href="../razbory/klyuchevaya-stavka-2026-03/">Ключевая ставка снижена до 15%: что это значит для вклада и ипотеки</a></h2>
-    <p>Ключевая ставка снижена с 15,5% до 15% (март 2026). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+    <p>Ключевая ставка снижена с 15,5% до 15% (20 марта). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
   </article>
   
   <article class="post-card">
-    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-02-01">февраль 2026</time></p>
+    <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-02-13">13 февраля 2026</time></p>
     <h2><a href="../razbory/klyuchevaya-stavka-2026-02/">Ключевая ставка снижена до 15,5%: что это значит для вклада и ипотеки</a></h2>
-    <p>Ключевая ставка снижена с 16% до 15,5% (февраль 2026). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+    <p>Ключевая ставка снижена с 16% до 15,5% (13 февраля). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
   </article>
   
 </section>

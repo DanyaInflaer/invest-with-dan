@@ -54,9 +54,17 @@ TEAM = {
 # ======================================================================
 UPDATED = "21.10.2026"   # дата, когда вы последний раз вручную обновляли показатели ниже
 
-# Даты заседаний Банка России, по которым нужен показ «ближайшего заседания».
-# Когда дата пройдёт, фраза пропадёт сама. Добавляйте новые даты по календарю ЦБ.
-MEETINGS = [dt.date(2026, 10, 23), dt.date(2026, 12, 18)]
+# Даты заседаний Банка России по ключевой ставке на 2026 год (календарь ЦБ: cbr.ru/dkp/cal_mp/).
+# По ним показывается «ближайшее заседание» и календарь решений. Даты следующего года добавьте, когда ЦБ их опубликует.
+MEETINGS = [dt.date(2026, 2, 13), dt.date(2026, 3, 20), dt.date(2026, 4, 24), dt.date(2026, 6, 19),
+            dt.date(2026, 7, 24), dt.date(2026, 9, 11), dt.date(2026, 10, 23), dt.date(2026, 12, 18)]
+# Решения по прошедшим заседаниям: дата -> (ставка до, ставка после), %. Новое решение добавляйте сюда.
+MEETING_DECISIONS = {
+    "2026-02-13": (16.0, 15.5), "2026-03-20": (15.5, 15.0), "2026-04-24": (15.0, 14.5),
+    "2026-06-19": (14.5, 14.25), "2026-07-24": (14.25, 14.0), "2026-09-11": (14.0, 14.0),
+    "2026-10-23": (14.0, 14.0),
+}
+WEEKDAYS = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
 
 # Последнее решение Банка России, текст вручную (источник: сообщение ЦБ от 23.10.2026).
 LAST_DECISION = ("23 октября Банк России сохранил ключевую ставку на уровне 14%. В базовом прогнозе "
@@ -583,6 +591,7 @@ def index():
         "tax": TAX,
         "scenarios": SCENARIOS, "scenarioNotes": SCENARIO_NOTES,
         "fx": fx_view(),
+        "meetings": [m.isoformat() for m in MEETINGS],
     }
     faq = build_faq(v["key"], v["next_meeting"])
     dep_year = next(r["rate"] for r in DEPOSIT_RATES if r["upto_months"] == 12)
@@ -598,7 +607,7 @@ def index():
         people=PEOPLE, invest=v["invest"],
         bars=bars, axis=AXIS, sources=SOURCES,
         regions=region_rows(), russia=RUSSIA_ROW, region_notes=REGION_NOTES,
-        scn_defs=SCENARIOS, latest_posts=get_posts()[:3], tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
+        scn_defs=SCENARIOS, calendar=calendar_view(), latest_posts=get_posts()[:3], tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
         mortgage_presets=MORTGAGE_PRESETS, deposit_rates=DEPOSIT_RATES,
         scenarios=build_scenarios(v["key"], v["next_meeting"]),
         infl_now=fmt(INFLATION), real_rate=fmt(v["key"] - INFLATION),
@@ -660,6 +669,29 @@ def _dep_year_rate():
     return next(r["rate"] for r in DEPOSIT_RATES if r["upto_months"] == 12)
 
 
+def calendar_view(today: dt.date | None = None):
+    """Календарь заседаний: дата, день недели, статус и решение для прошедших."""
+    today = today or dt.datetime.now(MSK).date()
+    slugs = {p["slug"] for p in get_posts()}
+    nxt = next((m for m in MEETINGS if m >= today), None)
+    items = []
+    for m in MEETINGS:
+        iso = m.isoformat()
+        dec = MEETING_DECISIONS.get(iso)
+        text = None
+        if dec:
+            old, new = dec
+            if new == old:
+                text = f"Ставка сохранена на уровне {fmt_num(new)}%"
+            else:
+                text = f"Ставка {'снижена' if new < old else 'повышена'} с {fmt_num(old)}% до {fmt_num(new)}%"
+        slug = f"klyuchevaya-stavka-{m.year}-{m.month:02d}"
+        items.append({"iso": iso, "label": f"{m.day} {MONTHS_GEN[m.month - 1]}", "weekday": WEEKDAYS[m.weekday()],
+                      "status": "past" if m < today else ("next" if m == nxt else "future"),
+                      "decision": text, "post": slug if (dec and dec[0] != dec[1] and slug in slugs) else None})
+    return items
+
+
 def fx_view():
     """Курсы для конвертера: свежие от ЦБ, а без сети запасные."""
     rates = live_data.get_live().get("rates")
@@ -677,7 +709,7 @@ def blog_context(now=None):
         "preferential_rate": MORTGAGE_PRESETS[2]["rate"], "annuity": annuity_payment,
         "deposit_income": deposit_income, "real_gain": real_gain, "tax": TAX,
         "guide_date": GUIDE_DATE.isoformat(), "guide_label": f"{GUIDE_DATE.day} {MONTHS_GEN[GUIDE_DATE.month - 1]} {GUIDE_DATE.year}",
-        "fallback_series": KEY_SERIES, "fallback_ym": RATE_YM,
+        "fallback_series": KEY_SERIES, "fallback_ym": RATE_YM, "meeting_dates": MEETINGS,
     }
 
 

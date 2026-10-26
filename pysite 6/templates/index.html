@@ -32,6 +32,7 @@
       <a href="#privet">Приветствие</a>
       <a href="#dannye">Данные</a>
       <a href="#dinamika">Динамика</a>
+      <a href="#kalendar">Календарь ЦБ</a>
       <a href="#regiony">Регионы</a>
       <a href="#kalkulyatory">Калькуляторы</a>
       <a href="#ipoteka">Ипотека</a>
@@ -141,6 +142,37 @@
         <p class="chart-note">В декабре зарплата обычно выше из-за годовых премий. За январь, февраль и март значения в использованных источниках не нашлись, на графике там пропуск.</p>
       </div>
     </div>
+  </section>
+
+  <!-- ===================== КАЛЕНДАРЬ ЦБ ===================== -->
+  <section class="band" id="kalendar">
+    <div class="sec-head">
+      <h2>Календарь решений Банка России</h2>
+      <p>Восемь заседаний в год, на которых определяется ключевая ставка. От неё зависят вклады и кредиты, поэтому даты стоит знать заранее. Решение обычно объявляют около 13:30 по Москве.</p>
+    </div>
+    <div class="cal-next" id="cal-next" aria-live="polite">
+      <p class="cal-k">Следующее заседание</p>
+      <p class="cal-date" id="cal-date">—</p>
+      <p class="cal-left" id="cal-left"></p>
+      <div class="cal-actions">
+        <a class="btn primary" id="cal-google" href="#" target="_blank" rel="noopener" hidden>Добавить в Google Календарь</a>
+        <button type="button" class="btn" id="cal-ics">Скачать напоминания (.ics)</button>
+        <span class="toolbar-hint" id="cal-msg" role="status"></span>
+      </div>
+    </div>
+    <ol class="cal-list" id="cal-list">
+      {% for m in calendar %}
+      <li class="cal-item {{ m.status }}" data-date="{{ m.iso }}">
+        <div class="cal-when"><b>{{ m.label }}</b><span>{{ m.weekday }}</span></div>
+        <div class="cal-what">
+          <span class="cal-badge" data-badge>{{ {'past': 'Прошло', 'next': 'Следующее', 'future': 'Впереди'}[m.status] }}</span>
+          <span class="cal-dec">{% if m.decision %}{{ m.decision }}{% else %}Решение будет объявлено в день заседания{% endif %}</span>
+          {% if m.post %}<a href="razbory/{{ m.post }}/">Разбор решения</a>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+    <p class="calc-note">Источник дат: календарь решений по ключевой ставке на сайте Банка России. Результаты прошедших заседаний обновляются вручную после каждого решения.</p>
   </section>
 
   <!-- ===================== РЕГИОНЫ ===================== -->

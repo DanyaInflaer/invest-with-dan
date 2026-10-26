@@ -44,7 +44,8 @@ def _date_label(d: dt.date) -> str:
 # ----------------------------------------------------------------------
 # События по ключевой ставке
 # ----------------------------------------------------------------------
-def key_events(live: dict, fallback_series: list[float], fallback_ym: list[tuple[int, int]], limit: int = 8) -> list[dict]:
+def key_events(live: dict, fallback_series: list[float], fallback_ym: list[tuple[int, int]], limit: int = 8,
+               meeting_dates: list | None = None) -> list[dict]:
     """Изменения ключевой ставки: по истории ЦБ, а без неё по месячному ряду сайта.
 
     Возвращает [{'date': date, 'exact': bool, 'old': 16.0, 'new': 15.5}] от новых к старым.
@@ -59,7 +60,8 @@ def key_events(live: dict, fallback_series: list[float], fallback_ym: list[tuple
         for i in range(1, len(fallback_series)):
             if fallback_series[i] != fallback_series[i - 1]:
                 y, m = fallback_ym[i]
-                events.append({"date": dt.date(y, m, 1), "exact": False,
+                day = next((d for d in (meeting_dates or []) if (d.year, d.month) == (y, m)), None)   # точная дата заседания ЦБ
+                events.append({"date": day or dt.date(y, m, 1), "exact": day is not None,
                                "old": fallback_series[i - 1], "new": fallback_series[i]})
     events.sort(key=lambda e: e["date"], reverse=True)
     return events[:limit]
@@ -282,7 +284,7 @@ def guide_posts(ctx: dict) -> list[dict]:
 def build_posts(live: dict, ctx: dict) -> list[dict]:
     posts = guide_posts(ctx)
     used = {p["slug"] for p in posts}
-    for ev in key_events(live, ctx["fallback_series"], ctx["fallback_ym"]):
+    for ev in key_events(live, ctx["fallback_series"], ctx["fallback_ym"], meeting_dates=ctx.get("meeting_dates")):
         posts.append(auto_post(ev, ctx, _slug_for(ev, used)))
     posts.sort(key=lambda p: (p["date"], p["kind"] == "auto"), reverse=True)
     return posts

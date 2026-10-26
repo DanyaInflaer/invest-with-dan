@@ -683,6 +683,78 @@
   })();
 
   /* ======================================================================
+     Календарь заседаний Банка России: обратный отсчёт, статусы, напоминания (.ics)
+     ====================================================================== */
+  (function () {
+    var list = document.getElementById('cal-list');
+    if (!list || !D.meetings) return;
+    var MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    var DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+    function todayMsk() {                                     // сегодняшняя дата по Москве: YYYY-MM-DD
+      try { return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }); }
+      catch (e) { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+    }
+    function utc(iso) { var p = iso.split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+    function days(a, b) { return Math.round((utc(b) - utc(a)) / 86400000); }
+    function plural(n, one, few, many) { var a = n % 100, b = n % 10; return a > 10 && a < 20 ? many : b === 1 ? one : b >= 2 && b <= 4 ? few : many; }
+    function label(iso) { var p = iso.split('-'); return +p[2] + ' ' + MONTHS[+p[1] - 1] + ' ' + p[0]; }
+    function nextOf(today) { for (var i = 0; i < D.meetings.length; i++) if (D.meetings[i] >= today) return D.meetings[i]; return null; }
+
+    var google = document.getElementById('cal-google');
+    function paint() {
+      var today = todayMsk(), nxt = nextOf(today);
+      Array.prototype.forEach.call(list.querySelectorAll('.cal-item'), function (li) {
+        var d = li.getAttribute('data-date');
+        var st = d < today ? 'past' : d === nxt ? 'next' : 'future';
+        li.className = 'cal-item ' + st;
+        li.querySelector('[data-badge]').textContent = st === 'past' ? 'Прошло' : st === 'next' ? 'Следующее' : 'Впереди';
+      });
+      var dateEl = document.getElementById('cal-date'), leftEl = document.getElementById('cal-left');
+      if (!nxt) {
+        dateEl.textContent = 'Заседания 2026 года завершились';
+        leftEl.textContent = 'Даты заседаний следующего года Банк России публикует заранее, мы добавим их в календарь.';
+        google.hidden = true; return;
+      }
+      var wd = DAYS[new Date(utc(nxt)).getUTCDay()], n = days(today, nxt);
+      dateEl.textContent = label(nxt) + ', ' + wd;
+      leftEl.textContent = n === 0 ? 'Заседание сегодня, решение обычно объявляют около 13:30 по Москве.'
+        : n === 1 ? 'Заседание завтра.' : 'Через ' + n + ' ' + plural(n, 'день', 'дня', 'дней') + '.';
+      var d1 = nxt.replace(/-/g, ''), nd = new Date(utc(nxt) + 86400000), d2 = nd.getUTCFullYear() + ('0' + (nd.getUTCMonth() + 1)).slice(-2) + ('0' + nd.getUTCDate()).slice(-2);
+      google.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('Заседание Банка России по ключевой ставке') +
+        '&dates=' + d1 + '/' + d2 + '&details=' + encodeURIComponent('Решение по ключевой ставке обычно объявляют около 13:30 по Москве.');
+      google.hidden = false;
+    }
+    paint();
+
+    function ics() {                                          // файл напоминаний со всеми будущими заседаниями
+      var today = todayMsk(), out = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Growth Syndicate//CBR//RU', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:Заседания Банка России'];
+      D.meetings.filter(function (d) { return d >= today; }).forEach(function (d) {
+        var d1 = d.replace(/-/g, ''), nd = new Date(utc(d) + 86400000), d2 = nd.getUTCFullYear() + ('0' + (nd.getUTCMonth() + 1)).slice(-2) + ('0' + nd.getUTCDate()).slice(-2);
+        out.push('BEGIN:VEVENT', 'UID:cbr-' + d1 + '@growth-syndicate', 'DTSTAMP:' + today.replace(/-/g, '') + 'T000000Z',
+          'DTSTART;VALUE=DATE:' + d1, 'DTEND;VALUE=DATE:' + d2,
+          'SUMMARY:Заседание Банка России по ключевой ставке',
+          'DESCRIPTION:Решение по ключевой ставке обычно объявляют около 13:30 по Москве.',
+          'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Сегодня заседание Банка России', 'TRIGGER:PT9H', 'END:VALARM', 'END:VEVENT');
+      });
+      out.push('END:VCALENDAR');
+      return out.join('\r\n') + '\r\n';
+    }
+    document.getElementById('cal-ics').addEventListener('click', function () {
+      var msg = document.getElementById('cal-msg');
+      if (!nextOf(todayMsk())) { msg.textContent = 'Будущих заседаний в календаре пока нет.'; return; }
+      try {
+        var blob = new Blob([ics()], { type: 'text/calendar;charset=utf-8' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'zasedaniya-cb.ics';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        msg.textContent = 'Файл скачан: откройте его, чтобы добавить напоминания в календарь.';
+      } catch (e) { msg.textContent = 'Не удалось создать файл. Воспользуйтесь кнопкой Google Календаря.'; }
+    });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) paint(); });   // обновляем отсчёт, когда вкладку открыли снова
+  })();
+
+  /* ======================================================================
      Накопить на цель и конвертер валют
      ====================================================================== */
   (function () {
