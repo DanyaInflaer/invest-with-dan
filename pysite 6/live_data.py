@@ -42,6 +42,7 @@ HISTORY_FROM = dt.date(2025, 11, 1)   # с какой даты нужна ист
 
 _lock = threading.Lock()
 _state: dict = {}
+MAX_BODY = 5 * 1024 * 1024
 _thread_started = False
 _loaded = False
 
@@ -51,9 +52,22 @@ _loaded = False
 # ----------------------------------------------------------------------
 def _http(url: str, data: bytes | None = None, headers: dict | None = None) -> bytes:
     """Один HTTP-запрос. В тестах эту функцию подменяют."""
+    if not url.startswith("https://"):
+        raise ValueError("разрешены только https-адреса")
     req = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT, **(headers or {})})
     with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
-        return resp.read()
+        body = resp.read(MAX_BODY + 1)
+        if len(body) > MAX_BODY:
+            raise ValueError("ответ источника слишком большой")
+        return body
+
+
+def safe_xml(xml_bytes: bytes):
+    """Разбор XML от внешнего источника без DOCTYPE/ENTITY (защита от «миллиарда смехов» и XXE)."""
+    head = xml_bytes[:4096].upper()
+    if b"<!DOCTYPE" in head or b"<!ENTITY" in xml_bytes.upper():
+        raise ValueError("XML с DOCTYPE/ENTITY отклонён")
+    return ET.fromstring(xml_bytes)
 
 
 # ----------------------------------------------------------------------
@@ -61,7 +75,7 @@ def _http(url: str, data: bytes | None = None, headers: dict | None = None) -> b
 # ----------------------------------------------------------------------
 def parse_cbr_daily(xml_bytes: bytes) -> dict:
     """XML_daily.asp -> {'date': '2026-10-21', 'USD': 82.85, 'EUR': ..., 'CNY': ...}."""
-    root = ET.fromstring(xml_bytes)
+    root = safe_xml(xml_bytes)
     d, m, y = root.attrib["Date"].split(".")
     out = {"date": f"{y}-{m}-{d}"}
     for v in root.iter("Valute"):
@@ -78,7 +92,7 @@ def parse_cbr_daily(xml_bytes: bytes) -> dict:
 
 def parse_keyrate_soap(xml_bytes: bytes) -> list[tuple[str, float]]:
     """Ответ KeyRateXML -> [('2026-07-24', 14.0), ...] по возрастанию даты."""
-    root = ET.fromstring(xml_bytes)
+    root = safe_xml(xml_bytes)
     rows = []
     for el in root.iter():
         if el.tag.split("}")[-1] != "KR":
@@ -121,12 +135,12 @@ def parse_moex(json_bytes: bytes) -> dict:
 
 def parse_rss(xml_bytes: bytes, limit: int = 8) -> list[dict]:
     """RSS 2.0 -> [{'title', 'link', 'date'}]; берём только заголовок и ссылку на источник."""
-    root = ET.fromstring(xml_bytes)
+    root = safe_xml(xml_bytes)
     items = []
     for it in root.iter("item"):
         title = (it.findtext("title") or "").strip()
         link = (it.findtext("link") or "").strip()
-        if not title or not link.startswith("http"):
+        if not title or not re.match(r"https://([a-z0-9-]+\.)*cbr\.ru/", link):
             continue
         date = None
         raw = (it.findtext("pubDate") or "").strip()

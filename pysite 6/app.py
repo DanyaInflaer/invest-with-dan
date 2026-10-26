@@ -22,8 +22,10 @@ except ModuleNotFoundError:
 
 import blog
 import live_data
+import security
 
 app = Flask(__name__)
+app.config.update(MAX_CONTENT_LENGTH=16 * 1024, SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
 BASE = pathlib.Path(__file__).parent
 
 # ======================================================================
@@ -746,6 +748,24 @@ def razbory_post(slug):
         ld["mainEntityOfPage"] = url
     others = [p for p in posts if p["slug"] != slug][:3]
     return render_template("post.html", post=post, others=others, ld=ld, team=TEAM, root=_root(2), page_url=url)
+
+
+SECURITY_TXT = (
+    "Contact: mailto:teamgrowth37@gmail.com\n"
+    "Expires: 2027-12-31T00:00:00.000Z\n"
+    "Preferred-Languages: ru, en\n"
+)
+
+
+@app.route("/.well-known/security.txt")
+def security_txt():
+    return Response(SECURITY_TXT, mimetype="text/plain")
+
+
+@app.after_request
+def add_security_headers(resp):
+    """Заголовки защиты для запуска через Python (на GitHub Pages их заменяет <meta>, см. build_static.py)."""
+    return security.apply_headers(resp, secure=request.is_secure)
 
 
 @app.route("/robots.txt")

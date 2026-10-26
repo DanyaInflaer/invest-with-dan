@@ -20,7 +20,7 @@
   <h2 class="news-title">Новости Банка России</h2>
   <p class="blog-lead">Заголовки из пресс-службы регулятора, полный текст на сайте источника.</p>
   <ul class="news-list">
-    {% for n in news %}<li><a href="{{ n.link }}" rel="noopener nofollow" target="_blank">{{ n.title }}</a>{% if n.date_label %} <span class="muted">{{ n.date_label }}</span>{% endif %}</li>{% endfor %}
+    {% for n in news %}<li><a href="{{ n.link }}" rel="noopener noreferrer nofollow" target="_blank">{{ n.title }}</a>{% if n.date_label %} <span class="muted">{{ n.date_label }}</span>{% endif %}</li>{% endfor %}
   </ul>
 </section>
 {% endif %}

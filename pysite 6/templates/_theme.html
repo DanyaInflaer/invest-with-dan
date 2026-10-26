@@ -1,5 +1,7 @@
 <script>
 (function () {
+  // защита от встраивания сайта в чужую страницу (clickjacking), когда нет заголовков сервера
+  if (window.top !== window.self) { try { window.top.location = window.self.location; } catch (e) { document.documentElement.style.display = 'none'; } }
   var KEY = 'theme', root = document.documentElement;
   function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function save(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }

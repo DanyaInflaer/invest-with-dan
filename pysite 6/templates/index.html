@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="theme-color" content="#F5F0E6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1714" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap" media="print">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap"></noscript>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -155,7 +155,7 @@
       <p class="cal-date" id="cal-date">—</p>
       <p class="cal-left" id="cal-left"></p>
       <div class="cal-actions">
-        <a class="btn primary" id="cal-google" href="#" target="_blank" rel="noopener" hidden>Добавить в Google Календарь</a>
+        <a class="btn primary" id="cal-google" href="#" target="_blank" rel="noopener noreferrer" hidden>Добавить в Google Календарь</a>
         <button type="button" class="btn" id="cal-ics">Скачать напоминания (.ics)</button>
         <span class="toolbar-hint" id="cal-msg" role="status"></span>
       </div>
@@ -272,7 +272,7 @@
 
     <div class="calcs">
       <!-- Вклад -->
-      <form class="calc" id="deposit-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="deposit-form" data-report autocomplete="off">
         <h3>Вклад</h3>
         <div class="field">
           <label for="dep-amount">Сумма, ₽</label>
@@ -299,7 +299,7 @@
       </form>
 
       <!-- Ипотека -->
-      <form class="calc" id="mortgage-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="mortgage-form" data-report autocomplete="off">
         <h3>Ипотека</h3>
         <div class="field">
           <label for="mor-price">Стоимость жилья, ₽</label>
@@ -334,7 +334,7 @@
       </form>
 
       <!-- Инфляция -->
-      <form class="calc" id="power-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="power-form" data-report autocomplete="off">
         <h3>Инфляция и деньги</h3>
         <div class="field">
           <label for="pw-amount">Сумма сегодня, ₽</label>
@@ -357,7 +357,7 @@
       </form>
 
       <!-- Кредит -->
-      <form class="calc" id="loan-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="loan-form" data-report autocomplete="off">
         <h3>Кредит</h3>
         <div class="field">
           <label for="ln-amount">Сколько берёте, ₽</label>
@@ -395,7 +395,7 @@
       </form>
 
       <!-- Накопить на цель -->
-      <form class="calc" id="goal-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="goal-form" data-report autocomplete="off">
         <h3>Накопить на цель</h3>
         <div class="field">
           <label for="gl-goal">Сколько нужно накопить, ₽</label>
@@ -431,7 +431,7 @@
       </form>
 
       <!-- Конвертер валют -->
-      <form class="calc" id="fx-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="fx-form" data-report autocomplete="off">
         <h3>Конвертер валют</h3>
         <div class="field">
           <label for="fx-amount">Сумма</label>
@@ -459,7 +459,7 @@
       </form>
 
       <!-- Инвестиции -->
-      <form class="calc wide" id="invest-form" data-report data-title="Инвестиционный калькулятор" autocomplete="off" onsubmit="return false">
+      <form class="calc wide" id="invest-form" data-report data-title="Инвестиционный калькулятор" autocomplete="off">
         <div class="calc-fields">
           <h3>Инвестиционный калькулятор</h3>
           <div class="field">
@@ -542,7 +542,7 @@
     <p class="chart-note">Выделена программа, ставка которой выбрана в калькуляторе. Льготные программы доступны не всем, условия уточняйте в банке.</p>
 
     <h3 class="group">Досрочное погашение</h3>
-    <form class="calc wide" id="prepay-form" data-report data-title="Досрочное погашение ипотеки" autocomplete="off" onsubmit="return false">
+    <form class="calc wide" id="prepay-form" data-report data-title="Досрочное погашение ипотеки" autocomplete="off">
       <div class="calc-fields">
         <h3>Что даёт досрочное погашение</h3>
         <p class="calc-note" id="pp-cond"></p>
@@ -609,7 +609,7 @@
 
     <div class="calcs">
       <!-- Налог на вклад -->
-      <form class="calc" id="tax-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="tax-form" data-report autocomplete="off">
         <h3>Налог на проценты по вкладу</h3>
         <div class="field">
           <label for="tx-amount">Сумма на вкладах, ₽</label>
@@ -629,7 +629,7 @@
       </form>
 
       <!-- Вычеты -->
-      <form class="calc" id="ded-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="ded-form" data-report autocomplete="off">
         <h3>Налоговые вычеты</h3>
         <div class="field">
           <label for="dd-price">Стоимость купленного жилья, ₽ <span class="hint">учитывается до 2 млн</span></label>
@@ -659,7 +659,7 @@
       </form>
 
       <!-- Пенсия -->
-      <form class="calc" id="pen-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="pen-form" data-report autocomplete="off">
         <h3>Хватит ли на пенсию</h3>
         <div class="field">
           <label for="pn-age">Сколько вам лет: <output id="pn-age-out">30 лет</output></label>
@@ -703,7 +703,7 @@
       </form>
 
       <!-- Сравнение вложений -->
-      <form class="calc" id="cmp-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="cmp-form" data-report autocomplete="off">
         <h3>Вклад, облигации или акции</h3>
         <div class="field">
           <label for="cp-amount">Сумма, ₽</label>
@@ -744,7 +744,7 @@
       </form>
 
       <!-- Вклад на руки -->
-      <form class="calc" id="net-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="net-form" data-report autocomplete="off">
         <h3>Вклад «на руки»: налог, капитализация, инфляция</h3>
         <div class="field">
           <label for="nt-amount">Сумма вклада, ₽</label>
@@ -785,7 +785,7 @@
       </form>
 
       <!-- Аренда или ипотека -->
-      <form class="calc" id="rent-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="rent-form" data-report autocomplete="off">
         <h3>Аренда или ипотека</h3>
         <div class="field">
           <label for="rv-price">Стоимость квартиры, ₽</label>
@@ -840,7 +840,7 @@
       </form>
 
       <!-- Бюджет семьи -->
-      <form class="calc" id="bud-form" data-report autocomplete="off" onsubmit="return false">
+      <form class="calc" id="bud-form" data-report autocomplete="off">
         <h3>Бюджет семьи</h3>
         <div class="field">
           <label for="bd-gross">Доход до налога в месяц, ₽ <span class="hint">общий, до НДФЛ</span></label>
@@ -917,7 +917,7 @@
       Источники данных
       <ul>
         {% for title, url in sources %}
-        <li><a href="{{ url }}" target="_blank" rel="noopener">{{ title }}</a></li>
+        <li><a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ title }}</a></li>
         {% endfor %}
       </ul>
     </div>

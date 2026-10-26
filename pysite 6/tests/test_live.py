@@ -397,7 +397,7 @@ class Blog(unittest.TestCase):
             html = c.get(url).get_data(as_text=True)
             self.assertIn('<main id="main">', html, url)
             self.assertIn('class="skip"', html, url)
-            self.assertIn('media="print" onload', html, url)      # шрифты не блокируют показ страницы
+            self.assertIn('media="print"', html, url)      # шрифты не блокируют показ страницы
         home = c.get("/").get_data(as_text=True)
         self.assertEqual(home.count("<h1"), 1)
 
@@ -423,6 +423,61 @@ class Blog(unittest.TestCase):
         html = site.app.test_client().get("/").get_data(as_text=True)
         self.assertIn('id="razbory"', html)
         self.assertIn('href="razbory/"', html)
+
+
+class Security(unittest.TestCase):
+    def setUp(self):
+        self.c = site.app.test_client()
+
+    def test_headers_and_csp(self):
+        for url in ("/", "/razbory/"):
+            r = self.c.get(url)
+            csp = r.headers["Content-Security-Policy"]
+            self.assertIn("default-src 'none'", csp)
+            self.assertIn("frame-ancestors 'none'", csp)
+            self.assertNotIn("script-src 'self' 'unsafe-inline'", csp)
+            self.assertIn("'sha256-", csp)                      # встроенная тема по хэшу
+            self.assertEqual(r.headers["X-Content-Type-Options"], "nosniff")
+            self.assertEqual(r.headers["X-Frame-Options"], "DENY")
+            self.assertIn("Referrer-Policy", r.headers)
+
+    def test_no_inline_handlers_or_innerhtml(self):
+        import re
+        html = self.c.get("/").get_data(as_text=True)
+        self.assertIsNone(re.search(r"\son(submit|load|click|error)\s*=", html))
+        js = (pathlib.Path(site.BASE) / "static" / "app.js").read_text(encoding="utf-8")
+        for bad in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write", "eval("):
+            self.assertNotIn(bad, js)
+
+    def test_inline_script_hashes_match(self):
+        import security
+        html = self.c.get("/").get_data(as_text=True)
+        self.assertTrue(security.script_hashes(html))
+        meta = security.inject_meta(html)
+        self.assertIn('http-equiv="Content-Security-Policy"', meta)
+        self.assertNotIn("frame-ancestors", meta.split("Content-Security-Policy")[1].split(">")[0])
+
+    def test_external_links_safe(self):
+        import re
+        html = self.c.get("/").get_data(as_text=True)
+        for tag in re.findall(r"<a [^>]*target=\"_blank\"[^>]*>", html):
+            self.assertIn("noopener", tag)
+
+    def test_security_txt(self):
+        r = self.c.get("/.well-known/security.txt")
+        self.assertIn("Contact: mailto:", r.get_data(as_text=True))
+
+    def test_xml_with_entities_rejected(self):
+        evil = b'<?xml version="1.0"?><!DOCTYPE x [<!ENTITY a "aaaa">]><x>&a;</x>'
+        with self.assertRaises(ValueError):
+            live_data.safe_xml(evil)
+
+    def test_rss_only_cbr_https_links(self):
+        xml = (b"<rss><channel><item><title>a</title><link>javascript:alert(1)</link></item>"
+               b"<item><title>b</title><link>http://evil.example/</link></item>"
+               b"<item><title>c</title><link>https://www.cbr.ru/press/pr/?file=1</link></item></channel></rss>")
+        items = live_data.parse_rss(xml)
+        self.assertEqual([i["title"] for i in items], ["c"])
 
 
 if __name__ == "__main__":

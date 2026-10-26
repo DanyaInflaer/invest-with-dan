@@ -21,7 +21,8 @@ os.environ["STATIC_BUILD"] = "1"
 os.environ["LIVE_DATA"] = "off"      # фоновый поток не нужен: обновляем один раз вручную ниже
 
 import live_data  # noqa: E402
-from app import STATIC_PRECACHE, app, get_posts, sw_source  # noqa: E402
+import security  # noqa: E402
+from app import SECURITY_TXT, STATIC_PRECACHE, app, get_posts, sw_source  # noqa: E402
 
 ROOT = pathlib.Path(__file__).parent
 
@@ -44,7 +45,7 @@ def main() -> int:
         page = page.replace('<link rel="stylesheet" href="/static/style.css">', "<style>\n" + css + "\n</style>")
         page = page.replace('<script src="/static/app.js"></script>', "<script>\n" + js + "\n</script>")
         assert "/static/" not in page, "в файле остались ссылки на static"
-        return page
+        return security.inject_meta(page)      # CSP с хэшами скриптов + referrer
 
     html = inline(app.test_client().get("/").get_data(as_text=True))
 
@@ -66,6 +67,9 @@ def main() -> int:
     print(f"Разборы: {len(pages) - 1} статей")
     # для поисковиков; адрес сайта берётся из переменной SITE_URL (например, https://имя.github.io/my-site/)
     client = app.test_client()
+    (out / ".well-known").mkdir(exist_ok=True)
+    (out / ".well-known" / "security.txt").write_text(SECURITY_TXT, encoding="utf-8")
+    (out / ".nojekyll").write_text("", encoding="utf-8")      # чтобы папка .well-known публиковалась
     (out / "robots.txt").write_text(client.get("/robots.txt").get_data(as_text=True), encoding="utf-8")
     if os.environ.get("SITE_URL"):
         (out / "sitemap.xml").write_text(client.get("/sitemap.xml").get_data(as_text=True), encoding="utf-8")

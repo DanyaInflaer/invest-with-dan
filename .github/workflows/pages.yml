@@ -11,9 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: read            # по умолчанию только чтение; права на публикацию выданы ниже только нужной задаче
 
 concurrency:
   group: pages
@@ -26,8 +24,11 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false      # токен не остаётся в клоне репозитория
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -43,6 +44,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -1,5 +1,19 @@
 (function () {
+
   'use strict';
+
+    /* безопасная подпись под графиком: только текстовые узлы, без разбора HTML */
+    function readoutFill(host, parts) {
+      while (host.firstChild) host.removeChild(host.firstChild);
+      parts.forEach(function (p) {
+        var sp = document.createElement('span'); sp.className = p[0];
+        if (p.length > 2) {
+          sp.appendChild(document.createTextNode(p[1] + ' '));
+          var b = document.createElement('b'); b.textContent = p[2]; sp.appendChild(b);
+        } else sp.textContent = p[1];
+        host.appendChild(sp);
+      });
+    }
 
   var D = JSON.parse(document.getElementById('site-data').textContent);
   var NS = 'http://www.w3.org/2000/svg';
@@ -104,11 +118,12 @@
       d1.setAttribute('cx', X(i)); d1.setAttribute('cy', f.Y(D.rate.key[i]));
       d2.setAttribute('cx', X(i)); d2.setAttribute('cy', f.Y(D.rate.infl[i]));
       var gap = D.rate.key[i] - D.rate.infl[i];
-      rateReadout.innerHTML =
-        '<span class="rd">' + D.rate.full[i] + '</span>' +
-        '<span class="r1">Ставка <b>' + pct(D.rate.key[i]) + '</b></span>' +
-        '<span class="r2">Инфляция <b>' + pct(D.rate.infl[i]) + '</b></span>' +
-        '<span class="rd">Разрыв ' + fmtN.format(gap) + ' п. п.</span>';
+      readoutFill(rateReadout, [
+        ['rd', String(D.rate.full[i])],
+        ['r1', 'Ставка', pct(D.rate.key[i])],
+        ['r2', 'Инфляция', pct(D.rate.infl[i])],
+        ['rd', 'Разрыв ' + fmtN.format(gap) + ' п. п.']
+      ]);
     }
     bindPick(f, n, X, function () { return rateIdx; }, show);
     show(rateIdx);
@@ -138,9 +153,8 @@
       wageIdx = i;
       bars.forEach(function (b, j) { if (b) b.setAttribute('class', 'bar-rect' + (j === i ? ' on' : '')); });
       var v = vals[i];
-      wageReadout.innerHTML = '<span class="rd">' + D.wage.full[i] + '</span>' +
-        (v === null ? '<span class="rd">значение не найдено в источниках</span>'
-          : '<span class="r1">Зарплата <b>' + rub(v * 1000) + '</b></span>');
+      readoutFill(wageReadout, [['rd', String(D.wage.full[i])],
+        v === null ? ['rd', 'значение не найдено в источниках'] : ['r1', 'Зарплата', rub(v * 1000)]]);
     }
     bindPick(f, n, X, function () { return wageIdx; }, show);
     show(wageIdx);
@@ -336,12 +350,12 @@
       function show(i) {
         idx = i;
         cur.setAttribute('x1', X(i)); cur.setAttribute('x2', X(i));
-        var html = '<span class="rd">' + cfg.full[i] + '</span>';
+        var parts = [['rd', String(cfg.full[i])]];
         cfg.series.forEach(function (s, k) {
           dots[k].setAttribute('cx', X(i)); dots[k].setAttribute('cy', f.Y(s.values[i]));
-          html += '<span class="r' + s.cls.slice(1) + '">' + s.name + ' <b>' + rub(s.values[i]) + '</b></span>';
+          parts.push(['r' + s.cls.slice(1), s.name, rub(s.values[i])]);
         });
-        readout.innerHTML = html;
+        readoutFill(readout, parts);
       }
       bindPick(f, n, X, function () { return idx; }, show);
       show(idx);
@@ -1072,6 +1086,10 @@
     deferredPrompt.userChoice.then(function () { deferredPrompt = null; installBtn.hidden = true; });
   });
   window.addEventListener('appinstalled', function () { installBtn.hidden = true; });
+  /* формы-калькуляторы не отправляются на сервер; шрифты подключаются без inline-обработчиков */
+  document.addEventListener('submit', function (e) { e.preventDefault(); });
+  Array.prototype.forEach.call(document.querySelectorAll('link[rel="stylesheet"][media="print"]'), function (l) { l.media = 'all'; });
+
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
   }
