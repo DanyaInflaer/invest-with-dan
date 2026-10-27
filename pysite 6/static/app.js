@@ -1197,21 +1197,22 @@
 
 
   /* ======================================================================
-     Слайд «Лента и разборы»: свайп влево, кнопка на краю или «Открыть ленту»
+     Слайд «Лента и разборы»: переключатель «Сайт | Лента и разборы» в самом верху страницы
      ====================================================================== */
   (function () {
-    var panel = document.getElementById('feed-panel'), edge = document.getElementById('feed-open');
-    if (!panel || !edge) return;
+    var panel = document.getElementById('feed-panel');
+    if (!panel) return;
     var HASH = '#lenta', pushed = false, lastFocus = null;
     var tabs = [document.getElementById('ft-posts'), document.getElementById('ft-news')];
     var panes = [document.getElementById('fp-posts'), document.getElementById('fp-news')];
+    var openers = Array.prototype.slice.call(document.querySelectorAll('[data-slide="feed"]'));
 
     function show(on) {
       panel.classList.toggle('open', on);
       document.body.classList.toggle('feed-open', on);
       panel.setAttribute('aria-hidden', on ? 'false' : 'true');
-      edge.setAttribute('aria-expanded', on ? 'true' : 'false');
-      if (on) { panel.removeAttribute('inert'); panel.scrollTop = 0; var t = tabs[0].classList.contains('on') ? tabs[0] : tabs[1]; t.focus({ preventScroll: true }); }
+      openers.forEach(function (b) { b.setAttribute('aria-expanded', on ? 'true' : 'false'); });
+      if (on) { panel.removeAttribute('inert'); panel.scrollTop = 0; (tabs[0].classList.contains('on') ? tabs[0] : tabs[1]).focus({ preventScroll: true }); }
       else { panel.setAttribute('inert', ''); if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true }); }
     }
     function open() {
@@ -1229,9 +1230,9 @@
     window.addEventListener('popstate', function () { var want = location.hash === HASH; if (want !== panel.classList.contains('open')) { if (want) lastFocus = document.activeElement; show(want); } });
     if (location.hash === HASH) show(true);
 
-    edge.addEventListener('click', open);
-    document.getElementById('feed-close').addEventListener('click', close);
-    Array.prototype.forEach.call(document.querySelectorAll('[data-feed-open]'), function (b) { b.addEventListener('click', open); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-slide]'), function (b) {
+      b.addEventListener('click', function () { if (b.getAttribute('data-slide') === 'feed') open(); else close(); });
+    });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 
     function pick(i) {
@@ -1240,36 +1241,6 @@
       panel.scrollTop = 0;
     }
     tabs.forEach(function (t, i) { t.addEventListener('click', function () { pick(i); }); });
-
-    /* жесты: влево по сайту открывает слайд, вправо по слайду закрывает.
-       Не трогаем поля ввода, ползунки, графики и таблицы с горизонтальной прокруткой. */
-    function scrollsSideways(el) {
-      for (; el && el !== document.body; el = el.parentElement) {
-        if (el.scrollWidth > el.clientWidth + 2) {
-          var ox = getComputedStyle(el).overflowX;
-          if (ox === 'auto' || ox === 'scroll') return true;
-        }
-      }
-      return false;
-    }
-    var sx = 0, sy = 0, st = 0, track = false;
-    document.addEventListener('touchstart', function (e) {
-      track = false;
-      if (e.touches.length !== 1) return;
-      var t = e.touches[0], el = e.target;
-      var inside = panel.contains(el);
-      if (!inside && (el.closest('input, select, textarea, svg, .chart, .table-wrap, [data-no-swipe]') || scrollsSideways(el))) return;
-      if (inside && scrollsSideways(el)) return;
-      sx = t.clientX; sy = t.clientY; st = Date.now(); track = true;
-    }, { passive: true });
-    document.addEventListener('touchend', function (e) {
-      if (!track) return; track = false;
-      var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-      if (Date.now() - st > 700 || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
-      var isOpen = panel.classList.contains('open');
-      if (!isOpen && dx < 0) open();
-      else if (isOpen && dx > 0) close();
-    }, { passive: true });
   })();
 
   /* ---------- сортировка таблицы регионов ---------- */

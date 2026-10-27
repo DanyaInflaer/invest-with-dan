@@ -25,6 +25,10 @@
 <body>
 <a class="skip" href="#main">К содержимому</a>
 <div class="wrap">
+  <nav class="slides" aria-label="Слайды сайта">
+    <button type="button" class="on" data-slide="site" aria-current="true">Сайт</button>
+    <button type="button" data-slide="feed" aria-controls="feed-panel" aria-expanded="false">Лента и разборы</button>
+  </nav>
 
   <header class="topbar">
     <div class="brand">{{ team.name }}</div>
@@ -1090,7 +1094,7 @@
       </article>
       {% endfor %}
     </div>
-    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a> <button type="button" class="btn feed-trigger" data-feed-open>Открыть ленту</button> <span class="muted feed-hint">или смахните экран влево</span></p>
+    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a></p>
   </section>
 
   <!-- ===================== ВОПРОСЫ ===================== -->
@@ -1151,12 +1155,12 @@
 
 
 <!-- ===================== СЛАЙД «ЛЕНТА И РАЗБОРЫ» (открывается свайпом влево) ===================== -->
-<button type="button" class="feed-edge" id="feed-open" aria-controls="feed-panel" aria-expanded="false">
-  <span class="fe-text">Лента и разборы</span><span class="fe-arrow" aria-hidden="true">‹</span>
-</button>
 <aside class="feed" id="feed-panel" aria-label="Лента и разборы" aria-hidden="true" inert>
   <div class="feed-bar">
-    <button type="button" class="feed-back" id="feed-close"><span aria-hidden="true">›</span> К сайту</button>
+    <nav class="slides" aria-label="Слайды сайта">
+      <button type="button" data-slide="site">Сайт</button>
+      <button type="button" class="on" data-slide="feed" aria-current="true">Лента и разборы</button>
+    </nav>
     <h2 class="feed-title">Лента и разборы</h2>
     <div class="feed-tabs" role="tablist" aria-label="Раздел ленты">
       <button type="button" role="tab" id="ft-posts" aria-controls="fp-posts" aria-selected="true" class="on">Разборы <span class="cnt">{{ feed_posts|length }}</span></button>

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-n7ov95LG2QYsnclF1F4fIdNvMi6QvyxmwDGoGdzsFyw=' 'sha256-xzYhVKr5IJF79d7OgfRFfpRkoanq10cu1rdtlmEcF/w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-4nrkWKpGGX3fBl35wsdsg+3Cqni4VOgDYe3a/HgTa0A=' 'sha256-xzYhVKr5IJF79d7OgfRFfpRkoanq10cu1rdtlmEcF/w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -563,15 +563,7 @@ html { -webkit-text-size-adjust: 100%; }
 .gl-links { font-size: 14px; color: var(--muted); }
 .gl-item:target { background: var(--surface); outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* слайд «Лента и разборы»: открывается свайпом влево, кнопкой на краю или «Открыть ленту» */
-.feed-edge { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 14px 6px; border: 1px solid var(--line); border-right: 0; border-radius: 10px 0 0 10px; background: var(--surface); color: var(--accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
-.feed-edge .fe-text { writing-mode: vertical-rl; letter-spacing: .04em; }
-.feed-edge .fe-arrow { font-size: 18px; line-height: 1; }
-.feed-edge:hover { background: var(--accent); color: var(--bg); }
-.feed-edge:focus-visible, .feed button:focus-visible, .feed a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-body.feed-open .feed-edge { display: none; }
-
+/* слайд «Лента и разборы»: открывается переключателем «Сайт | Лента и разборы» в самом верху страницы */
 .feed { position: fixed; inset: 0; z-index: 60; background: var(--bg); color: var(--fg); overflow-y: auto; overscroll-behavior: contain;
   transform: translateX(100%); visibility: hidden; transition: transform .32s cubic-bezier(.22,.8,.3,1), visibility 0s linear .32s; }
 .feed.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.22,.8,.3,1), visibility 0s; }
@@ -579,8 +571,6 @@ body.feed-open .feed-edge { display: none; }
 body.feed-open { overflow: hidden; }
 .feed-bar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 12px 16px 0; display: grid; gap: 8px; }
 .feed-bar, .feed-body { max-width: 760px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-.feed-back { justify-self: start; font: inherit; font-size: 14px; color: var(--accent); background: none; border: 0; padding: 6px 0; cursor: pointer; }
-.feed-back span { display: inline-block; transform: scaleX(-1); margin-right: 4px; }
 .feed-title { font-family: var(--font-display); font-size: clamp(26px, 6vw, 36px); line-height: 1.1; margin: 0; }
 .feed-tabs { display: flex; gap: 4px; margin-top: 4px; }
 .feed-tabs button { font: inherit; font-size: 15px; font-weight: 500; color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; }
@@ -599,16 +589,26 @@ body.feed-open { overflow: hidden; }
 .feed-news li { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .feed-news .muted { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
 .feed-empty { color: var(--muted); padding: 16px 0; }
-.feed-hint { font-size: 13px; }
-@media (hover: hover) and (pointer: fine) { .feed-hint { display: none; } }
 @media (prefers-reduced-motion: reduce) { .feed, .feed.open { transition: none; } }
-@media print { .feed, .feed-edge { display: none !important; } }
+@media print { .feed, .slides { display: none !important; } }
+
+/* переключатель слайдов в самом верху: «Сайт | Лента и разборы» */
+.slides { display: flex; gap: 4px; padding: 10px 0 0; }
+.slides button { font: inherit; font-size: 14px; font-weight: 500; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 8px 18px; cursor: pointer; }
+.slides button:hover { border-color: var(--accent); color: var(--accent); }
+.slides button.on { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.slides button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.feed-bar .slides { padding-top: 0; }
 
 </style>
 </head>
 <body>
 <a class="skip" href="#main">К содержимому</a>
 <div class="wrap">
+  <nav class="slides" aria-label="Слайды сайта">
+    <button type="button" class="on" data-slide="site" aria-current="true">Сайт</button>
+    <button type="button" data-slide="feed" aria-controls="feed-panel" aria-expanded="false">Лента и разборы</button>
+  </nav>
 
   <header class="topbar">
     <div class="brand">Growth Syndicate</div>
@@ -1950,7 +1950,7 @@ body.feed-open { overflow: hidden; }
       </article>
       
     </div>
-    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a> <button type="button" class="btn feed-trigger" data-feed-open>Открыть ленту</button> <span class="muted feed-hint">или смахните экран влево</span></p>
+    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a></p>
   </section>
 
   <!-- ===================== ВОПРОСЫ ===================== -->
@@ -2053,12 +2053,12 @@ body.feed-open { overflow: hidden; }
 
 
 <!-- ===================== СЛАЙД «ЛЕНТА И РАЗБОРЫ» (открывается свайпом влево) ===================== -->
-<button type="button" class="feed-edge" id="feed-open" aria-controls="feed-panel" aria-expanded="false">
-  <span class="fe-text">Лента и разборы</span><span class="fe-arrow" aria-hidden="true">‹</span>
-</button>
 <aside class="feed" id="feed-panel" aria-label="Лента и разборы" aria-hidden="true" inert>
   <div class="feed-bar">
-    <button type="button" class="feed-back" id="feed-close"><span aria-hidden="true">›</span> К сайту</button>
+    <nav class="slides" aria-label="Слайды сайта">
+      <button type="button" data-slide="site">Сайт</button>
+      <button type="button" class="on" data-slide="feed" aria-current="true">Лента и разборы</button>
+    </nav>
     <h2 class="feed-title">Лента и разборы</h2>
     <div class="feed-tabs" role="tablist" aria-label="Раздел ленты">
       <button type="button" role="tab" id="ft-posts" aria-controls="fp-posts" aria-selected="true" class="on">Разборы <span class="cnt">9</span></button>
@@ -3337,21 +3337,22 @@ body.feed-open { overflow: hidden; }
 
 
   /* ======================================================================
-     Слайд «Лента и разборы»: свайп влево, кнопка на краю или «Открыть ленту»
+     Слайд «Лента и разборы»: переключатель «Сайт | Лента и разборы» в самом верху страницы
      ====================================================================== */
   (function () {
-    var panel = document.getElementById('feed-panel'), edge = document.getElementById('feed-open');
-    if (!panel || !edge) return;
+    var panel = document.getElementById('feed-panel');
+    if (!panel) return;
     var HASH = '#lenta', pushed = false, lastFocus = null;
     var tabs = [document.getElementById('ft-posts'), document.getElementById('ft-news')];
     var panes = [document.getElementById('fp-posts'), document.getElementById('fp-news')];
+    var openers = Array.prototype.slice.call(document.querySelectorAll('[data-slide="feed"]'));
 
     function show(on) {
       panel.classList.toggle('open', on);
       document.body.classList.toggle('feed-open', on);
       panel.setAttribute('aria-hidden', on ? 'false' : 'true');
-      edge.setAttribute('aria-expanded', on ? 'true' : 'false');
-      if (on) { panel.removeAttribute('inert'); panel.scrollTop = 0; var t = tabs[0].classList.contains('on') ? tabs[0] : tabs[1]; t.focus({ preventScroll: true }); }
+      openers.forEach(function (b) { b.setAttribute('aria-expanded', on ? 'true' : 'false'); });
+      if (on) { panel.removeAttribute('inert'); panel.scrollTop = 0; (tabs[0].classList.contains('on') ? tabs[0] : tabs[1]).focus({ preventScroll: true }); }
       else { panel.setAttribute('inert', ''); if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true }); }
     }
     function open() {
@@ -3369,9 +3370,9 @@ body.feed-open { overflow: hidden; }
     window.addEventListener('popstate', function () { var want = location.hash === HASH; if (want !== panel.classList.contains('open')) { if (want) lastFocus = document.activeElement; show(want); } });
     if (location.hash === HASH) show(true);
 
-    edge.addEventListener('click', open);
-    document.getElementById('feed-close').addEventListener('click', close);
-    Array.prototype.forEach.call(document.querySelectorAll('[data-feed-open]'), function (b) { b.addEventListener('click', open); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-slide]'), function (b) {
+      b.addEventListener('click', function () { if (b.getAttribute('data-slide') === 'feed') open(); else close(); });
+    });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
 
     function pick(i) {
@@ -3380,36 +3381,6 @@ body.feed-open { overflow: hidden; }
       panel.scrollTop = 0;
     }
     tabs.forEach(function (t, i) { t.addEventListener('click', function () { pick(i); }); });
-
-    /* жесты: влево по сайту открывает слайд, вправо по слайду закрывает.
-       Не трогаем поля ввода, ползунки, графики и таблицы с горизонтальной прокруткой. */
-    function scrollsSideways(el) {
-      for (; el && el !== document.body; el = el.parentElement) {
-        if (el.scrollWidth > el.clientWidth + 2) {
-          var ox = getComputedStyle(el).overflowX;
-          if (ox === 'auto' || ox === 'scroll') return true;
-        }
-      }
-      return false;
-    }
-    var sx = 0, sy = 0, st = 0, track = false;
-    document.addEventListener('touchstart', function (e) {
-      track = false;
-      if (e.touches.length !== 1) return;
-      var t = e.touches[0], el = e.target;
-      var inside = panel.contains(el);
-      if (!inside && (el.closest('input, select, textarea, svg, .chart, .table-wrap, [data-no-swipe]') || scrollsSideways(el))) return;
-      if (inside && scrollsSideways(el)) return;
-      sx = t.clientX; sy = t.clientY; st = Date.now(); track = true;
-    }, { passive: true });
-    document.addEventListener('touchend', function (e) {
-      if (!track) return; track = false;
-      var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-      if (Date.now() - st > 700 || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
-      var isOpen = panel.classList.contains('open');
-      if (!isOpen && dx < 0) open();
-      else if (isOpen && dx > 0) close();
-    }, { passive: true });
   })();
 
   /* ---------- сортировка таблицы регионов ---------- */
