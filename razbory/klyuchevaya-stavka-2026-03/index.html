@@ -537,6 +537,10 @@ html { -webkit-text-size-adjust: 100%; }
 @media (max-width: 640px) { .cal-item { grid-template-columns: 1fr; gap: 4px; } .cal-next { padding: 18px; } }
 .cal-list + .calc-note { margin-top: 16px; }
 
+/* кнопка «в PDF» внутри калькулятора */
+.calc-pdf { align-self: start; font-size: 13px; padding: 7px 14px; margin-top: 4px; }
+@media print { .calc-pdf { display: none; } }
+
 </style>
 </head>
 <body>

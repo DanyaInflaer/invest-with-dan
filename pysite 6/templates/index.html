@@ -37,6 +37,7 @@
       <a href="#kalkulyatory">Калькуляторы</a>
       <a href="#ipoteka">Ипотека</a>
       <a href="#instrumenty">Налоги и пенсия</a>
+      <a href="#vlozheniya">ИИС и облигации</a>
       <a href="#vyvody">Что это значит</a>
       <a href="#kviz">Проверь себя</a>
       <a href="#razbory">Разборы</a>
@@ -682,6 +683,10 @@
           <input id="pn-want" name="want" type="number" inputmode="numeric" min="0" step="5000" value="80000">
         </div>
         <div class="field">
+          <label for="pn-state">Государственная пенсия в месяц в сегодняшних ценах, ₽ <span class="hint">оценку даёт личный кабинет Социального фонда</span></label>
+          <input id="pn-state" name="state" type="number" inputmode="numeric" min="0" step="1000" value="25000">
+        </div>
+        <div class="field">
           <label for="pn-rate">Доходность, % годовых</label>
           <input id="pn-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="{{ dep_year_rate }}">
         </div>
@@ -696,7 +701,8 @@
         <dl class="result" aria-live="polite">
           <div><dt>Накопится к пенсии (в сегодняшних ценах)</dt><dd id="pn-cap">—</dd></div>
           <div><dt>Пенсия от накоплений в месяц</dt><dd id="pn-pension">—</dd></div>
-          <div><dt>Нужно накопить на желаемую пенсию</dt><dd id="pn-need">—</dd></div>
+          <div><dt>Вместе с государственной пенсией</dt><dd id="pn-total">—</dd></div>
+          <div><dt>Нужно накопить, чтобы закрыть разницу</dt><dd id="pn-need">—</dd></div>
           <div class="sub"><dt>Чтобы хватило, откладывать в месяц</dt><dd id="pn-must">—</dd></div>
         </dl>
         <p class="calc-note" id="pn-note"></p>
@@ -889,6 +895,138 @@
           <div class="sub"><dt>Подушка безопасности, месяцев расходов</dt><dd id="bd-cushion">—</dd></div>
         </dl>
         <p class="calc-note" id="bd-note"></p>
+      </form>
+    </div>
+  </section>
+
+
+  <!-- ===================== ИИС, ВКЛАДЫ, ОБЛИГАЦИИ ===================== -->
+  <section class="band" id="vlozheniya">
+    <div class="sec-head">
+      <h2>ИИС, сравнение вкладов и облигации</h2>
+      <p>Три калькулятора для выбора, куда вложить деньги: какой тип ИИС выгоднее, какой из предложенных банками вкладов приносит больше и какую доходность даёт облигация, купленная не по номиналу.</p>
+    </div>
+
+    <div class="calcs">
+      <!-- ИИС -->
+      <form class="calc" id="iis-form" data-report autocomplete="off">
+        <h3>ИИС: тип А или тип Б</h3>
+        <div class="field">
+          <label for="is-sum">Взнос в год, ₽ <span class="hint">до 1 млн</span></label>
+          <input id="is-sum" name="sum" type="number" inputmode="numeric" min="0" max="1000000" step="10000" value="400000">
+        </div>
+        <div class="field">
+          <label for="is-years">Срок: <output id="is-years-out">5 лет</output> <span class="hint">не меньше 3 лет</span></label>
+          <input id="is-years" name="years" type="range" min="3" max="15" step="1" value="5">
+        </div>
+        <div class="field">
+          <label for="is-rate">Доходность портфеля, % годовых <span class="hint">не гарантирована</span></label>
+          <input id="is-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ dep_year_rate }}">
+        </div>
+        <div class="field">
+          <label for="is-income">Ваш доход за год до налога, ₽ <span class="hint">вычет не больше уплаченного НДФЛ</span></label>
+          <input id="is-income" name="income" type="number" inputmode="numeric" min="0" step="100000" value="1500000">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Тип А: итог, вычеты вложены заново</dt><dd id="is-a">—</dd></div>
+          <div><dt>Тип Б: итог без налога на доход</dt><dd id="is-b">—</dd></div>
+          <div><dt>Обычный брокерский счёт: итог после налога</dt><dd id="is-plain">—</dd></div>
+          <div class="sub"><dt>Вычеты за весь срок (тип А)</dt><dd id="is-ded">—</dd></div>
+          <div class="sub"><dt>Налог с дохода на обычном счёте</dt><dd id="is-tax">—</dd></div>
+          <div class="sub"><dt>Выгоднее</dt><dd id="is-best">—</dd></div>
+        </dl>
+        <p class="calc-note">Упрощения: взнос вносится в начале года, доход начисляется раз в год, вычет по типу А ({{ tax.rate }}% с суммы до {{ '{:,}'.format(tax.iis_limit).replace(',', ' ') }} ₽ в год) приходит в конце следующего года и вкладывается заново. Налог с дохода на обычном и на ИИС типа А считается по ставке 13% до 2,4 млн ₽ и 15% свыше. Комиссии брокера не учтены. Правила ИИС меняются, перед открытием счёта проверьте условия на сайте Банка России и у брокера.</p>
+      </form>
+
+      <!-- Сравнение вкладов -->
+      <form class="calc wide" id="dc-form" data-report autocomplete="off">
+        <h3>Сравнение трёх вкладов</h3>
+        <div class="field">
+          <label for="dc-amount">Сумма, ₽</label>
+          <input id="dc-amount" name="amount" type="number" inputmode="numeric" min="0" step="10000" value="1000000">
+        </div>
+        <div class="field">
+          <label for="dc-months">Срок: <output id="dc-months-out">12 мес.</output></label>
+          <input id="dc-months" name="months" type="range" min="1" max="60" step="1" value="12">
+        </div>
+        <div class="field">
+          <label for="dc-r1">Вклад 1: ставка, % годовых</label>
+          <input id="dc-r1" data-scn="dep" name="r1" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ dep_year_rate }}">
+        </div>
+        <div class="field check">
+          <input id="dc-c1" name="c1" type="checkbox" checked>
+          <label for="dc-c1">Вклад 1: проценты прибавляются к сумме каждый месяц</label>
+        </div>
+        <div class="field">
+          <label for="dc-r2">Вклад 2: ставка, % годовых</label>
+          <input id="dc-r2" data-scn="dep" name="r2" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ (dep_year_rate - 0.5)|round(2) }}">
+        </div>
+        <div class="field check">
+          <input id="dc-c2" name="c2" type="checkbox" checked>
+          <label for="dc-c2">Вклад 2: проценты прибавляются к сумме каждый месяц</label>
+        </div>
+        <div class="field">
+          <label for="dc-r3">Вклад 3: ставка, % годовых</label>
+          <input id="dc-r3" data-scn="dep" name="r3" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ (dep_year_rate + 0.5)|round(2) }}">
+        </div>
+        <div class="field check">
+          <input id="dc-c3" name="c3" type="checkbox"None>
+          <label for="dc-c3">Вклад 3: проценты прибавляются к сумме каждый месяц</label>
+        </div>
+        <div class="table-wrap">
+          <table class="regions" id="dc-table" style="min-width:0">
+            <thead><tr><th scope="col">Вклад</th><th scope="col" class="num">Итог до налога</th><th scope="col" class="num">Доход после налога</th><th scope="col" class="num">Эффективная ставка в год</th></tr></thead>
+            <tbody>
+              <tr><th scope="row" class="c-name">Вклад 1</th><td class="num" id="dc-v1">—</td><td class="num" id="dc-n1">—</td><td class="num" id="dc-e1">—</td></tr>
+              <tr><th scope="row" class="c-name">Вклад 2</th><td class="num" id="dc-v2">—</td><td class="num" id="dc-n2">—</td><td class="num" id="dc-e2">—</td></tr>
+              <tr><th scope="row" class="c-name">Вклад 3</th><td class="num" id="dc-v3">—</td><td class="num" id="dc-n3">—</td><td class="num" id="dc-e3">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <dl class="result" aria-live="polite">
+          <div class="sub"><dt>Лучший вариант</dt><dd id="dc-best">—</dd></div>
+          <div class="sub"><dt>Выигрыш лучшего у худшего</dt><dd id="dc-gap">—</dd></div>
+        </dl>
+        <p class="calc-note">Если проценты выплачиваются в конце срока, ставка считается простой. Налог посчитан так, будто это единственный вклад: не облагается 1 млн ₽ × {{ tax.free_rate|replace('.', ',') }}%, дальше 13% до 2,4 млн ₽ дохода в год и 15% выше. Вклады застрахованы до 1,4 млн ₽ в одном банке.</p>
+      </form>
+
+      <!-- Облигации -->
+      <form class="calc" id="bn-form" data-report autocomplete="off">
+        <h3>Облигация: доходность к погашению</h3>
+        <div class="field">
+          <label for="bn-price">Цена, % от номинала <span class="hint">номинал ОФЗ 1000 ₽</span></label>
+          <input id="bn-price" name="price" type="number" inputmode="decimal" min="1" max="200" step="0.01" value="92">
+        </div>
+        <div class="field">
+          <label for="bn-coupon">Купон, % годовых от номинала</label>
+          <input id="bn-coupon" name="coupon" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12">
+        </div>
+        <div class="field">
+          <label for="bn-freq">Выплат в год</label>
+          <select id="bn-freq" name="freq"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option><option value="12">12</option></select>
+        </div>
+        <div class="field">
+          <label for="bn-years">До погашения: <output id="bn-years-out">3 года</output></label>
+          <input id="bn-years" name="years" type="range" min="1" max="30" step="1" value="3">
+        </div>
+        <div class="field">
+          <label for="bn-count">Сколько облигаций, шт.</label>
+          <input id="bn-count" name="count" type="number" inputmode="numeric" min="1" max="100000" step="1" value="100">
+        </div>
+        <div class="field">
+          <label for="bn-dep">Ставка вклада для сравнения, % годовых</label>
+          <input id="bn-dep" data-scn="dep" name="dep" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="{{ dep_year_rate }}">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Вложите (без накопленного купонного дохода)</dt><dd id="bn-cost">—</dd></div>
+          <div><dt>Купоны за весь срок</dt><dd id="bn-cpn">—</dd></div>
+          <div><dt>Доход при погашении (номинал минус цена)</dt><dd id="bn-gain">—</dd></div>
+          <div><dt>Доходность к погашению, годовых</dt><dd id="bn-ytm">—</dd></div>
+          <div class="sub"><dt>То же после налога 13%</dt><dd id="bn-net">—</dd></div>
+          <div class="sub"><dt>Текущая доходность (купон к цене)</dt><dd id="bn-cur">—</dd></div>
+          <div class="sub"><dt>Разница со вкладом, п. п.</dt><dd id="bn-diff">—</dd></div>
+        </dl>
+        <p class="calc-note">Доходность к погашению считается с учётом того, что купоны вы получаете по ходу срока и не вкладываете заново. Налог 13% берётся с купонов и с разницы между номиналом и ценой покупки. Комиссия брокера, накопленный купонный доход и риск, что цена изменится до погашения, не учтены. Доходность вклада здесь не уменьшена на налог.</p>
       </form>
     </div>
   </section>

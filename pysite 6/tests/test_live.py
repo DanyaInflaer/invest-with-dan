@@ -425,6 +425,21 @@ class Blog(unittest.TestCase):
         self.assertIn('href="razbory/"', html)
 
 
+class NewTools(unittest.TestCase):
+    def test_new_calculators_present(self):
+        html = site.app.test_client().get("/").get_data(as_text=True)
+        for i in ("iis-form", "dc-form", "bn-form", "is-a", "is-b", "dc-best", "bn-ytm", "bn-net", "pn-state", "pn-total"):
+            self.assertIn(f'id="{i}"', html, i)
+        self.assertIn('href="#vlozheniya"', html)
+        for f in ("iis-form", "dc-form", "bn-form"):
+            self.assertRegex(html, rf'id="{f}" data-report')
+
+    def test_js_has_new_logic(self):
+        js = (pathlib.Path(site.BASE) / "static" / "app.js").read_text(encoding="utf-8")
+        for name in ("calcIis", "calcDepCompare", "calcBond", "bondRate", "reportOnly", "calc-pdf"):
+            self.assertIn(name, js, name)
+
+
 class Security(unittest.TestCase):
     def setUp(self):
         self.c = site.app.test_client()

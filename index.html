@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-48WLl4pWntEsMp7/7cLCNWqDJOfLedm3rlL+Fb4U2ZY=' 'sha256-xzYhVKr5IJF79d7OgfRFfpRkoanq10cu1rdtlmEcF/w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-WGWeupWVkgSdgqJIEmq9JP9B8fLdaid4zz7iTqTADRk=' 'sha256-xzYhVKr5IJF79d7OgfRFfpRkoanq10cu1rdtlmEcF/w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -537,6 +537,10 @@ html { -webkit-text-size-adjust: 100%; }
 @media (max-width: 640px) { .cal-item { grid-template-columns: 1fr; gap: 4px; } .cal-next { padding: 18px; } }
 .cal-list + .calc-note { margin-top: 16px; }
 
+/* кнопка «в PDF» внутри калькулятора */
+.calc-pdf { align-self: start; font-size: 13px; padding: 7px 14px; margin-top: 4px; }
+@media print { .calc-pdf { display: none; } }
+
 </style>
 </head>
 <body>
@@ -554,6 +558,7 @@ html { -webkit-text-size-adjust: 100%; }
       <a href="#kalkulyatory">Калькуляторы</a>
       <a href="#ipoteka">Ипотека</a>
       <a href="#instrumenty">Налоги и пенсия</a>
+      <a href="#vlozheniya">ИИС и облигации</a>
       <a href="#vyvody">Что это значит</a>
       <a href="#kviz">Проверь себя</a>
       <a href="#razbory">Разборы</a>
@@ -1392,6 +1397,10 @@ html { -webkit-text-size-adjust: 100%; }
           <input id="pn-want" name="want" type="number" inputmode="numeric" min="0" step="5000" value="80000">
         </div>
         <div class="field">
+          <label for="pn-state">Государственная пенсия в месяц в сегодняшних ценах, ₽ <span class="hint">оценку даёт личный кабинет Социального фонда</span></label>
+          <input id="pn-state" name="state" type="number" inputmode="numeric" min="0" step="1000" value="25000">
+        </div>
+        <div class="field">
           <label for="pn-rate">Доходность, % годовых</label>
           <input id="pn-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="50" step="0.01" value="12.73">
         </div>
@@ -1406,7 +1415,8 @@ html { -webkit-text-size-adjust: 100%; }
         <dl class="result" aria-live="polite">
           <div><dt>Накопится к пенсии (в сегодняшних ценах)</dt><dd id="pn-cap">—</dd></div>
           <div><dt>Пенсия от накоплений в месяц</dt><dd id="pn-pension">—</dd></div>
-          <div><dt>Нужно накопить на желаемую пенсию</dt><dd id="pn-need">—</dd></div>
+          <div><dt>Вместе с государственной пенсией</dt><dd id="pn-total">—</dd></div>
+          <div><dt>Нужно накопить, чтобы закрыть разницу</dt><dd id="pn-need">—</dd></div>
           <div class="sub"><dt>Чтобы хватило, откладывать в месяц</dt><dd id="pn-must">—</dd></div>
         </dl>
         <p class="calc-note" id="pn-note"></p>
@@ -1599,6 +1609,138 @@ html { -webkit-text-size-adjust: 100%; }
           <div class="sub"><dt>Подушка безопасности, месяцев расходов</dt><dd id="bd-cushion">—</dd></div>
         </dl>
         <p class="calc-note" id="bd-note"></p>
+      </form>
+    </div>
+  </section>
+
+
+  <!-- ===================== ИИС, ВКЛАДЫ, ОБЛИГАЦИИ ===================== -->
+  <section class="band" id="vlozheniya">
+    <div class="sec-head">
+      <h2>ИИС, сравнение вкладов и облигации</h2>
+      <p>Три калькулятора для выбора, куда вложить деньги: какой тип ИИС выгоднее, какой из предложенных банками вкладов приносит больше и какую доходность даёт облигация, купленная не по номиналу.</p>
+    </div>
+
+    <div class="calcs">
+      <!-- ИИС -->
+      <form class="calc" id="iis-form" data-report autocomplete="off">
+        <h3>ИИС: тип А или тип Б</h3>
+        <div class="field">
+          <label for="is-sum">Взнос в год, ₽ <span class="hint">до 1 млн</span></label>
+          <input id="is-sum" name="sum" type="number" inputmode="numeric" min="0" max="1000000" step="10000" value="400000">
+        </div>
+        <div class="field">
+          <label for="is-years">Срок: <output id="is-years-out">5 лет</output> <span class="hint">не меньше 3 лет</span></label>
+          <input id="is-years" name="years" type="range" min="3" max="15" step="1" value="5">
+        </div>
+        <div class="field">
+          <label for="is-rate">Доходность портфеля, % годовых <span class="hint">не гарантирована</span></label>
+          <input id="is-rate" data-scn="dep" name="rate" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12.73">
+        </div>
+        <div class="field">
+          <label for="is-income">Ваш доход за год до налога, ₽ <span class="hint">вычет не больше уплаченного НДФЛ</span></label>
+          <input id="is-income" name="income" type="number" inputmode="numeric" min="0" step="100000" value="1500000">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Тип А: итог, вычеты вложены заново</dt><dd id="is-a">—</dd></div>
+          <div><dt>Тип Б: итог без налога на доход</dt><dd id="is-b">—</dd></div>
+          <div><dt>Обычный брокерский счёт: итог после налога</dt><dd id="is-plain">—</dd></div>
+          <div class="sub"><dt>Вычеты за весь срок (тип А)</dt><dd id="is-ded">—</dd></div>
+          <div class="sub"><dt>Налог с дохода на обычном счёте</dt><dd id="is-tax">—</dd></div>
+          <div class="sub"><dt>Выгоднее</dt><dd id="is-best">—</dd></div>
+        </dl>
+        <p class="calc-note">Упрощения: взнос вносится в начале года, доход начисляется раз в год, вычет по типу А (13% с суммы до 400 000 ₽ в год) приходит в конце следующего года и вкладывается заново. Налог с дохода на обычном и на ИИС типа А считается по ставке 13% до 2,4 млн ₽ и 15% свыше. Комиссии брокера не учтены. Правила ИИС меняются, перед открытием счёта проверьте условия на сайте Банка России и у брокера.</p>
+      </form>
+
+      <!-- Сравнение вкладов -->
+      <form class="calc wide" id="dc-form" data-report autocomplete="off">
+        <h3>Сравнение трёх вкладов</h3>
+        <div class="field">
+          <label for="dc-amount">Сумма, ₽</label>
+          <input id="dc-amount" name="amount" type="number" inputmode="numeric" min="0" step="10000" value="1000000">
+        </div>
+        <div class="field">
+          <label for="dc-months">Срок: <output id="dc-months-out">12 мес.</output></label>
+          <input id="dc-months" name="months" type="range" min="1" max="60" step="1" value="12">
+        </div>
+        <div class="field">
+          <label for="dc-r1">Вклад 1: ставка, % годовых</label>
+          <input id="dc-r1" data-scn="dep" name="r1" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12.73">
+        </div>
+        <div class="field check">
+          <input id="dc-c1" name="c1" type="checkbox" checked>
+          <label for="dc-c1">Вклад 1: проценты прибавляются к сумме каждый месяц</label>
+        </div>
+        <div class="field">
+          <label for="dc-r2">Вклад 2: ставка, % годовых</label>
+          <input id="dc-r2" data-scn="dep" name="r2" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12.23">
+        </div>
+        <div class="field check">
+          <input id="dc-c2" name="c2" type="checkbox" checked>
+          <label for="dc-c2">Вклад 2: проценты прибавляются к сумме каждый месяц</label>
+        </div>
+        <div class="field">
+          <label for="dc-r3">Вклад 3: ставка, % годовых</label>
+          <input id="dc-r3" data-scn="dep" name="r3" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="13.23">
+        </div>
+        <div class="field check">
+          <input id="dc-c3" name="c3" type="checkbox"None>
+          <label for="dc-c3">Вклад 3: проценты прибавляются к сумме каждый месяц</label>
+        </div>
+        <div class="table-wrap">
+          <table class="regions" id="dc-table" style="min-width:0">
+            <thead><tr><th scope="col">Вклад</th><th scope="col" class="num">Итог до налога</th><th scope="col" class="num">Доход после налога</th><th scope="col" class="num">Эффективная ставка в год</th></tr></thead>
+            <tbody>
+              <tr><th scope="row" class="c-name">Вклад 1</th><td class="num" id="dc-v1">—</td><td class="num" id="dc-n1">—</td><td class="num" id="dc-e1">—</td></tr>
+              <tr><th scope="row" class="c-name">Вклад 2</th><td class="num" id="dc-v2">—</td><td class="num" id="dc-n2">—</td><td class="num" id="dc-e2">—</td></tr>
+              <tr><th scope="row" class="c-name">Вклад 3</th><td class="num" id="dc-v3">—</td><td class="num" id="dc-n3">—</td><td class="num" id="dc-e3">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <dl class="result" aria-live="polite">
+          <div class="sub"><dt>Лучший вариант</dt><dd id="dc-best">—</dd></div>
+          <div class="sub"><dt>Выигрыш лучшего у худшего</dt><dd id="dc-gap">—</dd></div>
+        </dl>
+        <p class="calc-note">Если проценты выплачиваются в конце срока, ставка считается простой. Налог посчитан так, будто это единственный вклад: не облагается 1 млн ₽ × 16,0%, дальше 13% до 2,4 млн ₽ дохода в год и 15% выше. Вклады застрахованы до 1,4 млн ₽ в одном банке.</p>
+      </form>
+
+      <!-- Облигации -->
+      <form class="calc" id="bn-form" data-report autocomplete="off">
+        <h3>Облигация: доходность к погашению</h3>
+        <div class="field">
+          <label for="bn-price">Цена, % от номинала <span class="hint">номинал ОФЗ 1000 ₽</span></label>
+          <input id="bn-price" name="price" type="number" inputmode="decimal" min="1" max="200" step="0.01" value="92">
+        </div>
+        <div class="field">
+          <label for="bn-coupon">Купон, % годовых от номинала</label>
+          <input id="bn-coupon" name="coupon" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12">
+        </div>
+        <div class="field">
+          <label for="bn-freq">Выплат в год</label>
+          <select id="bn-freq" name="freq"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option><option value="12">12</option></select>
+        </div>
+        <div class="field">
+          <label for="bn-years">До погашения: <output id="bn-years-out">3 года</output></label>
+          <input id="bn-years" name="years" type="range" min="1" max="30" step="1" value="3">
+        </div>
+        <div class="field">
+          <label for="bn-count">Сколько облигаций, шт.</label>
+          <input id="bn-count" name="count" type="number" inputmode="numeric" min="1" max="100000" step="1" value="100">
+        </div>
+        <div class="field">
+          <label for="bn-dep">Ставка вклада для сравнения, % годовых</label>
+          <input id="bn-dep" data-scn="dep" name="dep" type="number" inputmode="decimal" min="0" max="60" step="0.01" value="12.73">
+        </div>
+        <dl class="result" aria-live="polite">
+          <div><dt>Вложите (без накопленного купонного дохода)</dt><dd id="bn-cost">—</dd></div>
+          <div><dt>Купоны за весь срок</dt><dd id="bn-cpn">—</dd></div>
+          <div><dt>Доход при погашении (номинал минус цена)</dt><dd id="bn-gain">—</dd></div>
+          <div><dt>Доходность к погашению, годовых</dt><dd id="bn-ytm">—</dd></div>
+          <div class="sub"><dt>То же после налога 13%</dt><dd id="bn-net">—</dd></div>
+          <div class="sub"><dt>Текущая доходность (купон к цене)</dt><dd id="bn-cur">—</dd></div>
+          <div class="sub"><dt>Разница со вкладом, п. п.</dt><dd id="bn-diff">—</dd></div>
+        </dl>
+        <p class="calc-note">Доходность к погашению считается с учётом того, что купоны вы получаете по ходу срока и не вкладываете заново. Налог 13% берётся с купонов и с разницы между номиналом и ценой покупки. Комиссия брокера, накопленный купонный доход и риск, что цена изменится до погашения, не учтены. Доходность вклада здесь не уменьшена на налог.</p>
       </form>
     </div>
   </section>
@@ -2401,11 +2543,13 @@ html { -webkit-text-size-adjust: 100%; }
     return t;
   }
 
+  var reportOnly = null;          // если задан один блок, в PDF попадёт только он
+
   function buildReport() {
     var root = $('report');
     root.textContent = '';
     var head = div('rp-head');
-    var h1 = document.createElement('h1'); h1.textContent = 'Мои расчёты';
+    var h1 = document.createElement('h1'); h1.textContent = reportOnly ? 'Мой расчёт' : 'Мои расчёты';
     head.appendChild(h1);
     var when = new Date().toLocaleString('ru-RU', { dateStyle: 'long', timeStyle: 'short' });
     var p1 = document.createElement('p'); p1.textContent = (D.team ? D.team + ' · ' : '') + when;
@@ -2416,6 +2560,7 @@ html { -webkit-text-size-adjust: 100%; }
     root.appendChild(head);
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-report]'), function (node) {
+      if (reportOnly && node !== reportOnly) return;
       var sec = div('rp-sec');
       var h3 = node.querySelector('h3');
       var title = node.getAttribute('data-title') || (h3 ? textOf(h3) : '');
@@ -2461,11 +2606,22 @@ html { -webkit-text-size-adjust: 100%; }
 
   // Отчёт собирается при печати: и по кнопке, и по Ctrl+P
   window.addEventListener('beforeprint', function () { chartForcers.forEach(function (fn) { fn(); }); buildReport(); document.body.classList.add('printing'); });
-  window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); $('report').textContent = ''; });
+  window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); $('report').textContent = ''; reportOnly = null; });
   $('pdf-btn').addEventListener('click', function () {
     var msg = $('pdf-msg');
     msg.textContent = '';
     try { window.print(); } catch (e) { msg.textContent = 'Не удалось открыть окно печати. Нажмите Ctrl+P (на телефоне: меню браузера, «Печать»).'; }
+  });
+
+  /* кнопка «Сохранить в PDF» в каждом калькуляторе: в файл попадает только он */
+  Array.prototype.forEach.call(document.querySelectorAll('form.calc[data-report]'), function (form) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn calc-pdf'; b.textContent = 'Сохранить этот расчёт в PDF';
+    b.addEventListener('click', function () {
+      reportOnly = form;
+      try { window.print(); } catch (e) { reportOnly = null; }
+    });
+    form.appendChild(b);
   });
 
   /* ======================================================================
@@ -2779,7 +2935,8 @@ html { -webkit-text-size-adjust: 100%; }
       g('pn-age-out').textContent = yrs(age);
       g('pn-ret-out').textContent = yrs(ret);
       g('pn-years-out').textContent = yrs(pay);
-      var have = num(g('pn-have'), 0), save = num(g('pn-save'), 0), want = num(g('pn-want'), 0);
+      var have = num(g('pn-have'), 0), save = num(g('pn-save'), 0), state = num(g('pn-state'), 0);
+      var want = Math.max(0, num(g('pn-want'), 0) - state);        // сколько нужно закрыть накоплениями
       var r = num(g('pn-rate'), 0) / 100, inf = num(g('pn-infl'), 0) / 100;
       var rr = Math.pow((1 + r) / (1 + inf), 1 / 12) - 1;
       var n = (ret - age) * 12, M = pay * 12;
@@ -2791,15 +2948,16 @@ html { -webkit-text-size-adjust: 100%; }
       var must = Math.max(0, (need - have * grow) / fv);
       g('pn-cap').textContent = rub(cap);
       g('pn-pension').textContent = rub(cap / af);
+      g('pn-total').textContent = rub(cap / af + state);
       g('pn-need').textContent = rub(need);
       g('pn-must').textContent = cap >= need ? 'уже хватает' : rub(must);
       var share = need > 0 ? cap / need * 100 : 100;
       g('pn-note').textContent = (cap >= need
         ? 'Накоплений хватит на желаемую пенсию, это ' + fmt0.format(share) + '% от нужной суммы.'
         : 'Накоплений хватит на ' + fmt0.format(share) + '% от желаемой пенсии.') +
-        ' Государственная пенсия и налоги не учтены: государственная пенсия станет дополнением к накоплениям. Пополнения и выплаты растут вместе с инфляцией.';
+        ' Государственная пенсия учтена по вашей оценке, налоги и комиссии нет. Пополнения и выплаты растут вместе с инфляцией.';
     }
-    ['pn-age', 'pn-ret', 'pn-have', 'pn-save', 'pn-want', 'pn-rate', 'pn-infl', 'pn-years'].forEach(function (id) { g(id).addEventListener('input', calcPension); });
+    ['pn-age', 'pn-ret', 'pn-have', 'pn-save', 'pn-want', 'pn-state', 'pn-rate', 'pn-infl', 'pn-years'].forEach(function (id) { g(id).addEventListener('input', calcPension); });
 
     /* --- вклад, облигации, акции --- */
     function calcCompare() {
@@ -2916,6 +3074,91 @@ html { -webkit-text-size-adjust: 100%; }
     ['bd-gross', 'bd-loan', 'bd-comm', 'bd-food', 'bd-trans', 'bd-other', 'bd-save', 'bd-have', 'bd-rate'].forEach(function (id) {
       g(id).addEventListener('input', calcBudget);
     });
+
+    /* --- ИИС: тип А, тип Б и обычный брокерский счёт --- */
+    function calcIis() {
+      var C = Math.min(num(g('is-sum'), 0), 1000000), n = parseInt(g('is-years').value, 10), r = num(g('is-rate'), 0) / 100;
+      var inc = num(g('is-income'), 0);
+      g('is-years-out').textContent = yrs(n);
+      var fv = 0, t;
+      for (t = 1; t <= n; t++) fv = (fv + C) * (1 + r);
+      var paidIn = C * n;
+      var d = Math.min(Math.min(C, T.iis_limit) * T.rate / 100, ndfl(inc));       // вычет за один год
+      var dedVal = 0;
+      for (t = 1; t <= n; t++) dedVal += d * Math.pow(1 + r, Math.max(0, n - t - 1));
+      var profitPlain = Math.max(0, fv - paidIn), taxPlain = ndfl(profitPlain);
+      var profitA = Math.max(0, fv - paidIn + (dedVal - d * n)), taxA = ndfl(profitA);
+      var a = fv + dedVal - taxA, b = fv, plain = fv - taxPlain;
+      g('is-a').textContent = rub(a);
+      g('is-b').textContent = rub(b);
+      g('is-plain').textContent = rub(plain);
+      g('is-ded').textContent = rub(d * n);
+      g('is-tax').textContent = rub(taxPlain);
+      var best = a >= b && a >= plain ? 'Тип А' : b >= plain ? 'Тип Б' : 'Обычный счёт';
+      g('is-best').textContent = paidIn === 0 ? '—' : best + (best === 'Обычный счёт' ? '' : ' (+' + rub(Math.max(a, b) - plain) + ' к обычному счёту)');
+    }
+    ['is-sum', 'is-years', 'is-rate', 'is-income'].forEach(function (id) { g(id).addEventListener('input', calcIis); });
+
+    /* --- сравнение трёх вкладов --- */
+    function calcDepCompare() {
+      var A = num(g('dc-amount'), 0), m = parseInt(g('dc-months').value, 10);
+      g('dc-months-out').textContent = m % 12 === 0 ? yrs(m / 12) : m + ' мес.';
+      var res = [];
+      for (var i = 1; i <= 3; i++) {
+        var r = num(g('dc-r' + i), 0) / 100, cap = g('dc-c' + i).checked, bal, income;
+        if (cap) { bal = A * Math.pow(1 + r / 12, m); income = bal - A; }
+        else { income = A * r * m / 12; bal = A + income; }
+        var years = m / 12;
+        var tax = years <= 1 ? depTax(income) : depTax(income / years) * years;
+        var eff = A > 0 ? (Math.pow(bal / A, 12 / m) - 1) * 100 : 0;
+        g('dc-v' + i).textContent = rub(bal);
+        g('dc-n' + i).textContent = rub(income - tax);
+        g('dc-e' + i).textContent = fmtN.format(eff) + '%';
+        res.push(income - tax);
+      }
+      var mx = Math.max.apply(null, res), mn = Math.min.apply(null, res);
+      g('dc-best').textContent = A === 0 ? '—' : res.filter(function (v) { return v === mx; }).length > 1 ? 'несколько равны' : 'Вклад ' + (res.indexOf(mx) + 1);
+      g('dc-gap').textContent = rub(mx - mn);
+    }
+    ['dc-amount', 'dc-months', 'dc-r1', 'dc-r2', 'dc-r3', 'dc-c1', 'dc-c2', 'dc-c3'].forEach(function (id) {
+      g(id).addEventListener('input', calcDepCompare); g(id).addEventListener('change', calcDepCompare);
+    });
+
+    /* --- облигация: доходность к погашению (бисекция по ставке за период) --- */
+    function bondRate(price, cpn, N, nominal, redeem) {
+      var lo = -0.9, hi = 5, mid, k, pv;
+      for (var it = 0; it < 80; it++) {
+        mid = (lo + hi) / 2; pv = 0;
+        for (k = 1; k <= N; k++) pv += cpn / Math.pow(1 + mid, k);
+        pv += redeem / Math.pow(1 + mid, N);
+        if (pv > price) lo = mid; else hi = mid;
+      }
+      return mid;
+    }
+    function calcBond() {
+      var pr = num(g('bn-price'), 0) / 100 * 1000, cp = num(g('bn-coupon'), 0), f = parseInt(g('bn-freq').value, 10);
+      var y = parseInt(g('bn-years').value, 10), cnt = Math.max(1, Math.round(num(g('bn-count'), 1))), dep = num(g('bn-dep'), 0);
+      g('bn-years-out').textContent = yrs(y);
+      if (pr <= 0) return;
+      var N = y * f, c = cp / 100 * 1000 / f;
+      var i = bondRate(pr, c, N, 1000, 1000), ytm = (Math.pow(1 + i, f) - 1) * 100;
+      var k = 0.13, gainOne = 1000 - pr;
+      var cNet = c * (1 - k), redNet = 1000 - k * Math.max(0, gainOne);
+      var iN = bondRate(pr, cNet, N, 1000, redNet), ytmN = (Math.pow(1 + iN, f) - 1) * 100;
+      g('bn-cost').textContent = rub(pr * cnt);
+      g('bn-cpn').textContent = rub(c * N * cnt);
+      g('bn-gain').textContent = neg(gainOne * cnt);
+      g('bn-ytm').textContent = fmtN.format(ytm) + '%';
+      g('bn-net').textContent = fmtN.format(ytmN) + '%';
+      g('bn-cur').textContent = fmtN.format(cp * 1000 / pr) + '%';
+      var diff = ytm - dep;
+      g('bn-diff').textContent = (diff > 0 ? '+' : '') + fmtN.format(diff).replace('-', '−');
+    }
+    ['bn-price', 'bn-coupon', 'bn-freq', 'bn-years', 'bn-count', 'bn-dep'].forEach(function (id) {
+      g(id).addEventListener('input', calcBond); g(id).addEventListener('change', calcBond);
+    });
+
+    calcIis(); calcDepCompare(); calcBond();
 
     calcNet(); calcRent(); calcBudget();
     calcTax(); calcDed(); calcPension(); calcCompare();
@@ -3071,7 +3314,7 @@ html { -webkit-text-size-adjust: 100%; }
       ['Ипотека: платёж в месяц', 'mor-pay'], ['Кредит: платёж в месяц', 'ln-pay'],
       ['Инвестиции: итоговая сумма', 'inv-final'], ['Инвестиции: итог в сегодняшних ценах', 'inv-real'],
       ['Вклад на руки: итог', 'nt-net'], ['Вклад на руки: реальная доходность', 'nt-ryield'],
-      ['Пенсия от накоплений в месяц', 'pn-pension'], ['Аренда или ипотека', 'rv-verdict']
+      ['Пенсия от накоплений в месяц', 'pn-pension'], ['ИИС: итог по типу А', 'is-a'], ['Облигация: доходность к погашению', 'bn-ytm'], ['Аренда или ипотека', 'rv-verdict']
     ];
     var forkBody = document.getElementById('fork-body');
     var forkBusy = false;

@@ -551,11 +551,13 @@
     return t;
   }
 
+  var reportOnly = null;          // если задан один блок, в PDF попадёт только он
+
   function buildReport() {
     var root = $('report');
     root.textContent = '';
     var head = div('rp-head');
-    var h1 = document.createElement('h1'); h1.textContent = 'Мои расчёты';
+    var h1 = document.createElement('h1'); h1.textContent = reportOnly ? 'Мой расчёт' : 'Мои расчёты';
     head.appendChild(h1);
     var when = new Date().toLocaleString('ru-RU', { dateStyle: 'long', timeStyle: 'short' });
     var p1 = document.createElement('p'); p1.textContent = (D.team ? D.team + ' · ' : '') + when;
@@ -566,6 +568,7 @@
     root.appendChild(head);
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-report]'), function (node) {
+      if (reportOnly && node !== reportOnly) return;
       var sec = div('rp-sec');
       var h3 = node.querySelector('h3');
       var title = node.getAttribute('data-title') || (h3 ? textOf(h3) : '');
@@ -611,11 +614,22 @@
 
   // Отчёт собирается при печати: и по кнопке, и по Ctrl+P
   window.addEventListener('beforeprint', function () { chartForcers.forEach(function (fn) { fn(); }); buildReport(); document.body.classList.add('printing'); });
-  window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); $('report').textContent = ''; });
+  window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); $('report').textContent = ''; reportOnly = null; });
   $('pdf-btn').addEventListener('click', function () {
     var msg = $('pdf-msg');
     msg.textContent = '';
     try { window.print(); } catch (e) { msg.textContent = 'Не удалось открыть окно печати. Нажмите Ctrl+P (на телефоне: меню браузера, «Печать»).'; }
+  });
+
+  /* кнопка «Сохранить в PDF» в каждом калькуляторе: в файл попадает только он */
+  Array.prototype.forEach.call(document.querySelectorAll('form.calc[data-report]'), function (form) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn calc-pdf'; b.textContent = 'Сохранить этот расчёт в PDF';
+    b.addEventListener('click', function () {
+      reportOnly = form;
+      try { window.print(); } catch (e) { reportOnly = null; }
+    });
+    form.appendChild(b);
   });
 
   /* ======================================================================
@@ -929,7 +943,8 @@
       g('pn-age-out').textContent = yrs(age);
       g('pn-ret-out').textContent = yrs(ret);
       g('pn-years-out').textContent = yrs(pay);
-      var have = num(g('pn-have'), 0), save = num(g('pn-save'), 0), want = num(g('pn-want'), 0);
+      var have = num(g('pn-have'), 0), save = num(g('pn-save'), 0), state = num(g('pn-state'), 0);
+      var want = Math.max(0, num(g('pn-want'), 0) - state);        // сколько нужно закрыть накоплениями
       var r = num(g('pn-rate'), 0) / 100, inf = num(g('pn-infl'), 0) / 100;
       var rr = Math.pow((1 + r) / (1 + inf), 1 / 12) - 1;
       var n = (ret - age) * 12, M = pay * 12;
@@ -941,15 +956,16 @@
       var must = Math.max(0, (need - have * grow) / fv);
       g('pn-cap').textContent = rub(cap);
       g('pn-pension').textContent = rub(cap / af);
+      g('pn-total').textContent = rub(cap / af + state);
       g('pn-need').textContent = rub(need);
       g('pn-must').textContent = cap >= need ? 'уже хватает' : rub(must);
       var share = need > 0 ? cap / need * 100 : 100;
       g('pn-note').textContent = (cap >= need
         ? 'Накоплений хватит на желаемую пенсию, это ' + fmt0.format(share) + '% от нужной суммы.'
         : 'Накоплений хватит на ' + fmt0.format(share) + '% от желаемой пенсии.') +
-        ' Государственная пенсия и налоги не учтены: государственная пенсия станет дополнением к накоплениям. Пополнения и выплаты растут вместе с инфляцией.';
+        ' Государственная пенсия учтена по вашей оценке, налоги и комиссии нет. Пополнения и выплаты растут вместе с инфляцией.';
     }
-    ['pn-age', 'pn-ret', 'pn-have', 'pn-save', 'pn-want', 'pn-rate', 'pn-infl', 'pn-years'].forEach(function (id) { g(id).addEventListener('input', calcPension); });
+    ['pn-age', 'pn-ret', 'pn-have', 'pn-save', 'pn-want', 'pn-state', 'pn-rate', 'pn-infl', 'pn-years'].forEach(function (id) { g(id).addEventListener('input', calcPension); });
 
     /* --- вклад, облигации, акции --- */
     function calcCompare() {
@@ -1066,6 +1082,91 @@
     ['bd-gross', 'bd-loan', 'bd-comm', 'bd-food', 'bd-trans', 'bd-other', 'bd-save', 'bd-have', 'bd-rate'].forEach(function (id) {
       g(id).addEventListener('input', calcBudget);
     });
+
+    /* --- ИИС: тип А, тип Б и обычный брокерский счёт --- */
+    function calcIis() {
+      var C = Math.min(num(g('is-sum'), 0), 1000000), n = parseInt(g('is-years').value, 10), r = num(g('is-rate'), 0) / 100;
+      var inc = num(g('is-income'), 0);
+      g('is-years-out').textContent = yrs(n);
+      var fv = 0, t;
+      for (t = 1; t <= n; t++) fv = (fv + C) * (1 + r);
+      var paidIn = C * n;
+      var d = Math.min(Math.min(C, T.iis_limit) * T.rate / 100, ndfl(inc));       // вычет за один год
+      var dedVal = 0;
+      for (t = 1; t <= n; t++) dedVal += d * Math.pow(1 + r, Math.max(0, n - t - 1));
+      var profitPlain = Math.max(0, fv - paidIn), taxPlain = ndfl(profitPlain);
+      var profitA = Math.max(0, fv - paidIn + (dedVal - d * n)), taxA = ndfl(profitA);
+      var a = fv + dedVal - taxA, b = fv, plain = fv - taxPlain;
+      g('is-a').textContent = rub(a);
+      g('is-b').textContent = rub(b);
+      g('is-plain').textContent = rub(plain);
+      g('is-ded').textContent = rub(d * n);
+      g('is-tax').textContent = rub(taxPlain);
+      var best = a >= b && a >= plain ? 'Тип А' : b >= plain ? 'Тип Б' : 'Обычный счёт';
+      g('is-best').textContent = paidIn === 0 ? '—' : best + (best === 'Обычный счёт' ? '' : ' (+' + rub(Math.max(a, b) - plain) + ' к обычному счёту)');
+    }
+    ['is-sum', 'is-years', 'is-rate', 'is-income'].forEach(function (id) { g(id).addEventListener('input', calcIis); });
+
+    /* --- сравнение трёх вкладов --- */
+    function calcDepCompare() {
+      var A = num(g('dc-amount'), 0), m = parseInt(g('dc-months').value, 10);
+      g('dc-months-out').textContent = m % 12 === 0 ? yrs(m / 12) : m + ' мес.';
+      var res = [];
+      for (var i = 1; i <= 3; i++) {
+        var r = num(g('dc-r' + i), 0) / 100, cap = g('dc-c' + i).checked, bal, income;
+        if (cap) { bal = A * Math.pow(1 + r / 12, m); income = bal - A; }
+        else { income = A * r * m / 12; bal = A + income; }
+        var years = m / 12;
+        var tax = years <= 1 ? depTax(income) : depTax(income / years) * years;
+        var eff = A > 0 ? (Math.pow(bal / A, 12 / m) - 1) * 100 : 0;
+        g('dc-v' + i).textContent = rub(bal);
+        g('dc-n' + i).textContent = rub(income - tax);
+        g('dc-e' + i).textContent = fmtN.format(eff) + '%';
+        res.push(income - tax);
+      }
+      var mx = Math.max.apply(null, res), mn = Math.min.apply(null, res);
+      g('dc-best').textContent = A === 0 ? '—' : res.filter(function (v) { return v === mx; }).length > 1 ? 'несколько равны' : 'Вклад ' + (res.indexOf(mx) + 1);
+      g('dc-gap').textContent = rub(mx - mn);
+    }
+    ['dc-amount', 'dc-months', 'dc-r1', 'dc-r2', 'dc-r3', 'dc-c1', 'dc-c2', 'dc-c3'].forEach(function (id) {
+      g(id).addEventListener('input', calcDepCompare); g(id).addEventListener('change', calcDepCompare);
+    });
+
+    /* --- облигация: доходность к погашению (бисекция по ставке за период) --- */
+    function bondRate(price, cpn, N, nominal, redeem) {
+      var lo = -0.9, hi = 5, mid, k, pv;
+      for (var it = 0; it < 80; it++) {
+        mid = (lo + hi) / 2; pv = 0;
+        for (k = 1; k <= N; k++) pv += cpn / Math.pow(1 + mid, k);
+        pv += redeem / Math.pow(1 + mid, N);
+        if (pv > price) lo = mid; else hi = mid;
+      }
+      return mid;
+    }
+    function calcBond() {
+      var pr = num(g('bn-price'), 0) / 100 * 1000, cp = num(g('bn-coupon'), 0), f = parseInt(g('bn-freq').value, 10);
+      var y = parseInt(g('bn-years').value, 10), cnt = Math.max(1, Math.round(num(g('bn-count'), 1))), dep = num(g('bn-dep'), 0);
+      g('bn-years-out').textContent = yrs(y);
+      if (pr <= 0) return;
+      var N = y * f, c = cp / 100 * 1000 / f;
+      var i = bondRate(pr, c, N, 1000, 1000), ytm = (Math.pow(1 + i, f) - 1) * 100;
+      var k = 0.13, gainOne = 1000 - pr;
+      var cNet = c * (1 - k), redNet = 1000 - k * Math.max(0, gainOne);
+      var iN = bondRate(pr, cNet, N, 1000, redNet), ytmN = (Math.pow(1 + iN, f) - 1) * 100;
+      g('bn-cost').textContent = rub(pr * cnt);
+      g('bn-cpn').textContent = rub(c * N * cnt);
+      g('bn-gain').textContent = neg(gainOne * cnt);
+      g('bn-ytm').textContent = fmtN.format(ytm) + '%';
+      g('bn-net').textContent = fmtN.format(ytmN) + '%';
+      g('bn-cur').textContent = fmtN.format(cp * 1000 / pr) + '%';
+      var diff = ytm - dep;
+      g('bn-diff').textContent = (diff > 0 ? '+' : '') + fmtN.format(diff).replace('-', '−');
+    }
+    ['bn-price', 'bn-coupon', 'bn-freq', 'bn-years', 'bn-count', 'bn-dep'].forEach(function (id) {
+      g(id).addEventListener('input', calcBond); g(id).addEventListener('change', calcBond);
+    });
+
+    calcIis(); calcDepCompare(); calcBond();
 
     calcNet(); calcRent(); calcBudget();
     calcTax(); calcDed(); calcPension(); calcCompare();
@@ -1221,7 +1322,7 @@
       ['Ипотека: платёж в месяц', 'mor-pay'], ['Кредит: платёж в месяц', 'ln-pay'],
       ['Инвестиции: итоговая сумма', 'inv-final'], ['Инвестиции: итог в сегодняшних ценах', 'inv-real'],
       ['Вклад на руки: итог', 'nt-net'], ['Вклад на руки: реальная доходность', 'nt-ryield'],
-      ['Пенсия от накоплений в месяц', 'pn-pension'], ['Аренда или ипотека', 'rv-verdict']
+      ['Пенсия от накоплений в месяц', 'pn-pension'], ['ИИС: итог по типу А', 'is-a'], ['Облигация: доходность к погашению', 'bn-ytm'], ['Аренда или ипотека', 'rv-verdict']
     ];
     var forkBody = document.getElementById('fork-body');
     var forkBusy = false;
