@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-WGWeupWVkgSdgqJIEmq9JP9B8fLdaid4zz7iTqTADRk=' 'sha256-xzYhVKr5IJF79d7OgfRFfpRkoanq10cu1rdtlmEcF/w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-n7ov95LG2QYsnclF1F4fIdNvMi6QvyxmwDGoGdzsFyw=' 'sha256-xzYhVKr5IJF79d7OgfRFfpRkoanq10cu1rdtlmEcF/w='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -562,6 +562,47 @@ html { -webkit-text-size-adjust: 100%; }
 .gl-item dd p { margin: 0 0 6px; }
 .gl-links { font-size: 14px; color: var(--muted); }
 .gl-item:target { background: var(--surface); outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* слайд «Лента и разборы»: открывается свайпом влево, кнопкой на краю или «Открыть ленту» */
+.feed-edge { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px 6px; border: 1px solid var(--line); border-right: 0; border-radius: 10px 0 0 10px; background: var(--surface); color: var(--accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+.feed-edge .fe-text { writing-mode: vertical-rl; letter-spacing: .04em; }
+.feed-edge .fe-arrow { font-size: 18px; line-height: 1; }
+.feed-edge:hover { background: var(--accent); color: var(--bg); }
+.feed-edge:focus-visible, .feed button:focus-visible, .feed a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+body.feed-open .feed-edge { display: none; }
+
+.feed { position: fixed; inset: 0; z-index: 60; background: var(--bg); color: var(--fg); overflow-y: auto; overscroll-behavior: contain;
+  transform: translateX(100%); visibility: hidden; transition: transform .32s cubic-bezier(.22,.8,.3,1), visibility 0s linear .32s; }
+.feed.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.22,.8,.3,1), visibility 0s; }
+.feed.dragging { transition: none; }
+body.feed-open { overflow: hidden; }
+.feed-bar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 12px 16px 0; display: grid; gap: 8px; }
+.feed-bar, .feed-body { max-width: 760px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+.feed-back { justify-self: start; font: inherit; font-size: 14px; color: var(--accent); background: none; border: 0; padding: 6px 0; cursor: pointer; }
+.feed-back span { display: inline-block; transform: scaleX(-1); margin-right: 4px; }
+.feed-title { font-family: var(--font-display); font-size: clamp(26px, 6vw, 36px); line-height: 1.1; margin: 0; }
+.feed-tabs { display: flex; gap: 4px; margin-top: 4px; }
+.feed-tabs button { font: inherit; font-size: 15px; font-weight: 500; color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; }
+.feed-tabs button.on { color: var(--fg); border-bottom-color: var(--accent); }
+.feed-tabs .cnt { font-size: 12px; color: var(--muted); margin-left: 2px; }
+.feed-body { padding: 8px 16px 40px; }
+.feed-lead { color: var(--muted); font-size: 14px; margin: 14px 0 6px; }
+.feed-card { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.feed-card h3 { font-family: var(--font-display); font-size: 19px; line-height: 1.25; margin: 4px 0 6px; }
+.feed-card h3 a { color: inherit; text-decoration: none; }
+.feed-card h3 a:hover { color: var(--accent); }
+.feed-card p { margin: 0; }
+.feed-card .post-meta { margin: 0; font-size: 13px; color: var(--muted); }
+.feed-more { margin-top: 20px; }
+.feed-news { list-style: none; margin: 8px 0 0; padding: 0; }
+.feed-news li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.feed-news .muted { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.feed-empty { color: var(--muted); padding: 16px 0; }
+.feed-hint { font-size: 13px; }
+@media (hover: hover) and (pointer: fine) { .feed-hint { display: none; } }
+@media (prefers-reduced-motion: reduce) { .feed, .feed.open { transition: none; } }
+@media print { .feed, .feed-edge { display: none !important; } }
 
 </style>
 </head>
@@ -1909,7 +1950,7 @@ html { -webkit-text-size-adjust: 100%; }
       </article>
       
     </div>
-    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a></p>
+    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a> <button type="button" class="btn feed-trigger" data-feed-open>Открыть ленту</button> <span class="muted feed-hint">или смахните экран влево</span></p>
   </section>
 
   <!-- ===================== ВОПРОСЫ ===================== -->
@@ -2009,6 +2050,89 @@ html { -webkit-text-size-adjust: 100%; }
 
   <footer>© 2026 Growth Syndicate · <a href="slovar/">Словарь</a> · <a href="metodika/">Методика и источники</a></footer>
 </div>
+
+
+<!-- ===================== СЛАЙД «ЛЕНТА И РАЗБОРЫ» (открывается свайпом влево) ===================== -->
+<button type="button" class="feed-edge" id="feed-open" aria-controls="feed-panel" aria-expanded="false">
+  <span class="fe-text">Лента и разборы</span><span class="fe-arrow" aria-hidden="true">‹</span>
+</button>
+<aside class="feed" id="feed-panel" aria-label="Лента и разборы" aria-hidden="true" inert>
+  <div class="feed-bar">
+    <button type="button" class="feed-back" id="feed-close"><span aria-hidden="true">›</span> К сайту</button>
+    <h2 class="feed-title">Лента и разборы</h2>
+    <div class="feed-tabs" role="tablist" aria-label="Раздел ленты">
+      <button type="button" role="tab" id="ft-posts" aria-controls="fp-posts" aria-selected="true" class="on">Разборы <span class="cnt">9</span></button>
+      <button type="button" role="tab" id="ft-news" aria-controls="fp-news" aria-selected="false">Лента ЦБ</button>
+    </div>
+  </div>
+  <div class="feed-body">
+    <section id="fp-posts" role="tabpanel" aria-labelledby="ft-posts">
+      <p class="feed-lead">Короткие разборы про ставки, вклады, ипотеку и налоги. Новые появляются сами после решений Банка России.</p>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Разбор</span> <time datetime="2026-10-24">24 октября 2026</time></p>
+        <h3><a href="razbory/snizhenie-stavki-i-vklad/">Что значит снижение ключевой ставки для вашего вклада</a></h3>
+        <p>Как ключевая ставка связана со ставками по вкладам, сколько теряет вкладчик при снижении и что можно сделать.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Разбор</span> <time datetime="2026-10-24">24 октября 2026</time></p>
+        <h3><a href="razbory/inflyaciya-i-vklad/">Как инфляция съедает доход по вкладу и как посчитать реальную доходность</a></h3>
+        <p>Почему ставка по вкладу и реальная прибыль не одно и то же, и сколько теряют деньги без вложений.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Разбор</span> <time datetime="2026-10-24">24 октября 2026</time></p>
+        <h3><a href="razbory/nalog-na-vklady-2026/">Налог на проценты по вкладам в 2026 году: кто и сколько заплатит</a></h3>
+        <p>Необлагаемая сумма, ставки налога 13% и 15% и примеры расчёта для вкладов на 3 и 10 млн рублей.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Разбор</span> <time datetime="2026-10-24">24 октября 2026</time></p>
+        <h3><a href="razbory/ipoteka-i-stavka/">Ипотека и ставка: как один процентный пункт меняет платёж и переплату</a></h3>
+        <p>Платёж и переплата по ипотеке 4,8 млн рублей на 20 лет при разных ставках, и чем помогает досрочное погашение.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-07-24">24 июля 2026</time></p>
+        <h3><a href="razbory/klyuchevaya-stavka-2026-07/">Ключевая ставка снижена до 14%: что это значит для вклада и ипотеки</a></h3>
+        <p>Ключевая ставка снижена с 14,25% до 14% (24 июля). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-06-19">19 июня 2026</time></p>
+        <h3><a href="razbory/klyuchevaya-stavka-2026-06/">Ключевая ставка снижена до 14,25%: что это значит для вклада и ипотеки</a></h3>
+        <p>Ключевая ставка снижена с 14,5% до 14,25% (19 июня). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-04-24">24 апреля 2026</time></p>
+        <h3><a href="razbory/klyuchevaya-stavka-2026-04/">Ключевая ставка снижена до 14,5%: что это значит для вклада и ипотеки</a></h3>
+        <p>Ключевая ставка снижена с 15% до 14,5% (24 апреля). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-03-20">20 марта 2026</time></p>
+        <h3><a href="razbory/klyuchevaya-stavka-2026-03/">Ключевая ставка снижена до 15%: что это значит для вклада и ипотеки</a></h3>
+        <p>Ключевая ставка снижена с 15,5% до 15% (20 марта). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+      </article>
+      
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">Автоматический разбор</span> <time datetime="2026-02-13">13 февраля 2026</time></p>
+        <h3><a href="razbory/klyuchevaya-stavka-2026-02/">Ключевая ставка снижена до 15,5%: что это значит для вклада и ипотеки</a></h3>
+        <p>Ключевая ставка снижена с 16% до 15,5% (13 февраля). Что изменится для вкладов, ипотеки и реальной доходности, с расчётами в рублях.</p>
+      </article>
+      
+      <p class="feed-more"><a class="btn" href="razbory/">Открыть страницу разборов</a></p>
+    </section>
+    <section id="fp-news" role="tabpanel" aria-labelledby="ft-news" hidden>
+      <p class="feed-lead">Заголовки пресс-службы Банка России. Полный текст на сайте источника.</p>
+      
+      <p class="feed-empty">Новости пока не загрузились. Они подтягиваются автоматически при обновлении сайта.</p>
+      
+    </section>
+  </div>
+</aside>
 
 <div id="report" class="report" aria-hidden="true"></div>
 
@@ -3210,6 +3334,83 @@ html { -webkit-text-size-adjust: 100%; }
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
   }
+
+
+  /* ======================================================================
+     Слайд «Лента и разборы»: свайп влево, кнопка на краю или «Открыть ленту»
+     ====================================================================== */
+  (function () {
+    var panel = document.getElementById('feed-panel'), edge = document.getElementById('feed-open');
+    if (!panel || !edge) return;
+    var HASH = '#lenta', pushed = false, lastFocus = null;
+    var tabs = [document.getElementById('ft-posts'), document.getElementById('ft-news')];
+    var panes = [document.getElementById('fp-posts'), document.getElementById('fp-news')];
+
+    function show(on) {
+      panel.classList.toggle('open', on);
+      document.body.classList.toggle('feed-open', on);
+      panel.setAttribute('aria-hidden', on ? 'false' : 'true');
+      edge.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (on) { panel.removeAttribute('inert'); panel.scrollTop = 0; var t = tabs[0].classList.contains('on') ? tabs[0] : tabs[1]; t.focus({ preventScroll: true }); }
+      else { panel.setAttribute('inert', ''); if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true }); }
+    }
+    function open() {
+      if (panel.classList.contains('open')) return;
+      lastFocus = document.activeElement;
+      if (location.hash !== HASH) { try { history.pushState(null, '', location.pathname + location.search + HASH); pushed = true; } catch (e) {} }
+      show(true);
+    }
+    function close() {
+      if (!panel.classList.contains('open')) return;
+      if (pushed && location.hash === HASH) { pushed = false; history.back(); return; }     // popstate закроет слайд
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+      show(false);
+    }
+    window.addEventListener('popstate', function () { var want = location.hash === HASH; if (want !== panel.classList.contains('open')) { if (want) lastFocus = document.activeElement; show(want); } });
+    if (location.hash === HASH) show(true);
+
+    edge.addEventListener('click', open);
+    document.getElementById('feed-close').addEventListener('click', close);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-feed-open]'), function (b) { b.addEventListener('click', open); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+
+    function pick(i) {
+      tabs.forEach(function (t, k) { t.classList.toggle('on', k === i); t.setAttribute('aria-selected', k === i ? 'true' : 'false'); });
+      panes.forEach(function (p, k) { p.hidden = k !== i; });
+      panel.scrollTop = 0;
+    }
+    tabs.forEach(function (t, i) { t.addEventListener('click', function () { pick(i); }); });
+
+    /* жесты: влево по сайту открывает слайд, вправо по слайду закрывает.
+       Не трогаем поля ввода, ползунки, графики и таблицы с горизонтальной прокруткой. */
+    function scrollsSideways(el) {
+      for (; el && el !== document.body; el = el.parentElement) {
+        if (el.scrollWidth > el.clientWidth + 2) {
+          var ox = getComputedStyle(el).overflowX;
+          if (ox === 'auto' || ox === 'scroll') return true;
+        }
+      }
+      return false;
+    }
+    var sx = 0, sy = 0, st = 0, track = false;
+    document.addEventListener('touchstart', function (e) {
+      track = false;
+      if (e.touches.length !== 1) return;
+      var t = e.touches[0], el = e.target;
+      var inside = panel.contains(el);
+      if (!inside && (el.closest('input, select, textarea, svg, .chart, .table-wrap, [data-no-swipe]') || scrollsSideways(el))) return;
+      if (inside && scrollsSideways(el)) return;
+      sx = t.clientX; sy = t.clientY; st = Date.now(); track = true;
+    }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (!track) return; track = false;
+      var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Date.now() - st > 700 || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+      var isOpen = panel.classList.contains('open');
+      if (!isOpen && dx < 0) open();
+      else if (isOpen && dx > 0) close();
+    }, { passive: true });
+  })();
 
   /* ---------- сортировка таблицы регионов ---------- */
   var table = document.getElementById('regions-table');

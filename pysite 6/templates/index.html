@@ -1090,7 +1090,7 @@
       </article>
       {% endfor %}
     </div>
-    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a></p>
+    <p class="all-posts"><a class="btn" href="razbory/">Все разборы</a> <button type="button" class="btn feed-trigger" data-feed-open>Открыть ленту</button> <span class="muted feed-hint">или смахните экран влево</span></p>
   </section>
 
   <!-- ===================== ВОПРОСЫ ===================== -->
@@ -1148,6 +1148,46 @@
 
   <footer>© {{ team.year }} {{ team.name }} · <a href="slovar/">Словарь</a> · <a href="metodika/">Методика и источники</a></footer>
 </div>
+
+
+<!-- ===================== СЛАЙД «ЛЕНТА И РАЗБОРЫ» (открывается свайпом влево) ===================== -->
+<button type="button" class="feed-edge" id="feed-open" aria-controls="feed-panel" aria-expanded="false">
+  <span class="fe-text">Лента и разборы</span><span class="fe-arrow" aria-hidden="true">‹</span>
+</button>
+<aside class="feed" id="feed-panel" aria-label="Лента и разборы" aria-hidden="true" inert>
+  <div class="feed-bar">
+    <button type="button" class="feed-back" id="feed-close"><span aria-hidden="true">›</span> К сайту</button>
+    <h2 class="feed-title">Лента и разборы</h2>
+    <div class="feed-tabs" role="tablist" aria-label="Раздел ленты">
+      <button type="button" role="tab" id="ft-posts" aria-controls="fp-posts" aria-selected="true" class="on">Разборы <span class="cnt">{{ feed_posts|length }}</span></button>
+      <button type="button" role="tab" id="ft-news" aria-controls="fp-news" aria-selected="false">Лента ЦБ{% if feed_news %} <span class="cnt">{{ feed_news|length }}</span>{% endif %}</button>
+    </div>
+  </div>
+  <div class="feed-body">
+    <section id="fp-posts" role="tabpanel" aria-labelledby="ft-posts">
+      <p class="feed-lead">Короткие разборы про ставки, вклады, ипотеку и налоги. Новые появляются сами после решений Банка России.</p>
+      {% for p in feed_posts %}
+      <article class="feed-card">
+        <p class="post-meta"><span class="tag">{{ p.kind_label }}</span> <time datetime="{{ p.date }}">{{ p.date_label }}</time></p>
+        <h3><a href="razbory/{{ p.slug }}/">{{ p.title }}</a></h3>
+        <p>{{ p.description }}</p>
+      </article>
+      {% endfor %}
+      <p class="feed-more"><a class="btn" href="razbory/">Открыть страницу разборов</a></p>
+    </section>
+    <section id="fp-news" role="tabpanel" aria-labelledby="ft-news" hidden>
+      <p class="feed-lead">Заголовки пресс-службы Банка России. Полный текст на сайте источника.</p>
+      {% if feed_news %}
+      <ul class="feed-news">
+        {% for n in feed_news %}<li><a href="{{ n.link }}" target="_blank" rel="noopener noreferrer nofollow">{{ n.title }}</a>{% if n.date_label %} <span class="muted">{{ n.date_label }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="feed-empty">Новости пока не загрузились. Они подтягиваются автоматически при обновлении сайта.</p>
+      {% endif %}
+    </section>
+  </div>
+</aside>
 
 <div id="report" class="report" aria-hidden="true"></div>
 

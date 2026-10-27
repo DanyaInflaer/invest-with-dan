@@ -610,7 +610,7 @@ def index():
         people=PEOPLE, invest=v["invest"],
         bars=bars, axis=AXIS, sources=SOURCES,
         regions=region_rows(), russia=RUSSIA_ROW, region_notes=REGION_NOTES,
-        scn_defs=SCENARIOS, calendar=calendar_view(), latest_posts=get_posts()[:3], tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
+        scn_defs=SCENARIOS, calendar=calendar_view(), latest_posts=get_posts()[:3], feed_posts=get_posts(), feed_news=blog.news_items(live_data.get_live()), tax=TAX, tax_free_text=f"{TAX['free_base'] * TAX['free_rate'] / 100:,.0f} ₽".replace(",", " "), dep_year_rate=dep_year, bond_rate=BOND_RATE, stock_rate=STOCK_RATE,
         mortgage_presets=MORTGAGE_PRESETS, deposit_rates=DEPOSIT_RATES,
         scenarios=build_scenarios(v["key"], v["next_meeting"]),
         infl_now=fmt(INFLATION), real_rate=fmt(v["key"] - INFLATION),

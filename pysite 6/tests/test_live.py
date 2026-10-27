@@ -494,6 +494,25 @@ class Glossary(unittest.TestCase):
                 self.assertIn(f'id="{anchor[1:]}"', home, anchor)
 
 
+class FeedSlide(unittest.TestCase):
+    def test_feed_panel(self):
+        import glossary  # noqa: F401
+        html = site.app.test_client().get("/").get_data(as_text=True)
+        self.assertIn('id="feed-panel"', html)
+        self.assertIn("inert", html.split('id="feed-panel"')[1][:200])        # закрыт и недоступен с клавиатуры
+        self.assertIn('id="feed-open"', html)
+        self.assertIn("data-feed-open", html)
+        panel = html.split('id="feed-panel"')[1].split("</aside>")[0]
+        for p in site.get_posts():
+            self.assertIn(f'razbory/{p["slug"]}/', panel, p["slug"])
+        self.assertIn('role="tablist"', panel)
+
+    def test_swipe_code_ignores_inputs(self):
+        js = (pathlib.Path(site.BASE) / "static" / "app.js").read_text(encoding="utf-8")
+        self.assertIn("input, select, textarea, svg, .chart, .table-wrap", js)
+        self.assertIn("#lenta", js)
+
+
 class Security(unittest.TestCase):
     def setUp(self):
         self.c = site.app.test_client()
