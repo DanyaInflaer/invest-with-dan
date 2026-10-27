@@ -548,6 +548,21 @@ html { -webkit-text-size-adjust: 100%; }
 .method-table td { font-size: 14px; }
 .method ul { padding-left: 20px; }
 
+/* словарь терминов */
+.gl-index { display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0 8px; }
+.gl-index a { min-width: 36px; text-align: center; padding: 6px 10px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); font-weight: 600; text-decoration: none; }
+.gl-index a:hover { border-color: var(--accent); color: var(--accent); }
+.gl-group h2 { margin-top: 32px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.gl-list { margin: 0; }
+.gl-item { padding: 16px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 16px; }
+.gl-item dt { font-family: var(--font-display); font-weight: 600; font-size: 19px; }
+.gl-item dt a { color: inherit; text-decoration: none; }
+.gl-item dt a:hover { color: var(--accent); }
+.gl-item dd { margin: 6px 0 0; }
+.gl-item dd p { margin: 0 0 6px; }
+.gl-links { font-size: 14px; color: var(--muted); }
+.gl-item:target { background: var(--surface); outline: 2px solid var(--accent); outline-offset: 2px; }
+
 </style>
 </head>
 <body>
@@ -559,6 +574,7 @@ html { -webkit-text-size-adjust: 100%; }
       <a href="../#dannye">Данные</a>
       <a href="../#kalkulyatory">Калькуляторы</a>
       <a href="../razbory/">Разборы</a>
+      <a href="../slovar/">Словарь</a>
       <a href="../metodika/">Методика</a>
       <a href="../#o-nas">О нас</a>
     </nav>
@@ -605,7 +621,7 @@ html { -webkit-text-size-adjust: 100%; }
       </tbody>
     </table>
   </div>
-  <p>Страницы пересобираются автоматически примерно раз в 6 часов. Время обновления указано по Москве. Дата сборки этой страницы: 27.10.2026, 08:16 МСК.</p>
+  <p>Страницы пересобираются автоматически примерно раз в 6 часов. Время обновления указано по Москве. Дата сборки этой страницы: 27.10.2026, 08:18 МСК.</p>
 
   <h2>Что обновляется вручную</h2>
   <p>Эти показатели выбирает и вносит команда по публикациям источников. Дата последней ручной проверки: <strong>21.10.2026</strong>.</p>
@@ -725,7 +741,7 @@ html { -webkit-text-size-adjust: 100%; }
 </article>
 
   </main>
-  <footer>© 2026 Growth Syndicate · <a href="../">На главную</a> · <a href="../metodika/">Методика и источники</a></footer>
+  <footer>© 2026 Growth Syndicate · <a href="../">На главную</a> · <a href="../slovar/">Словарь</a> · <a href="../metodika/">Методика и источники</a></footer>
 </div>
 </body>
 </html>

@@ -58,9 +58,9 @@ def main() -> int:
         shutil.rmtree(blog_dir)           # старые страницы не копим
     blog_dir.mkdir()
     pages = {"": "/razbory/"}
-    metodika = out / "metodika"
-    metodika.mkdir(exist_ok=True)
-    (metodika / "index.html").write_text(inline(app.test_client().get("/metodika/").get_data(as_text=True)), encoding="utf-8")
+    for extra in ("metodika", "slovar"):                 # отдельные страницы: методика и словарь терминов
+        (out / extra).mkdir(exist_ok=True)
+        (out / extra / "index.html").write_text(inline(app.test_client().get(f"/{extra}/").get_data(as_text=True)), encoding="utf-8")
     for p in get_posts():
         pages[p["slug"] + "/"] = f"/razbory/{p['slug']}/"
     for rel, url in pages.items():

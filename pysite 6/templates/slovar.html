@@ -1,0 +1,33 @@
+{% extends "_blog_base.html" %}
+{% block title %}Словарь терминов: ставки, вклады, ипотека, налоги{% endblock %}
+{% block description %}Простыми словами: ключевая ставка, инфляция, капитализация, аннуитетный платёж, ИИС, облигации, налоговый вычет и другие термины. {{ count }} определений со ссылками на калькуляторы.{% endblock %}
+{% block ld %}<script type="application/ld+json">{{ ld|tojson }}</script>{% endblock %}
+{% block content %}
+<article class="post glossary">
+  <p class="post-meta"><a href="{{ root }}">← На главную</a> <span class="tag">Словарь</span></p>
+  <h1>Словарь терминов</h1>
+  <p>Простыми словами о том, что встречается в разговорах о ставках, вкладах, ипотеке, налогах и инвестициях. Рядом с терминами есть ссылки на калькуляторы, где его можно проверить на цифрах. Как считаются сами калькуляторы, описано в <a href="{{ root }}metodika/">методике</a>.</p>
+
+  <nav class="gl-index" aria-label="Буквы">
+    {% for ch, items in letters %}<a href="#bukva-{{ loop.index }}">{{ ch }}</a>{% endfor %}
+  </nav>
+
+  {% for ch, items in letters %}
+  <section class="gl-group" aria-labelledby="bukva-{{ loop.index }}">
+    <h2 id="bukva-{{ loop.index }}">{{ ch }}</h2>
+    <dl class="gl-list">
+      {% for key, term, text, links in items %}
+      <div class="gl-item" id="{{ key }}">
+        <dt><a href="#{{ key }}">{{ term }}</a></dt>
+        <dd>
+          <p>{{ text }}</p>
+          {% if links %}<p class="gl-links">{% for label, anchor in links %}<a href="{{ root }}{{ anchor }}">{{ label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+        </dd>
+      </div>
+      {% endfor %}
+    </dl>
+  </section>
+  {% endfor %}
+  <p class="post-note">Определения носят справочный характер и не являются индивидуальной инвестиционной рекомендацией. Налоговые правила и условия продуктов меняются, проверяйте их у банка, брокера или в первоисточнике.</p>
+</article>
+{% endblock %}

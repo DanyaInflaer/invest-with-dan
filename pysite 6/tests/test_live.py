@@ -467,6 +467,33 @@ class Methodology(unittest.TestCase):
         self.assertIn("26.10.2026, 13:00 МСК", html)
 
 
+class Glossary(unittest.TestCase):
+    def test_glossary(self):
+        import glossary
+        c = site.app.test_client()
+        r = c.get("/slovar/")
+        self.assertEqual(r.status_code, 200)
+        html = r.get_data(as_text=True)
+        keys = [t[0] for t in glossary.TERMS]
+        self.assertEqual(len(keys), len(set(keys)), "ключи терминов должны быть уникальными")
+        for key, term, text, links in glossary.TERMS:
+            self.assertIn(f'id="{key}"', html, key)
+            self.assertGreater(len(text), 60, key)
+            for _label, anchor in links:
+                self.assertTrue(anchor.startswith("#"), key)
+        self.assertIn("DefinedTermSet", html)
+        self.assertNotIn("Undefined", html)
+        self.assertIn("/slovar/", c.get("/sitemap.xml").get_data(as_text=True))
+        self.assertIn('href="slovar/"', c.get("/").get_data(as_text=True))
+
+    def test_link_targets_exist_on_home(self):
+        import glossary
+        home = site.app.test_client().get("/").get_data(as_text=True)
+        for _k, _t, _x, links in glossary.TERMS:
+            for _label, anchor in links:
+                self.assertIn(f'id="{anchor[1:]}"', home, anchor)
+
+
 class Security(unittest.TestCase):
     def setUp(self):
         self.c = site.app.test_client()

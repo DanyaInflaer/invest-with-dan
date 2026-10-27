@@ -22,6 +22,7 @@ except ModuleNotFoundError:
 
 import blog
 import live_data
+import glossary
 import security
 
 app = Flask(__name__)
@@ -795,6 +796,23 @@ def metodika():
                            stock_rate=fmt_num(STOCK_RATE), top_text=lambda v: _rub_text(v), **methodology_view())
 
 
+@app.route("/slovar/")
+def slovar():
+    terms = sorted(glossary.TERMS, key=lambda t: t[1].lower().replace("ё", "е"))
+    letters = []
+    for t in terms:
+        ch = t[1][0].upper()
+        if not letters or letters[-1][0] != ch:
+            letters.append((ch, []))
+        letters[-1][1].append(t)
+    url = _blog_url("slovar/")
+    ld = {"@context": "https://schema.org", "@type": "DefinedTermSet", "name": "Словарь терминов: ставки, вклады, ипотека, налоги",
+          "inLanguage": "ru", "hasDefinedTerm": [{"@type": "DefinedTerm", "name": t[1], "description": t[2]} for t in terms]}
+    if url:
+        ld["url"] = url
+    return render_template("slovar.html", team=TEAM, root=_root(1), page_url=url, ld=ld, letters=letters, count=len(terms))
+
+
 SECURITY_TXT = (
     "Contact: mailto:teamgrowth37@gmail.com\n"
     "Expires: 2027-12-31T00:00:00.000Z\n"
@@ -829,6 +847,7 @@ def sitemap():
            f"  <url><loc>{site_url()}</loc><lastmod>{today}</lastmod></url>\n"
            f"  <url><loc>{site_url()}razbory/</loc><lastmod>{today}</lastmod></url>\n"
            f"  <url><loc>{site_url()}metodika/</loc><lastmod>{today}</lastmod></url>\n"
+           f"  <url><loc>{site_url()}slovar/</loc><lastmod>{today}</lastmod></url>\n"
            + "".join(f"  <url><loc>{site_url()}razbory/{p['slug']}/</loc><lastmod>{p['date']}</lastmod></url>\n" for p in get_posts())
            + "</urlset>\n")
     return Response(xml, mimetype="application/xml")
