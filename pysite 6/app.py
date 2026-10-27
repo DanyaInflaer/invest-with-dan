@@ -750,6 +750,51 @@ def razbory_post(slug):
     return render_template("post.html", post=post, others=others, ld=ld, team=TEAM, root=_root(2), page_url=url)
 
 
+
+def _rub_text(x: int) -> str:
+    return f"{x:,}".replace(",", "\u00a0") + "\u00a0₽"
+
+
+def methodology_view(now: dt.datetime | None = None) -> dict:
+    """Данные для страницы «Методика и источники»: источники, время обновления, параметры налогов."""
+    now = now or dt.datetime.now(MSK)
+    status = live_data.get_live().get("status", {})
+    owners = {"rates": ("Банк России, курсы валют", live_data.CBR_DAILY_URL),
+              "key": ("Банк России, ключевая ставка", live_data.CBR_KEYRATE_PAGE),
+              "moex": ("Московская биржа, индексы", "https://iss.moex.com/"),
+              "news": ("Банк России, пресс-релизы", live_data.CBR_NEWS_URL)}
+    rows = []
+    for name, (title, _fn) in live_data.SOURCES.items():
+        st = status.get(name, {})
+        at = st.get("at")
+        if at:
+            when = dt.datetime.fromisoformat(at).astimezone(MSK).strftime("%d.%m.%Y, %H:%M МСК")
+            if not st.get("ok"):
+                when += " (последняя попытка не удалась, показаны прежние данные)"
+        else:
+            when = "ещё не обновлялось, показаны запасные значения"
+        owner, url = owners.get(name, (title, "https://www.cbr.ru/"))
+        rows.append({"title": title, "owner": owner, "url": url, "when": when})
+    tax = dict(TAX)
+    tax.update(free_base_text=_rub_text(TAX["free_base"]), free_rate_text=fmt_num(TAX["free_rate"]),
+               threshold_text=_rub_text(TAX["deposit_threshold"]), home_text=_rub_text(TAX["home_limit"]),
+               interest_text=_rub_text(TAX["interest_limit"]), iis_text=_rub_text(TAX["iis_limit"]))
+    return {"auto_sources": rows, "tax": tax, "built": now.strftime("%d.%m.%Y, %H:%M МСК"),
+            "manual_date": UPDATED, "asof": live_view(now)["asof"]}
+
+
+@app.route("/metodika/")
+def metodika():
+    ld = {"@context": "https://schema.org", "@type": "WebPage", "name": "Методика и источники", "inLanguage": "ru",
+          "publisher": {"@type": "Organization", "name": TEAM["name"]}}
+    url = _blog_url("metodika/")
+    if url:
+        ld["url"] = url
+    return render_template("metodika.html", team=TEAM, root=_root(1), page_url=url, ld=ld, sources=SOURCES,
+                           scenarios=SCENARIOS, scenario_notes=SCENARIO_NOTES, bond_rate=fmt_num(BOND_RATE),
+                           stock_rate=fmt_num(STOCK_RATE), top_text=lambda v: _rub_text(v), **methodology_view())
+
+
 SECURITY_TXT = (
     "Contact: mailto:teamgrowth37@gmail.com\n"
     "Expires: 2027-12-31T00:00:00.000Z\n"
@@ -783,6 +828,7 @@ def sitemap():
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            f"  <url><loc>{site_url()}</loc><lastmod>{today}</lastmod></url>\n"
            f"  <url><loc>{site_url()}razbory/</loc><lastmod>{today}</lastmod></url>\n"
+           f"  <url><loc>{site_url()}metodika/</loc><lastmod>{today}</lastmod></url>\n"
            + "".join(f"  <url><loc>{site_url()}razbory/{p['slug']}/</loc><lastmod>{p['date']}</lastmod></url>\n" for p in get_posts())
            + "</urlset>\n")
     return Response(xml, mimetype="application/xml")

@@ -440,6 +440,33 @@ class NewTools(unittest.TestCase):
             self.assertIn(name, js, name)
 
 
+class Methodology(unittest.TestCase):
+    def setUp(self):
+        self.c = site.app.test_client()
+
+    def test_page(self):
+        r = self.c.get("/metodika/")
+        self.assertEqual(r.status_code, 200)
+        html = r.get_data(as_text=True)
+        for text in ("Методика и источники", "Что обновляется автоматически", "Как считаются калькуляторы",
+                     "Облигации", "ИИС", "Сценарии", "Ограничения", site.UPDATED):
+            self.assertIn(text, html, text)
+        for title, _fn in live_data.SOURCES.values():
+            self.assertIn(title, html, title)
+        self.assertNotIn("Undefined", html)
+        self.assertIn("Content-Security-Policy", r.headers)
+
+    def test_linked_and_in_sitemap(self):
+        self.assertIn('href="metodika/"', self.c.get("/").get_data(as_text=True))
+        self.assertIn("/metodika/", self.c.get("/razbory/").get_data(as_text=True))
+        self.assertIn("metodika/", self.c.get("/sitemap.xml").get_data(as_text=True))
+
+    def test_status_time_shown(self):
+        live_data._state.setdefault("status", {})["rates"] = {"ok": True, "at": "2026-10-26T10:00:00+00:00", "error": None}
+        html = self.c.get("/metodika/").get_data(as_text=True)
+        self.assertIn("26.10.2026, 13:00 МСК", html)
+
+
 class Security(unittest.TestCase):
     def setUp(self):
         self.c = site.app.test_client()
