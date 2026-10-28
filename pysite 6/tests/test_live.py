@@ -516,6 +516,12 @@ class FeedSlide(unittest.TestCase):
         self.assertIn("#lenta", js)
 
 
+class Verification(unittest.TestCase):
+    def test_yandex_meta_on_home(self):
+        html = site.app.test_client().get("/").get_data(as_text=True)
+        self.assertIn('<meta name="yandex-verification" content="59cc4fc22f93bc20" />', html)
+
+
 class Security(unittest.TestCase):
     def setUp(self):
         self.c = site.app.test_client()
