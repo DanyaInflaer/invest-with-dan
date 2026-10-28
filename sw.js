@@ -1,6 +1,6 @@
 // Service worker: страница открывается без сети и обновляется, когда сеть есть.
 // Версия и список файлов подставляются при отдаче (Flask) или при сборке (build_static.py).
-const VERSION = "1793078913";
+const VERSION = "1793187826";
 const CACHE = "invest-site-" + VERSION;
 const PRECACHE = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 

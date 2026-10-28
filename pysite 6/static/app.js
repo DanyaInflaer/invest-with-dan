@@ -1243,6 +1243,57 @@
     tabs.forEach(function (t, i) { t.addEventListener('click', function () { pick(i); }); });
   })();
 
+  /* ======================================================================
+     Оформление «Аврора»: подсветка под курсором, плавное появление блоков, бег чисел
+     ====================================================================== */
+  (function () {
+    var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // свет под курсором на карточках (только мышь)
+    document.addEventListener('pointermove', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      var el = e.target.closest ? e.target.closest('.card, .calc, .glance, .post-card') : null;
+      if (!el) return;
+      var r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    }, { passive: true });
+
+    if (calm || !('IntersectionObserver' in window)) return;
+
+    // блоки плавно появляются при прокрутке; без скрипта всё видно сразу
+    var io = new IntersectionObserver(function (items) {
+      items.forEach(function (it) { if (it.isIntersecting) { it.target.classList.add('in'); io.unobserve(it.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    Array.prototype.forEach.call(document.querySelectorAll('.band .sec-head, .band .card, .band .calc, .band .scale, .band .scenario, .post-card'), function (el, i) {
+      var r = el.getBoundingClientRect();
+      if (r.top < innerHeight) return;                // то, что уже на экране, не прячем
+      el.classList.add('rv'); io.observe(el);
+    });
+    window.addEventListener('beforeprint', function () { Array.prototype.forEach.call(document.querySelectorAll('.rv'), function (n) { n.classList.add('in'); }); });
+
+    // числа в сводке «Россия сейчас» «набегают» один раз
+    var re = /(\d[\d\s\u00a0]*(?:,\d+)?)/;
+    Array.prototype.forEach.call(document.querySelectorAll('.glance dd'), function (dd) {
+      var txt = dd.textContent, m = re.exec(txt);
+      if (!m) return;
+      var raw = m[1], dec = (raw.split(',')[1] || '').length;
+      var target = parseFloat(raw.replace(/[\s\u00a0]/g, '').replace(',', '.'));
+      if (!isFinite(target)) return;
+      var fmt = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+      var pre = txt.slice(0, m.index), post = txt.slice(m.index + raw.length);
+      var t0 = null, dur = 1100;
+      dd.setAttribute('aria-label', txt.trim());
+      function step(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+        dd.textContent = p < 1 ? pre + fmt.format(target * e) + post : txt;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  })();
+
   /* ---------- сортировка таблицы регионов ---------- */
   var table = document.getElementById('regions-table');
   var tbody = table.tBodies[0];

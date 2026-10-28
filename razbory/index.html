@@ -58,35 +58,45 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap" media="print">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=Manrope:wght@400;500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" media="print">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap"></noscript>
 <style>
 /* Layout: широкая колонка, крупный заголовок слева, сводка справа; данные сеткой карточек и одной шкалой "цена денег"; в конце блок о команде */
+/* Тема «Аврора»: тёмный неон по умолчанию в тёмном режиме, светлая индиго-палитра в светлом */
 :root {
-  --bg: #F5F0E6;
-  --surface: #FFFDF8;
-  --fg: #1C1B16;
-  --muted: #5E5A4E;
-  --line: #DDD5C3;
-  --accent: #0F5C45;
-  --s2: #C2410C;
-  --accent-soft: #DDEBE2;
-  --neg: #B42318;
-  --pos: #0F7A4F;
-  --font-display: "Literata", Georgia, "Times New Roman", serif;
+  --bg: #F3F5FF;
+  --bg2: #E7EBFF;
+  --surface: #FFFFFF;
+  --glass: rgba(255, 255, 255, 0.72);
+  --fg: #0B1020;
+  --muted: #55607F;
+  --line: #D9DFF4;
+  --accent: #4F3BE8;
+  --accent2: #0AA37A;
+  --s2: #E8590C;
+  --accent-soft: #E6E3FF;
+  --neg: #C62839;
+  --pos: #0A8F6A;
+  --glow: rgba(79, 59, 232, 0.28);
+  --aurora1: rgba(124, 92, 255, 0.28);
+  --aurora2: rgba(10, 163, 122, 0.20);
+  --aurora3: rgba(255, 140, 80, 0.16);
+  --font-display: "Unbounded", "Manrope", system-ui, sans-serif;
   --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-data: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0F1714; --surface: #16211C; --fg: #ECEFE8; --muted: #9DAA9F; --line: #26352D;
-    --accent: #5FD3A0; --s2: #FFA45C; --accent-soft: #1B2E25; --neg: #FF8A7A; --pos: #6FD3A0;
+    --bg: #070B16; --bg2: #0B1226; --surface: #0F1730; --glass: rgba(18, 27, 56, 0.62); --fg: #EAF0FF; --muted: #93A1C6; --line: rgba(255, 255, 255, 0.11);
+    --accent: #3DF5B0; --accent2: #8B7CFF; --s2: #FFB347; --accent-soft: rgba(61, 245, 176, 0.12); --neg: #FF7A8A; --pos: #3DF5B0;
+    --glow: rgba(61, 245, 176, 0.35); --aurora1: rgba(110, 80, 255, 0.34); --aurora2: rgba(61, 245, 176, 0.18); --aurora3: rgba(255, 120, 90, 0.14);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0F1714; --surface: #16211C; --fg: #ECEFE8; --muted: #9DAA9F; --line: #26352D;
-  --accent: #5FD3A0; --s2: #FFA45C; --accent-soft: #1B2E25; --neg: #FF8A7A; --pos: #6FD3A0;
+  --bg: #070B16; --bg2: #0B1226; --surface: #0F1730; --glass: rgba(18, 27, 56, 0.62); --fg: #EAF0FF; --muted: #93A1C6; --line: rgba(255, 255, 255, 0.11);
+  --accent: #3DF5B0; --accent2: #8B7CFF; --s2: #FFB347; --accent-soft: rgba(61, 245, 176, 0.12); --neg: #FF7A8A; --pos: #3DF5B0;
+  --glow: rgba(61, 245, 176, 0.35); --aurora1: rgba(110, 80, 255, 0.34); --aurora2: rgba(61, 245, 176, 0.18); --aurora3: rgba(255, 120, 90, 0.14);
   color-scheme: dark;
 }
 
@@ -599,6 +609,107 @@ body.feed-open { overflow: hidden; }
 .slides button.on { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .slides button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .feed-bar .slides { padding-top: 0; }
+
+
+/* =====================================================================
+   Стиль «Аврора»: стекло, свечение, градиенты, бегущая лента показателей
+   ===================================================================== */
+body { background: var(--bg); position: relative; }
+body::before {                                   /* северное сияние на фоне */
+  content: ""; position: fixed; inset: -20vmax; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(40vmax 40vmax at 15% 10%, var(--aurora1), transparent 60%),
+    radial-gradient(45vmax 45vmax at 90% 20%, var(--aurora2), transparent 60%),
+    radial-gradient(50vmax 50vmax at 60% 95%, var(--aurora3), transparent 60%);
+  animation: aurora 28s ease-in-out infinite alternate;
+}
+@keyframes aurora { to { transform: translate3d(3vmax, -2vmax, 0) rotate(6deg) scale(1.06); } }
+
+h1, h2, h3, .brand { letter-spacing: -0.02em; }
+.hero h1, .sec-head h2, .blog-title, .post h1 { font-family: var(--font-display); font-weight: 600; }
+.hero h1 { font-size: clamp(28px, 4.8vw, 50px); line-height: 1.1; }
+.sec-head h2 { font-size: clamp(24px, 3.4vw, 36px); }
+.hero h1 { background: linear-gradient(100deg, var(--fg) 0%, var(--fg) 40%, var(--accent) 75%, var(--accent2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.calc h3, .read h3, .about h3, h3.group, .scenario h3 { font-family: var(--font-display); font-weight: 500; font-size: 17px; }
+.brand { font-family: var(--font-display); font-size: 16px; }
+.brand::before { width: 12px; height: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 3px; box-shadow: 0 0 14px var(--glow); }
+
+.topbar { border-bottom: 1px solid var(--line); }
+.band { border-top: 1px solid var(--line); }
+.eyebrow { color: var(--accent); }
+.eyebrow::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); margin-right: 8px; animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; transform: scale(.8); } }
+
+/* стеклянные карточки с подсветкой под курсором */
+.glance, .card, .scale, .calc, .scenario, .chart-box, .table-wrap, .contact, .post-card, .feed-card, .scn, .read, .about > * {
+  background: var(--glass); border: 1px solid var(--line); border-radius: 16px;
+  -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 8px 30px -14px rgba(8, 12, 40, 0.35);
+}
+.glance { border-top: 1px solid var(--line); background-image: linear-gradient(180deg, var(--accent-soft), transparent 40%); }
+.card, .calc, .glance, .post-card { position: relative; transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+.card::after, .calc::after, .glance::after, .post-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), var(--glow), transparent 70%);
+  -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000); mask-composite: exclude; padding: 1px;
+}
+.card:hover, .calc:hover, .post-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: 0 14px 40px -16px var(--glow); }
+.card:hover::after, .calc:hover::after, .glance:hover::after, .post-card:hover::after { opacity: 1; }
+
+.card .v, .glance dd { color: var(--fg); }
+.card .v, .glance dd, .calc .result dd { text-shadow: 0 0 22px var(--glow); }
+.result > div:first-child dd { color: var(--accent); }
+.track { background: var(--accent-soft); border-radius: 999px; }
+.fill { background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 999px; box-shadow: 0 0 14px var(--glow); }
+.fill.alt { background: linear-gradient(90deg, var(--muted), var(--line)); box-shadow: none; }
+
+.btn { border-radius: 999px; border: 1px solid var(--line); background: var(--glass); }
+.btn.primary, .slides button.on { background: linear-gradient(120deg, var(--accent2), var(--accent)); border-color: transparent; color: #04101F; font-weight: 700; box-shadow: 0 6px 22px -8px var(--glow); }
+:root:not([data-theme="dark"]) .btn.primary, :root:not([data-theme="dark"]) .slides button.on { color: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary, :root:not([data-theme="light"]) .slides button.on { color: #04101F; } }
+.btn.primary:hover { filter: brightness(1.1); color: inherit; }
+.field input[type="number"], .field select { border-radius: 10px; background: color-mix(in srgb, var(--bg) 70%, transparent); }
+.field input[type="range"] { accent-color: var(--accent); }
+.tag { border-radius: 999px; }
+.nav a { position: relative; }
+.nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .25s; }
+.nav a:hover::after { transform: scaleX(1); }
+.theme-btn, .slides button { backdrop-filter: blur(10px); }
+
+/* графики: свечение линий */
+.chart .s1, .chart .s2 { stroke-width: 3; filter: drop-shadow(0 0 6px var(--glow)); }
+.chart .bar-rect { opacity: 0.7; }
+.chart .dot1, .chart .dot2 { stroke: var(--bg); }
+
+/* бегущая лента показателей */
+.ticker { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); margin-top: 14px;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.ticker-track { display: flex; width: max-content; animation: tick 46s linear infinite; }
+.ticker:hover .ticker-track, .ticker:focus-within .ticker-track { animation-play-state: paused; }
+.ticker ul { display: flex; list-style: none; margin: 0; padding: 0; }
+.ticker li { display: flex; align-items: baseline; gap: 8px; padding: 9px 22px; white-space: nowrap; font-size: 13px; }
+.ticker li::after { content: "◆"; margin-left: 22px; font-size: 8px; color: var(--accent); opacity: .7; align-self: center; }
+.ticker .tk { color: var(--muted); }
+.ticker .tv { font-family: var(--font-data); font-weight: 600; color: var(--fg); }
+@keyframes tick { to { transform: translateX(-50%); } }
+
+/* появление блоков при прокрутке */
+.rv { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+.rv.in { opacity: 1; transform: none; }
+
+@media (max-width: 640px) { .glance, .card, .scale, .calc, .scenario, .contact, .post-card { border-radius: 14px; } .ticker li { padding: 8px 16px; } }
+@media (prefers-reduced-motion: reduce) {
+  body::before, .ticker-track, .eyebrow::before { animation: none; }
+  .rv { opacity: 1; transform: none; transition: none; }
+  .card, .calc, .post-card { transition: none; }
+}
+@media print {
+  body::before, .ticker { display: none !important; }
+  .rv { opacity: 1 !important; transform: none !important; }
+  .glance, .card, .scale, .calc, .scenario, .chart-box, .table-wrap, .contact, .post-card { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; background: #fff; }
+  .hero h1 { background: none; color: #000; -webkit-text-fill-color: #000; }
+}
 
 </style>
 </head>
