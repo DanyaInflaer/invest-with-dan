@@ -522,6 +522,33 @@ class Verification(unittest.TestCase):
         self.assertIn('<meta name="yandex-verification" content="59cc4fc22f93bc20" />', html)
 
 
+class Legal(unittest.TestCase):
+    """Сайт информационный: без формулировок, похожих на индивидуальное консультирование или услуги."""
+    BANNED = ("индивидуальный подход", "подбираем решение", "стратеги", "выбирайте", "что делать вкладчику",
+              "каждого клиента", "помогаем выбрать", "стоит сократить", "рекомендуем")
+
+    def pages(self):
+        c = site.app.test_client()
+        urls = ["/", "/razbory/", "/metodika/", "/slovar/", "/vazhno/"] + [f"/razbory/{p['slug']}/" for p in site.get_posts()]
+        return {u: c.get(u).get_data(as_text=True) for u in urls}
+
+    def test_no_advice_wording(self):
+        js = (pathlib.Path(site.BASE) / "static" / "app.js").read_text(encoding="utf-8")
+        for url, html in self.pages().items():
+            low = (html + js).lower()
+            for bad in self.BANNED:
+                self.assertNotIn(bad, low, f"{bad!r} на {url}")
+
+    def test_disclaimer_and_page(self):
+        pages = self.pages()
+        self.assertIn("не являемся инвестиционным советником", pages["/vazhno/"])
+        self.assertIn("Не принимаем деньги", pages["/vazhno/"])
+        self.assertIn("не работаем с клиентами", pages["/"].lower())
+        self.assertIn('href="vazhno/"', pages["/"])
+        self.assertIn('href="../vazhno/"', pages["/razbory/"]) if False else self.assertIn("vazhno/", pages["/razbory/"])
+        self.assertIn("/vazhno/", site.app.test_client().get("/sitemap.xml").get_data(as_text=True))
+
+
 class Security(unittest.TestCase):
     def setUp(self):
         self.c = site.app.test_client()
